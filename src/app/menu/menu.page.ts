@@ -24,6 +24,7 @@ export class MenuPage implements OnInit {
     activite: string;
     zoneInter: any = [];
     firstNavigate: boolean = false;
+    benefRoute: string = '';
     private isBloc: BehaviorSubject<boolean> = new BehaviorSubject(false);
     private isPms: BehaviorSubject<boolean> = new BehaviorSubject(false);
     private isPr: BehaviorSubject<boolean> = new BehaviorSubject(false);
@@ -36,7 +37,7 @@ export class MenuPage implements OnInit {
     ];
 
     pages_bloc = [
-      { title: 'Identification de beneficiaire', url: '/menu/beneficiaire', icone: 'person', color: 'primary', data: this.zoneInter},
+      { title: 'Identification de beneficiaire', url: '/menu/beneficiaire_bloc', icone: 'person', color: 'primary', data: this.zoneInter},
       { title: 'Carnet de suivi bloc', url: '/menu/suivi', icone: 'navigate', color: 'primary', data: this.zoneInter },
       { title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success', data: this.zoneInter }      
     ];
@@ -68,21 +69,25 @@ export class MenuPage implements OnInit {
         this.pages_bloc.forEach(elements => {
           elements.data = this.zoneInter;
         });
+        this.benefRoute = 'beneficiaire_bloc';
         this.isBloc.next(true);
       } else if (this.activite.toUpperCase() === 'RP') {
         this.pages_pms.forEach(elements => {
           elements.data = this.zoneInter;
         });
+        this.benefRoute = 'beneficiaire_rp';
         this.isPms.next(true);
       } else if (this.activite.toUpperCase() === 'PR') {
         this.pages_pr.forEach(elements => {
           elements.data = this.zoneInter;
         });
+        this.benefRoute = 'beneficiaire_rp';
         this.isPr.next(true);
       } else if (this.activite.toUpperCase() === 'BI') {
         this.pages_pr.forEach(elements => {
           elements.data = this.zoneInter;
         });
+        this.benefRoute = 'beneficiaire_rp';
         this.isBi.next(true);
       }
       console.log(this.zoneInter);
@@ -90,7 +95,8 @@ export class MenuPage implements OnInit {
     this.router.events.subscribe((event: RouterEvent) => {
       if (event && event.url) {
         if(this.firstNavigate) {
-          this.selectedPath = event.url + '/beneficiaire';
+
+          this.selectedPath = event.url + this.benefRoute;
           this.firstNavigate = false;
         } else this.selectedPath = event.url;
           console.log("========= selected === " + this.selectedPath);
@@ -106,7 +112,7 @@ export class MenuPage implements OnInit {
     };
     console.log("Menu Page =====>" + navigationExtras.state);
     console.log(navigationExtras.state)
-    this.router.navigate(['menu/beneficiaire'], navigationExtras);
+    this.router.navigate(['menu/' + this.benefRoute], navigationExtras);
   }
 
   onClick(url) {

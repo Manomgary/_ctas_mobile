@@ -11,8 +11,12 @@ const routes: Routes = [
     component: MenuPage,
     children: [
       {
-        path: 'beneficiaire',
+        path: 'beneficiaire_rp',
         loadChildren: () => import('../pages/beneficiaire/beneficiaire-routing.module').then( m => m.BeneficiairePageRoutingModule)
+      },
+      {
+        path: 'beneficiaire_bloc',
+        loadChildren: () => import('../pages/beneficiaire-bloc/beneficiaire-bloc-routing.module').then( m => m.BeneficiaireBlocPageRoutingModule)
       },
       {
         path: 'suivi',

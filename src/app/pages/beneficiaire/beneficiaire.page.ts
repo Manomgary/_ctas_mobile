@@ -69,7 +69,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
       const routeState = this.router.getCurrentNavigation().extras.state;
       data = JSON.parse(routeState.zone);
       ///this.region = JSON.parse(data.data);
-      console.log("Beneficiaire =====>" + data);
+      console.log("Beneficiaire RP=====>" + data);
       console.log(data);
       this.region = data.data.region;
       this.district = data.data.district;

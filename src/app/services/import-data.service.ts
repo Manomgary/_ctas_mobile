@@ -454,9 +454,9 @@ export class ImportDataService implements OnInit, OnDestroy {
             this.select("beneficiaire", data_benef);
 
             data_benef.forEach((item, index) => {
-              const insert_pms = `INSERT INTO benef_activ_bl(code_benef_bl, id_proj, id_activ, id_benef, id_bloc, id_collaborateur, status) 
+              const insert_bl = `INSERT OR IGNORE INTO benef_activ_bl(code_benef_bl, id_proj, id_activ, id_benef, id_bloc, id_collaborateur, status) 
                                   VALUES ("${item.code_benef_bl}", "${item.id_proj}", ${item.id_activ}, "${item.id_benef}", ${item.id_bloc}, ${item.id_collaborateur},"${item.status_benef_bloc}");`;
-              this.insertData(insert_pms);  
+              this.insertData(insert_bl);  
               
               if (index == (data_benef.length - 1)) {
                 console.log("==Fin du boucle definitive BENEFICIAIRE ACTIVITE BLOC==");

@@ -7,8 +7,16 @@
       <div class="ion-text-center ion-text-wrap">
         Projet {{ nomPrjt }}
       </div> 
-      <ion-thumbnail>
-      </ion-thumbnail>
+      <div class="ion-text-center ion-text-wrap">
+        <mat-form-field>
+          <mat-label>Selectionner projet</mat-label>
+          <mat-select [(value)]="selectedProjet">
+            <mat-option *ngFor="let p of projets" [value]="p">
+              {{ p.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div> 
     </ion-title>
   </ion-toolbar>
 </ion-header>

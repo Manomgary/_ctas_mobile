@@ -21,6 +21,7 @@ export class HomePage implements OnInit {
   usersReady: boolean = false;
   isFirstConnection: boolean = false;
   selectedActive: string = '';
+  selectedProjet = {};
  
   constructor(
               private route: Router,
@@ -78,9 +79,7 @@ export class HomePage implements OnInit {
               }
   ngOnInit() {
     console.log("<=======NgOnInit Homme Page=================>");
-    if (this.isFirstConnection) {
-      
-    }
+    if (this.isFirstConnection) {}
   }
 
   async presentModal(data) {
@@ -113,6 +112,11 @@ export class HomePage implements OnInit {
     this.selectedActive = data;
     this.presentModal(this.selectedActive);
   }
+
+  getProjet() {
+    
+  }
+
   getUsers() {
     if (this.users != null && this.users.length > 0) {
       this.users.forEach(async element => {
