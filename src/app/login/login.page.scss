@@ -1,0 +1,43 @@
+.logo {
+    padding: 20px 0;
+    min-height: 200px;
+    text-align: center;
+
+    img {
+      max-width: 150px;
+    }
+  }
+  .ion-text-wrap {
+    color:whitesmoke;
+  }
+  ion-toolbar {
+    --background: rgb(12, 92, 52);
+  }
+  ion-thumbnail {
+    --border-radius: 20px;
+    --size: 60px;
+  }
+  
+  .logo-header-image {
+    background-image: url('../../assets/ctas/user_.png');
+    background-size: cover;
+    background-color: aliceblue;
+  }
+  .form-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center left;
+    margin-top: 15px;
+
+    .mat-form-field {
+      max-width: 600px
+    }
+  }
+ .mat-card-header{
+    background-color: rgb(25, 90, 16) !important;
+    color: aliceblue;
+    padding:0 !important;
+  }
+  ::ng-deep .mat-card{
+    background-color:rgb(228, 248, 238) !important;
+  }

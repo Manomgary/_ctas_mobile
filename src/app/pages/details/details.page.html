@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Users Details </ion-title>
+  </ion-toolbar>
+</ion-header>
+ 
+<ion-content>
+  <div *ngIf="user">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ user.nom }} {{ user.prenom }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <h2>{{ user.email}}</h2>
+        <p>{{ user.age }}</p>
+        <p>{{ user.id_project }}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

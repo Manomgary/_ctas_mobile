@@ -1,0 +1,53 @@
+<ion-header>
+	<ion-toolbar>
+		<ion-grid>  
+			<ion-row>
+				<ion-col class="ion-align-self-start" size="2">
+					<ion-thumbnail>
+						<ion-img src="../../assets/ctas/logo_ctas.jpg"></ion-img>
+					</ion-thumbnail>
+				</ion-col>
+				<ion-col class="ion-align-self-start" size="10">
+					<ion-title>
+						<div class="ion-text-center ion-text-wrap">
+							Bienvenue sur l'app mobile CTAS
+						</div>
+					</ion-title>
+				</ion-col>
+			</ion-row>
+		  </ion-grid>
+	</ion-toolbar>
+  </ion-header>
+  
+  <ion-content>
+	  <form fxLayoutAlign="center center" fxFlexFill [formGroup]="loginForm" (ngSubmit)="doLogin()">
+		<mat-card fxFlex="90" class="login-card">
+			<mat-card-header fxLayoutAlign="center center" color="success">
+				<div mat-card-avatar class="logo-header-image"></div>
+				<mat-card-title>Se connecter à ctas</mat-card-title>
+			</mat-card-header>
+			<mat-card-content>
+				<div  class="form-content">
+					<mat-form-field appearance="fill">
+						<mat-label>Identifiant</mat-label>
+						<input matInput formControlName="userName">
+						<!--<mat-error *ngIf="f['userName'].errors['required']">Name is required</mat-error>-->
+					</mat-form-field>
+					<mat-form-field appearance="fill">
+						<mat-label>Mot de passe</mat-label>
+						<input matInput [type]="hide ? 'password' : 'text'" formControlName="passWord"> 
+						<button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide" type="button" >
+							<mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+						</button>
+						<!--<mat-error *ngIf="!isNotPass"> {{msg}} </mat-error>-->
+					</mat-form-field>	
+				</div>
+			</mat-card-content>
+			<mat-card-actions fxLayoutAlign="center center" fxFlexFill>
+				<button mat-raised-button type="button" (click)="onReset()">Reset</button>
+				<button mat-raised-button color="primary" type="submit" [disabled]="!loginForm.valid">connexion</button>
+
+			</mat-card-actions>
+		</mat-card>
+	</form>
+  </ion-content>

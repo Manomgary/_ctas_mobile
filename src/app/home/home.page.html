@@ -1,0 +1,34 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>
+      <ion-thumbnail>
+        <ion-img src="../../assets/ctas/logo_ctas.jpg"></ion-img>
+      </ion-thumbnail>
+      <div class="ion-text-center ion-text-wrap">
+        Projet {{ nomPrjt }}
+      </div> 
+      <ion-thumbnail>
+      </ion-thumbnail>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+ 
+<ion-content>
+  <div *ngIf="Activite_Projet == null">
+      <p>Aucune Active trouver pour le projet "{{ nomPrjt }}" !!!</p> 
+  </div> 
+  <div *ngIf="Activite_Projet != null">
+    <mat-action-list class="list-btn" *ngFor="let activite of Activite_Projet">
+      <button mat-list-item class="btn" (click)="doMenu(activite.intitule)"> {{ activite.description }} </button>
+    </mat-action-list>   
+  </div> 
+  <!--<ion-button expand="full" (click)="doMenu()">PRODUCTION DE SEMENCE</ion-button>
+  <ion-button expand="full" (click)="doMenu()">GESTION DE BLOC</ion-button>
+  <ion-button expand="full" (click)="doMenu()">CHAMPS ECOLE DES PAYSANS RELAIS</ion-button>-->
+
+</ion-content> 
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Footer - No Border</ion-title>
+  </ion-toolbar>
+</ion-footer>

@@ -1,0 +1,76 @@
+<!-- Card Modal -->
+      <ion-content >  
+        <div fxLayoutAlign="center center" fxFlexFill class="example-container">
+          <mat-card fxFlex="100" class="modal-card">
+            <mat-card-header color="success">
+              <mat-card-title>
+                <div class="ion-text-center ion-text-wrap">
+                    <span *ngIf="isHome">Zone d'intervention</span> 
+                </div>
+                <div class="ion-text-center ion-text-wrap">
+                  <span *ngIf="isLogin">Importation de donnée</span> 
+                </div>
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <form *ngIf="isHome">
+                <div  class="form-content">
+                  <mat-form-field appearance="fill">
+                    <mat-label>Region</mat-label>
+                    <mat-select [(value)]="selected_region">
+                      <mat-option (click)="onRegion()" *ngFor="let region of data_region" [value]="region">
+                        {{ region.nom_reg }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-hint align="end">formulaire obligatoire</mat-hint>
+                  </mat-form-field>	
+                  <mat-form-field appearance="fill">
+                    <mat-label>District</mat-label>
+                    <mat-select [(value)]="selected_district">
+                      <mat-option> --Aucune-- </mat-option>
+                      <mat-option (click)="onDistrict()" *ngFor="let district of data_district" [value]="district"> {{ district.nom_dist }} </mat-option>
+                    </mat-select>
+                    <mat-hint align="end">formulaire obligatoire</mat-hint>
+                  </mat-form-field>	
+                  <mat-form-field *ngIf="!isBloc" appearance="fill">
+                    <mat-label>Commune</mat-label>
+                    <mat-select [(value)]="selected_commune">
+                      <mat-option (click)="onCommune()" *ngFor="let commune of data_commune" [value]="commune">
+                        {{ commune.nom_com }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-hint align="end">formulaire obligatoire</mat-hint>
+                  </mat-form-field>	
+                </div>
+              </form> 
+
+              <!-- Login page -->
+              <mat-list *ngIf="isLogin">
+                <mat-list-item>
+                  <mat-checkbox class="example-margin"
+                                [checked]="allComplete"
+                                [color]="task.color"
+                                [indeterminate]="someComplete()"
+                                (change)="setAll($event.checked)">
+                    {{task.nom}}
+                  </mat-checkbox>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item *ngFor="let subtask of task.subtasks">
+                  <mat-checkbox [(ngModel)]="subtask.completed"
+                  [color]="subtask.color"
+                  (ngModelChange)="updateAllComplete()">
+                    {{subtask.nom}}
+                  </mat-checkbox>
+                </mat-list-item>
+             </mat-list>              
+            </mat-card-content>
+            <mat-card-actions fxLayoutAlign="center center" fxFlexFill>
+              <button *ngIf="isHome" mat-button (click)="closeModal()" color="warning">Revenir</button>
+              <button *ngIf="isHome" mat-raised-button color="primary" type="submit" (click)="closeModal()">valider</button>                
+              <button *ngIf="isLogin" mat-raised-button color="primary" type="submit" (click)="importData()">importer</button>   
+            </mat-card-actions>
+          </mat-card>
+      </div>
+    </ion-content>
+  

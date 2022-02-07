@@ -1,0 +1,78 @@
+<ion-app>
+  <ion-menu side="start" menuId="first" contentId="main-content">
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title> {{ activite.description }} </ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-list>
+        <div *ngIf="isBloc.value">
+          <ion-menu-toggle auto-hide="false" *ngFor="let p of pages_bloc">
+            <ion-item 
+              (click) = "goToUrl(p.url, p.data)"
+              routerDirection="root"
+                [class.active-item]="selectedPath.startsWith(p.url)">
+                <ion-icon [name]="p.icone" slot="start" [color]="p.color"></ion-icon>
+                <ion-label>
+                  {{ p.title }}
+                </ion-label>
+            </ion-item>
+          </ion-menu-toggle>          
+        </div>
+
+        <div *ngIf="isPms.value">
+          <ion-menu-toggle auto-hide="false" *ngFor="let p of  pages_pms">
+            <ion-item 
+              (click) = "goToUrl(p.url, p.data)"
+              routerDirection="root"
+                [class.active-item]="selectedPath.startsWith(p.url)">
+                <ion-icon [name]="p.icone" slot="start" [color]="p.color"></ion-icon>
+                <ion-label>
+                  {{ p.title }}
+                </ion-label>
+            </ion-item>
+          </ion-menu-toggle>          
+        </div>
+
+        <div *ngIf="isPr.value">
+          <ion-menu-toggle auto-hide="false" *ngFor="let p of  pages_pr">
+            <ion-item 
+              (click) = "goToUrl(p.url, p.data)"
+              routerDirection="root"
+                [class.active-item]="selectedPath.startsWith(p.url)">
+                <ion-icon [name]="p.icone" slot="start" [color]="p.color"></ion-icon>
+                <ion-label>
+                  {{ p.title }}
+                </ion-label>
+            </ion-item>
+          </ion-menu-toggle>          
+        </div>
+
+        <div *ngIf="isBi.value">
+          <ion-menu-toggle auto-hide="false" *ngFor="let p of  pages_bi">
+            <ion-item 
+              (click) = "goToUrl(p.url, p.data)"
+              routerDirection="root"
+                [class.active-item]="selectedPath.startsWith(p.url)">
+                <ion-icon [name]="p.icone" slot="start" [color]="p.color"></ion-icon>
+                <ion-label>
+                  {{ p.title }}
+                </ion-label>
+            </ion-item>
+          </ion-menu-toggle>          
+        </div>
+
+        <ion-item (click)="presentModal()">
+          <ion-icon name="map" color="success" slot="start"></ion-icon>
+            Modification de zone d'intervention
+        </ion-item>
+        <ion-item trappable routerLink="/login" routerDirection="root">
+          <ion-icon name="log-out" slot="start" color="danger"></ion-icon>
+            Deconnection
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-menu>
+  <ion-router-outlet id="main-content" main></ion-router-outlet>
+</ion-app>
