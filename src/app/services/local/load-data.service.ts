@@ -39,7 +39,6 @@ export class LoadDataService {
   }
 
   async loadUsers(data: any) {
-    console.log(this.dbService.dbReady.value);
     
     if (this.dbService.dbReady.value) {
       let user: Utilisateurs[]  = [];
@@ -118,36 +117,41 @@ export class LoadDataService {
     return this.projets.asObservable();
   }
 
-  async loadActiveProjet(id_projet: string) {
-    if (this.dbService.dbReady.value) {
-      let act_pr: any[]  = [];
-      console.log(this.dbService.dbReady.value);
-      const statement = `SELECT  AP.code, AP.id_proj, P.nom, AP.id_activ, A.code_act, A.intitule, A.description,  AP.statuts 
-                          FROM  participe_proj_activ AP 
-                          INNER JOIN activite A ON A.code_act = AP.id_activ
-                          INNER JOIN projet P ON P.code_proj = AP.id_proj
-                          WHERE AP.id_proj = "${ id_projet }";`;
-      await this.db.query(statement).then(res => {
-        console.log(":::RESPONSE QUERY Activite Projet ::::");
-        if (res.values.length >0) {
-          console.log(res.values);
-          res.values.forEach((element: any) => {
-            act_pr.push({
-              code: element.code,
-              id_proj: element.id_proj,
-              nom: element.nom,
-              id_activ: element.id_activ,
-              intitule: element.intitule,
-              description: element.description,
-              statuts: element.statuts
+  loadActiveProjet(id_projet: string): Observable<any[]> {
+
+    this.dbService.dbReady.subscribe(async isReady => {
+      if (isReady) {
+        let act_pr: any[]  = [];
+        console.log(this.dbService.dbReady.value);
+        const statement = `SELECT  AP.code, AP.id_proj, P.nom, AP.id_activ, A.code_act, A.intitule, A.description,  AP.statuts 
+                            FROM  participe_proj_activ AP 
+                            INNER JOIN activite A ON A.code_act = AP.id_activ
+                            INNER JOIN projet P ON P.code_proj = AP.id_proj
+                            WHERE AP.id_proj = "${ id_projet }";`;
+        await this.db.query(statement).then(res => {
+          console.log(":::RESPONSE QUERY Activite Projet ::::");
+          if (res.values.length >0) {
+            console.log(res.values);
+            res.values.forEach((element: any) => {
+              act_pr.push({
+                code: element.code,
+                id_proj: element.id_proj,
+                nom: element.nom,
+                id_activ: element.id_activ,
+                intitule: element.intitule,
+                description: element.description,
+                statuts: element.statuts
+              });
             });
-          });
-          this.active_projet.next(act_pr);
-          this.dbReady.next(true);
-          console.log(this.active_projet);
-        } else console.log("Aucune activiter projet!!!");
-      }); 
-    }
+            this.active_projet.next(act_pr);
+            this.dbReady.next(true);
+            console.log(this.active_projet);
+          } else console.log("Aucune activiter projet!!!");
+        }); 
+      }
+    });
+
+    return this.active_projet.asObservable();
   }
 
   loadRegion(): Observable<any[]> {

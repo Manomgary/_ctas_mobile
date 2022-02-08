@@ -10,9 +10,9 @@
       <div class="ion-text-center ion-text-wrap">
         <mat-form-field>
           <mat-label>Selectionner projet</mat-label>
-          <mat-select [(value)]="selectedProjet">
+          <mat-select [(ngModel)]="selectedProjet" (ngModelChange)="projetChange($event)">
             <mat-option *ngFor="let p of projets" [value]="p">
-              {{ p.name }}
+              {{ p.nom }}
             </mat-option>
           </mat-select>
         </mat-form-field>
@@ -37,6 +37,6 @@
 </ion-content> 
 <ion-footer class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Footer - No Border</ion-title>
+    <ion-title></ion-title>
   </ion-toolbar>
 </ion-footer>

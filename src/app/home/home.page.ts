@@ -17,11 +17,12 @@ export class HomePage implements OnInit {
   modalData: any;
   users: Utilisateurs[];
   Activite_Projet: any[] = [];
+  projets: any[] = [];
   nomPrjt: string = '';
   usersReady: boolean = false;
   isFirstConnection: boolean = false;
   selectedActive: string = '';
-  selectedProjet = {};
+  selectedProjet: any = {};
  
   constructor(
               private route: Router,
@@ -72,14 +73,14 @@ export class HomePage implements OnInit {
                       console.log("**Deuxiemes connection local**");
                       this.getUsers();
                     }*/
-                    this.getUsers();
                     console.log(this.users);
                   }
                 }
               }
   ngOnInit() {
     console.log("<=======NgOnInit Homme Page=================>");
-    if (this.isFirstConnection) {}
+    this.loadProjet();
+    this.loadUsers();
   }
 
   async presentModal(data) {
@@ -100,6 +101,7 @@ export class HomePage implements OnInit {
         const navigationExtras: NavigationExtras = {
           state : {
             zone: JSON.stringify(this.modalData),
+            projet: JSON.stringify(this.selectedProjet),
             activite: this.selectedActive
           }
         };
@@ -113,29 +115,45 @@ export class HomePage implements OnInit {
     this.presentModal(this.selectedActive);
   }
 
-  getProjet() {
-    
+  loadProjet() {
+    this.loadData.loadAllProjet({}).subscribe(res => {
+      this.projets = res;
+      console.log("***get Projet home page***");
+      console.log(this.projets);
+      if (this.projets.length > 0) {
+        this.selectedProjet = this.projets[0];
+        if (!(Object.keys(this.selectedProjet).length === 0)) {
+          this.loadActivitePr(this.selectedProjet.code_proj);
+        }
+      }
+    });
   }
 
-  getUsers() {
+  projetChange(value) {
+    console.log("==== ngModel change ====");
+    console.log(value);
+    console.log(this.selectedProjet);
+    this.loadActivitePr(this.selectedProjet.code_proj);
+  }
+
+  loadActivitePr(id_projet) {
+    this.loadData.loadActiveProjet(id_projet).subscribe(data => {
+      console.log("-------Homme Page ACTIVITE-------");
+      console.log(data);
+      this.Activite_Projet = [];
+      this.Activite_Projet = data;
+      console.log(this.Activite_Projet);
+      this.Activite_Projet.forEach((elem) => {
+        this.nomPrjt = elem.nom;
+      });
+    });
+  }
+
+  loadUsers() {
     if (this.users != null && this.users.length > 0) {
       this.users.forEach(async element => {
+        console.log("-------Homme Page USERS DATA-------");
         console.log(element);  
-        await this.loadData.loadActiveProjet(element.id_proj);
-        await this.loadData.getStateQuer().subscribe(isReady => {
-            if (isReady) {
-              this.loadData.getActivitePr().subscribe(data => {
-                console.log("-------Homme Page response-------");
-                console.log(data);
-                this.Activite_Projet = [];
-                this.Activite_Projet = data;
-                console.log(this.Activite_Projet);
-                this.Activite_Projet.forEach((elem) => {
-                  this.nomPrjt = elem.nom;
-                });
-              });
-            }
-          });
       });
     } else console.log("users vide::: Home page");
   }
