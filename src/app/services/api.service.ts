@@ -31,6 +31,17 @@ export class ApiService {
     return this.http.post<any>(this.base_path + 'projet', data, this.httpOptions);
   }
 
+  // Get Equipe
+  getEquipe(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'equipe', data, this.httpOptions);
+  }
+
+  // Get Equipe
+  getProjetEquipe(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'projet/projet_equipe', data, this.httpOptions);
+  }
+  
+
   // get all project active
   getProjet(): Observable<Projet[]> {
     return this.http.get<Projet[]>(this.base_path + 'projet');

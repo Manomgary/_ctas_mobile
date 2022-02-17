@@ -5,6 +5,34 @@ export interface Projet {
     logo: Blob,
     statuts: string
 }
+
+export interface Equipe {
+    code_equipe: number, 
+    img: Blob, 
+    nom: string, 
+    prenom: string, 
+    sexe: string, 
+    dt_nais: string, 
+    cin: string, 
+    dt_delivrance: string, 
+    lieu_delivrance: string, 
+    img_cin: Blob, 
+    email: string, 
+    num_perso: string, 
+    num_float: string, 
+    id_fonct: number,
+    intitule_fct: string,
+    statuts: string
+}
+
+export interface ProjetEquipe {
+    code: number,
+    id_projet: string,
+    id_equipe: number,
+    id_volet: number,
+    status_pe: string
+}
+
 export interface Volet {
     code_vol: number, 
     nom: string, 
@@ -21,7 +49,6 @@ export interface Volet {
 }
 export interface Utilisateurs {
     code_util: number, 
-    id_proj: string,
     id_equipe: number,
     img: Blob, 
     nom: string, 

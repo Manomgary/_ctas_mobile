@@ -10,7 +10,7 @@
         <div *ngIf="isBloc.value">
           <ion-menu-toggle auto-hide="false" *ngFor="let p of pages_bloc">
             <ion-item 
-              (click) = "goToUrl(p.url, p.data)"
+              (click) = "goToUrl(p)"
               routerDirection="root"
                 [class.active-item]="selectedPath.startsWith(p.url)">
                 <ion-icon [name]="p.icone" slot="start" [color]="p.color"></ion-icon>
@@ -24,7 +24,7 @@
         <div *ngIf="isPms.value">
           <ion-menu-toggle auto-hide="false" *ngFor="let p of  pages_pms">
             <ion-item 
-              (click) = "goToUrl(p.url, p.data)"
+              (click) = "goToUrl(p)"
               routerDirection="root"
                 [class.active-item]="selectedPath.startsWith(p.url)">
                 <ion-icon [name]="p.icone" slot="start" [color]="p.color"></ion-icon>
@@ -38,7 +38,7 @@
         <div *ngIf="isPr.value">
           <ion-menu-toggle auto-hide="false" *ngFor="let p of  pages_pr">
             <ion-item 
-              (click) = "goToUrl(p.url, p.data)"
+              (click) = "goToUrl(p)"
               routerDirection="root"
                 [class.active-item]="selectedPath.startsWith(p.url)">
                 <ion-icon [name]="p.icone" slot="start" [color]="p.color"></ion-icon>
@@ -52,7 +52,7 @@
         <div *ngIf="isBi.value">
           <ion-menu-toggle auto-hide="false" *ngFor="let p of  pages_bi">
             <ion-item 
-              (click) = "goToUrl(p.url, p.data)"
+              (click) = "goToUrl(p)"
               routerDirection="root"
                 [class.active-item]="selectedPath.startsWith(p.url)">
                 <ion-icon [name]="p.icone" slot="start" [color]="p.color"></ion-icon>

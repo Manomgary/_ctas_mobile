@@ -28,6 +28,8 @@ import { FlexLayoutModule } from "@angular/flex-layout";
 import { MenuPage } from './menu/menu.page';
 import { HomePage } from './home/home.page';
 import { BeneficiairePage } from './pages/beneficiaire/beneficiaire.page';
+import { BeneficiaireBlocPage } from './pages/beneficiaire-bloc/beneficiaire-bloc.page';
+import { SuiviPage } from './pages/suivi/suivi.page';
 import { TabsPage } from './pages/tabs/tabs.page';
 import { LoginPage } from './login/login.page';
 import { ModalPage } from './pages/modal/modal.page';
@@ -43,6 +45,8 @@ import { LoadDataService } from './services/local/load-data.service';
     HomePage,
     MenuPage,
     BeneficiairePage,
+    BeneficiaireBlocPage,
+    SuiviPage,
     TabsPage,
     LoginPage,
     ModalPage

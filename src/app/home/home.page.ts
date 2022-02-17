@@ -39,40 +39,6 @@ export class HomePage implements OnInit {
                     console.log("*******************");
                     this.users = JSON.parse(routeState.users);
                     this.isFirstConnection = routeState.isFirstConnect;
-                    /**if (this.isFirstConnection) {
-                      console.log("**première connection**");
-                      //this.Activite_Projet = JSON.parse(routeState.activeProjet);
-                      this.users.forEach((element) => {
-                        console.log(element);  
-                        let id_pr = {
-                          id_projet: element.id_proj
-                        }
-                        this.api.getListActiveProjet(id_pr).subscribe((res: any[]) => {
-                          console.log("--------Homme API::: ActiveProjet....");
-                          let count = 0;
-                          console.log(res);
-                          console.log(this.Activite_Projet);
-                          res.forEach((element) => {
-                            count ++;
-                            this.Activite_Projet.push({
-                              code: element.code,
-                              id_proj: element.id_proj,
-                              nom: element.nom,
-                              id_activ: element.id_activ,
-                              intitule: element.intitule,
-                              description: element.description,
-                              statuts: element.statuts
-                            });
-                            if (count === res.length) this.nomPrjt = element.nom;
-                          });
-                          console.log(this.Activite_Projet);
-                        });
-                      });
-                      console.log(this.Activite_Projet);
-                    } else {
-                      console.log("**Deuxiemes connection local**");
-                      this.getUsers();
-                    }*/
                     console.log(this.users);
                   }
                 }
@@ -94,19 +60,21 @@ export class HomePage implements OnInit {
       }
     });
     modal.onDidDismiss().then((data) => {
-      if (!(Object.keys(data).length === 0 && data.constructor === Object)) {
         this.modalData = data;
-        console.log("*****Modal Data*****");
         console.log(this.modalData);
-        const navigationExtras: NavigationExtras = {
-          state : {
-            zone: JSON.stringify(this.modalData),
-            projet: JSON.stringify(this.selectedProjet),
-            activite: this.selectedActive
-          }
-        };
-        this.route.navigate(['menu'], navigationExtras);
-      }
+        if (!this.modalData.dismissed) {
+          console.log("*****Modal Data*****");
+          const navigationExtras: NavigationExtras = {
+            state : {
+              zone: JSON.stringify(this.modalData),
+              projet: JSON.stringify(this.selectedProjet),
+              activite: this.selectedActive
+            }
+          };
+          console.log(navigationExtras);
+          this.route.navigate(['menu'], navigationExtras);
+          
+        }
     });
     await modal.present();
   }

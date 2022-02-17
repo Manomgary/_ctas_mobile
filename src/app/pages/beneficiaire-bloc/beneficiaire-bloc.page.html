@@ -1,13 +1,36 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>beneficiaire-bloc</ion-title>
+      <mat-grid-list cols="4" rowHeight="60px">
+        <mat-grid-tile colspan="4" rowspan="1" style.background = "lightgreen">
+           Projet: 
+        </mat-grid-tile>
+        <mat-grid-tile colspan="2" rowspan="1" style.background = "lightblue">
+          Region: {{region.nom_reg}}
+        </mat-grid-tile>
+        <mat-grid-tile colspan="2" rowspan="1" style.background = "#DDBDF1">
+          District: {{district.nom_dist}}
+        </mat-grid-tile>
+      </mat-grid-list> 
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <p>Region : {{region.nom_reg}}</p>
-  <p>District : {{district.nom_dist}}</p>
+  <div class="ion-text-center ion-text-wrap">
+    Identification de Beneficiaire
+  </div>
+  <!-- visualiser liste beneficiaire -->
+  <mat-tab-group mat-align-tabs="start">
+    <mat-tab label="Bloc">  
+      Liste bloc Bloc
+    </mat-tab>
+    <mat-tab label="Beneficiaire-Bloc">
+      Liste association
+    </mat-tab>
+    <mat-tab label="Parcelle-Bloc">
+      <h1>Liste des Parcelle</h1>
+    </mat-tab>
+  </mat-tab-group>
 </ion-content>

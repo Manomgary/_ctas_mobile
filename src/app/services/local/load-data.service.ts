@@ -6,7 +6,8 @@ import { DatabaseService } from '../database.service';
 import { DB_NAME } from 'src/app/utils/global-variables';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { BehaviorSubject, from, Observable } from 'rxjs';
-import { Utilisateurs } from 'src/app/utils/interface-bd';
+import { Equipe, ProjetEquipe, Utilisateurs } from 'src/app/utils/interface-bd';
+import { Association } from 'src/app/interfaces/interfaces-local';
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +29,8 @@ export class LoadDataService {
   private collabActive = new BehaviorSubject([]);
   private association = new BehaviorSubject([]);
   private bloc = new BehaviorSubject([]);
+  private equipe = new BehaviorSubject([]);
+  private projetEquipe = new BehaviorSubject([]);
   private beneficiaire = new BehaviorSubject([]);
   private beneficiaire_pms = new BehaviorSubject([]);
   private beneficiaire_bloc = new BehaviorSubject([]);
@@ -42,39 +45,53 @@ export class LoadDataService {
     
     if (this.dbService.dbReady.value) {
       let user: Utilisateurs[]  = [];
-      const statement = `SELECT * From utilisateurs WHERE num_perso = "${ data.userName }" AND mot_passe = "${data.passWord}";`;
+      const statement1 = `SELECT code_equipe, nom, prenom, sexe, dt_nais, num_perso,id_fonct, statuts 
+                          FROM equipe 
+                          WHERE statuts = "en fonction" AND num_perso = "${data.userName}";`;
 
-      await this.db.query(statement).then(res => {
+      await this.db.query(statement1).then(async res => {
         console.log(":::RESPONSE QUERY UTILISATEURS ::::");
         console.log(res);
         if (res.values.length >0) {
-          res.values.forEach((element: Utilisateurs) => {
-            user.push({
-              code_util: element.code_util, 
-              id_proj: element.id_proj,
-              id_equipe: element.id_equipe,
-              img: element.img, 
-              nom: element.nom, 
-              prenom: element.prenom, 
-              sexe: element.sexe,
-              dt_nais: element.dt_nais,
-              num_perso: element.num_perso,
-              id_fonct: element.id_fonct,
-              fonction: element.fonction,
-              type: element.type, 
-              role: element.role, 
-              nom_users: element.nom_users,
-              mot_passe: element.mot_passe, 
-              situation_compte: element.situation_compte, 
-              statuts_equipe: element.statuts_equipe,
-              statuts_compte: element.statuts_compte
-            });
+          const req = `SELECT E.code_equipe, E.nom, E.prenom, E.sexe, E.dt_nais, E.num_perso, U.code_util, U.id_equipe, U.img, U.id_fonct, 
+                      U.fonction, U.type, U.role, U.nom_users, U.mot_passe, U.situation_compte, U.statuts_equipe, U.statuts_compte
+                      FROM equipe E
+                      INNER JOIN utilisateurs U ON U.id_equipe = E.code_equipe
+                      WHERE E.statuts = "en fonction" AND E.num_perso = "${data.userName}" AND U.mot_passe = "${data.passWord}"`;
+          await this.db.query(req).then(res_req => {
+            console.log(res_req);
+            if (res_req.values.length > 0) {
+              res_req.values.forEach((element: Utilisateurs) => {
+                user.push({
+                  code_util: element.code_util,
+                  id_equipe: element.id_equipe,
+                  img: element.img, 
+                  nom: element.nom, 
+                  prenom: element.prenom, 
+                  sexe: element.sexe,
+                  dt_nais: element.dt_nais,
+                  num_perso: element.num_perso,
+                  id_fonct: element.id_fonct,
+                  fonction: element.fonction,
+                  type: element.type, 
+                  role: element.role, 
+                  nom_users: element.nom_users,
+                  mot_passe: element.mot_passe, 
+                  situation_compte: element.situation_compte, 
+                  statuts_equipe: element.statuts_equipe,
+                  statuts_compte: element.statuts_compte
+                });
+              });
+              this.users.next(user);
+              this.dbReady.next(true);
+            } else {
+              console.log("--Mot de passe incorrecte--");
+              this.users.next([]);
+            }
           });
-          this.users.next(user);
-          this.dbReady.next(true);
         } else {
-          console.log("Users not existing");
-          this.users.next(res.values);
+          console.log("--UserName n'existe pas--");
+          this.users.next([]);
         }
       }); 
 
@@ -157,6 +174,7 @@ export class LoadDataService {
   loadRegion(): Observable<any[]> {
     this.dbService.dbReady.subscribe(async (isReady) => {
       if (isReady) {
+        this.region.next([]);
         let reg: any[]  = [];
         console.log(this.dbService.dbReady.value);
         const statement = `SELECT * FROM zone_region;`;
@@ -172,7 +190,10 @@ export class LoadDataService {
             });
             this.region.next(reg);
             console.log(this.region);
-          } else console.log("Aucune region!!!");
+          } else {
+            console.log("Aucune region!!!");
+            this.region.next([]);
+          }
         }); 
       }
     });
@@ -182,6 +203,7 @@ export class LoadDataService {
   loadDistrict(id_region): Observable<any[]> {
     this.dbService.dbReady.subscribe(async (isReady) => {
       if (isReady) {
+        this.district.next([]);
         let dist: any[]  = [];
         console.log(this.dbService.dbReady.value);
         const statement = `SELECT  code_dist, nom_dist, id_reg 
@@ -200,7 +222,10 @@ export class LoadDataService {
             });
             this.district.next(dist);
             console.log(this.district);
-          } else console.log("Aucune District!!!");
+          } else {
+            console.log("Aucune District!!!");
+            this.district.next([]);
+          }
         }); 
       }
     });
@@ -210,6 +235,7 @@ export class LoadDataService {
   loadCommune(id_dist): Observable<any[]> {
     this.dbService.dbReady.subscribe(async (isReady) => {
       if (isReady) {
+        this.commune.next([]);
         let com: any[]  = [];
         console.log(this.dbService.dbReady.value);
         const statement = `SELECT R.nom_reg, C.id_dist, D.nom_dist,  C.code_com, C.nom_com
@@ -232,16 +258,30 @@ export class LoadDataService {
             });
             this.commune.next(com);
             console.log(this.commune);
-          } else console.log("Aucune commune Disponible!!!");
+          } else {
+            console.log("Aucune commune Disponible!!!");
+            this.commune.next([]);
+          }
         }); 
       }
     });
     return this.commune.asObservable();
   }
 
-  loadFokontany(id_commune): Observable<any[]> {
+  async loadFokontany(id_commune) {
+    const statement = `SELECT D.id_reg, R.nom_reg, C.id_dist, D.nom_dist, F.id_com, C.nom_com, F.code_fkt, F.nom_fkt 
+    FROM zone_fonkotany F 
+    INNER JOIN zone_commune C ON C.code_com = F.id_com 
+    INNER JOIN zone_district D ON D.code_dist = C.id_dist
+    INNER JOIN zone_region R ON R.code_reg = D.id_reg 
+    WHERE C.code_com = ${ id_commune  } ORDER BY R.nom_reg, D.nom_dist, C.nom_com, F.nom_fkt;`;
+    return await this.db.query(statement);
+  }
+
+  /**loadFokontany(id_commune): Observable<any[]> {
     this.dbService.dbReady.subscribe(async (isReady) => {
       if (isReady) {
+        this.fokontany.next([]);
         let fkt: any[]  = [];
         console.log(this.dbService.dbReady.value);
         const statement = `SELECT D.id_reg, R.nom_reg, C.id_dist, D.nom_dist, F.id_com, C.nom_com, F.code_fkt, F.nom_fkt 
@@ -266,13 +306,16 @@ export class LoadDataService {
               });
             });
             this.fokontany.next(fkt);
-            console.log(this.commune);
-          } else console.log("Aucune commune Disponible!!!");
+            console.log(this.fokontany);
+          } else {
+            console.log("Aucune Fokontany Disponible!!!");
+            this.fokontany.next([]);
+          }
         }); 
       }
     });
     return this.fokontany.asObservable();
-  }
+  }*/
 
   loadCollaborateurs(): Observable<any[]> {
     this.dbService.dbReady.subscribe(async isReady => {
@@ -297,38 +340,99 @@ export class LoadDataService {
     return this.collaborateur.asObservable();
   }
 
-  loadAssociation(): Observable<any[]> {
+  async loadAssociation(data: any) {
+    let req: string = ``;
+    let statement1 = `SELECT ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass,  ASS.id_tech, ASS.id_pms, B.nom || ' ' || B.prenom AS nom_benf, B.sexe, B.cin, B.surnom, ASS.status
+                        FROM association ASS
+                        INNER JOIN projet P ON P.code_proj = ASS.id_prjt
+                        INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt
+                        INNER JOIN benef_activ_pms BPMS ON BPMS.code_benef_pms = ASS.id_pms
+                        INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef`;
+    let statement2 = `SELECT ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass,  ASS.id_tech, ASS.id_pms, NULL, NULL, NULL, NULL, ASS.status
+                      FROM association ASS
+                      INNER JOIN projet P ON P.code_proj = ASS.id_prjt
+                      INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt`;                            
+    if (!(Object.keys(data).length === 0)) {
+      let stat1 = statement1 + ` WHERE ASS.id_fkt = ${data.id_fkt} AND ASS.id_prjt = "${data.code_pr}"`;
+      let stat2 = statement2 + ` WHERE ASS.id_fkt = ${data.id_fkt} AND ASS.id_prjt = "${data.code_pr}" 
+                                  AND ASS.code_ass NOT IN (SELECT ASS.code_ass
+                                                            FROM association ASS
+                                                            INNER JOIN projet P ON P.code_proj = ASS.id_prjt
+                                                            INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt
+                                                            INNER JOIN benef_activ_pms BPMS ON BPMS.code_benef_pms = ASS.id_pms
+                                                            INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef);`;
+      req = stat1 + ` UNION ` + stat2;
+    } else req = statement1 + ` UNION ` + statement2 + ` WHERE ASS.code_ass NOT IN (SELECT ASS.code_ass
+      FROM association ASS
+      INNER JOIN projet P ON P.code_proj = ASS.id_prjt
+      INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt
+      INNER JOIN benef_activ_pms BPMS ON BPMS.code_benef_pms = ASS.id_pms
+      INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef);`;
+    return  await this.db.query(req);
+  }
+  /**loadAssociation(data: any): Observable<any[]> {
     this.dbService.dbReady.subscribe(async isReady => {
       if (isReady) {
-        let assoc: any[] = [];
-        const statement = `SELECT ASS.code_ass, P.code_proj, P.nom as nom_pr, ASS.nom as nom_ass, ASS.id_prjt, ASS.id_tech, ASS.id_pms, ASS.id_fkt, FKT.nom_fkt, ASS.status
+        let assoc: Association[] = [];
+        let req: string = ``;
+        let statement1 = `SELECT ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass,  ASS.id_tech, ASS.id_pms, B.nom || ' ' || B.prenom AS nom_benf, B.sexe, B.cin, B.surnom, ASS.status
                             FROM association ASS
                             INNER JOIN projet P ON P.code_proj = ASS.id_prjt
-                            INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt;`;
+                            INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt
+                            INNER JOIN benef_activ_pms BPMS ON BPMS.code_benef_pms = ASS.id_pms
+                            INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef`;
+        let statement2 = `SELECT ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass,  ASS.id_tech, ASS.id_pms, NULL, NULL, NULL, NULL, ASS.status
+                          FROM association ASS
+                          INNER JOIN projet P ON P.code_proj = ASS.id_prjt
+                          INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt`;                            
+        if (!(Object.keys(data).length === 0)) {
+          let stat1 = statement1 + ` WHERE ASS.id_fkt = ${data.id_fkt} AND ASS.id_prjt = "${data.code_pr}"`;
+          let stat2 = statement2 + ` WHERE ASS.id_fkt = ${data.id_fkt} AND ASS.id_prjt = "${data.code_pr}" 
+                                      AND ASS.code_ass NOT IN (SELECT ASS.code_ass
+                                                                FROM association ASS
+                                                                INNER JOIN projet P ON P.code_proj = ASS.id_prjt
+                                                                INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt
+                                                                INNER JOIN benef_activ_pms BPMS ON BPMS.code_benef_pms = ASS.id_pms
+                                                                INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef);`;
+          req = stat1 + ` UNION ` + stat2;
+        } else req = statement1 + ` UNION ` + statement2 + ` WHERE ASS.code_ass NOT IN (SELECT ASS.code_ass
+          FROM association ASS
+          INNER JOIN projet P ON P.code_proj = ASS.id_prjt
+          INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt
+          INNER JOIN benef_activ_pms BPMS ON BPMS.code_benef_pms = ASS.id_pms
+          INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef);`;
   
-        await this.db.query(statement).then(res => {
+        await this.db.query(req).then(res => {
           if (res.values.length) {
+            assoc = [];
             res.values.forEach(elem => {
               assoc.push({
-                code_ass: elem.code_ass, 
+                id_prjt: elem.id_prjt,
                 code_proj: elem.code_proj, 
                 nom_pr: elem.nom_pr, 
+                id_fkt: elem.id_fkt, 
+                nom_fkt: elem.nom_fkt,
+                code_ass: elem.code_ass, 
                 nom_ass: elem.nom_ass, 
-                id_prjt: elem.id_prjt, 
                 id_tech: elem.id_tech, 
                 id_pms: elem.id_pms, 
-                id_fkt: elem.id_fkt, 
-                nom_fkt: elem.nom_fkt, 
+                nom_benf: elem.nom_benf, 
+                sexe:  elem.sexe,
+                cin: elem.cin,
+                surnom: elem.surnom,
                 status: elem.status
               });
             });
             this.association.next(assoc);
-          } else console.log("Aucun enregistrement pour la table association");
+          } else {
+            console.log("Aucun enregistrement pour la table association");
+            this.association.next([]);
+          }
         });
       }
     });
     return this.association.asObservable();
-  }
+  }*/
 
   loadBloc(): Observable<any[]> {
     this.dbService.dbReady.subscribe(async isReady => {
@@ -356,6 +460,67 @@ export class LoadDataService {
       }
     });
     return this.bloc.asObservable();
+  }
+
+  loadEquipe(): Observable<any[]> {
+    this.dbService.dbReady.subscribe(async isReady => {
+      if (isReady) {
+        let equipe_: Equipe[] = [];
+        const statement = `SELECT * FROM equipe;`;
+  
+        await this.db.query(statement).then(res => {
+          if (res.values.length) {
+            res.values.forEach(elem => {
+              equipe_.push({
+                code_equipe: elem.code_equipe, 
+                img: elem.img, 
+                nom: elem.nom, 
+                prenom: elem.prenom, 
+                sexe: elem.sexe, 
+                dt_nais: elem.dt_nais, 
+                cin: elem.cin, 
+                dt_delivrance: elem.dt_delivrance, 
+                lieu_delivrance: elem.lieu_delivrance, 
+                img_cin: elem.img_cin, 
+                email: elem.email, 
+                num_perso: elem.num_perso, 
+                num_float: elem.num_float, 
+                id_fonct: elem.id_fonct,
+                intitule_fct: elem.intitule_fct,
+                statuts: elem.statuts
+              });
+            });
+            this.equipe.next(equipe_);
+          } else console.log("Aucun enregistrement pour la table bloc");
+        });
+      }
+    });
+    return this.equipe.asObservable();
+  }
+
+  loadProjetEquipe(): Observable<any[]> {
+    this.dbService.dbReady.subscribe(async isReady => {
+      if (isReady) {
+        let pr_equipe: ProjetEquipe[] = [];
+        const statement = `SELECT * FROM projet_equipe;`;
+  
+        await this.db.query(statement).then(res => {
+          if (res.values.length) {
+            res.values.forEach(elem => {
+              pr_equipe.push({
+                code: elem.code,
+                id_projet: elem.id_projet,
+                id_equipe: elem.id_equipe,
+                id_volet: elem.id_volet,
+                status_pe: elem.status_pe
+              });
+            });
+            this.projetEquipe.next(pr_equipe);
+          } else console.log("Aucun enregistrement pour la table ProjetEquipe");
+        });
+      }
+    });
+    return this.projetEquipe.asObservable();
   }
 
   loadCollabActivite(): Observable<any[]> {

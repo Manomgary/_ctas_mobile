@@ -16,8 +16,9 @@ export class BeneficiaireBlocPage implements OnInit {
     if (this.router.getCurrentNavigation().extras.state) {
       let data: any;
       const routeState = this.router.getCurrentNavigation().extras.state;
+      console.log(routeState);
       data = JSON.parse(routeState.zone);
-      console.log("Beneficiaire Bloc =====>" + data);
+      console.log("Beneficiaire Bloc =====>");
       console.log(data);
       this.region = data.data.region;
       this.district = data.data.district;
@@ -28,7 +29,7 @@ export class BeneficiaireBlocPage implements OnInit {
   }
 
   ngOnInit() {
-    this.loadData.loadAllProjet({}).subscribe(data => {
+    /**this.loadData.loadAllProjet({}).subscribe(data => {
       console.log("<======= load All project =====>");
       console.log(data);
     });
@@ -40,7 +41,7 @@ export class BeneficiaireBlocPage implements OnInit {
       console.log("<======= load All Collaborateurs activite =====>");
       console.log(data);
     });
-    this.loadData.loadAssociation().subscribe(data => {
+    this.loadData.loadAssociation({}).then(data => {
       console.log("<======= load Association =====>");
       console.log(data);
     });
@@ -59,7 +60,7 @@ export class BeneficiaireBlocPage implements OnInit {
     this.loadData.loadBeneficiaireBloc().subscribe(data => {
       console.log("<======= load Beneficiaire BLOC  =====>");
       console.log(data);
-    });
+    });*/
   }
 
 }

@@ -105,7 +105,6 @@ export class ModalPage implements OnInit {
     await loading.present();
 
     this.api.getProjet().subscribe((res: Projet[]) => {  
-      console.log(res);
       data_projet = res;
       console.log(data_projet);
       data_projet.forEach((elem, i) => {
@@ -129,12 +128,19 @@ export class ModalPage implements OnInit {
     const zone_dest = {
       region: this.selected_region,
       district: this.selected_district,
-      commune: this.selected_commune
+      commune: this.selected_commune,
+      valide: true,
+      dismissed: false
     }
     console.log(zone_dest);
     this.modalCtrl.dismiss(zone_dest);
     this.isHome = false;
     this.isBloc = false;
+  }
+  async revenirModal() {
+    await this.modalCtrl.dismiss({
+      dismissed: true
+    });
   }
 
   async importData() {
@@ -157,16 +163,13 @@ export class ModalPage implements OnInit {
             id_projet: elem.code_projet
           }
           this.importService.loadProjet(id_pr);
-          this.importService.loadBloc(id_pr);
-          this.importService.loadAssociation(id_pr);
-          this.importService.loadActivProjet(id_pr);
 
         });
         setTimeout(() => {
           this.modalCtrl.dismiss();
           this.isLogin = false;
           loading.dismiss();
-        }, 5000);
+        }, 15000);
       }
     });
   }

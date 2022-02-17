@@ -97,8 +97,16 @@ export class LoginPage implements OnInit {
             this.users = res.data;
             console.log("Array Object");
             console.log(res.data);
-            this.importData.loadData(this.users);
-            this.importData.getStateImp().subscribe(isReady => {
+            (await this.importData.loadData(this.users)).subscribe(isReady => {
+              if (isReady) {
+                console.log("----Data isReady---- " + isReady);
+                setTimeout(() => {
+                  this.presentModal();
+                  loading.dismiss();
+                }, 7000);
+              } else console.log("-----Data is not Ready---- " + isReady);
+            });
+            /**this.importData.getStateImp().subscribe(isReady => {
               console.log("Login isReady *** " + isReady);
               if (isReady) {
                 setTimeout(() => {
@@ -106,7 +114,7 @@ export class LoginPage implements OnInit {
                   loading.dismiss();
                 }, 5000);
               }
-            });
+            });*/
           }
         }, error => {
           console.log(error);

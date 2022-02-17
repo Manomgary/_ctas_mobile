@@ -10,11 +10,40 @@ CREATE TABLE IF NOT EXISTS  projet (
     logo BLOB,  
     statuts TEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS  equipe (
+    code_equipe INTEGER PRIMARY KEY NOT NULL, 
+    img BLOB, 
+    nom TEXT NOT NULL, 
+    prenom TEXT, 
+    sexe TEXT NOT NULL, 
+    dt_nais TEXT NOT NULL, 
+    cin TEXT NOT NULL, 
+    dt_delivrance TEXT NOT NULL, 
+    lieu_delivrance TEXT NOT NULL, 
+    img_cin BLOB, 
+    email TEXT, 
+    num_perso TEXT, 
+    num_float TEXT, 
+    id_fonct INTEGER NOT NULL,
+    intitule_fct TEXT NOT NULL,
+    statuts TEXT NOT NULL
+  );
   CREATE TABLE IF NOT EXISTS volet (
     code_vol INTEGER PRIMARY KEY NOT NULL, 
     nom TEXT NOT NULL, 
     description TEXT
     );
+CREATE TABLE IF NOT EXISTS projet_equipe (
+    code INTEGER PRIMARY KEY NOT NULL,
+    id_projet TEXT NOT NULL,
+    id_equipe INTEGER NOT NULL,
+    id_volet INTEGER NOT NULL,
+    status_pe TEXT NOT NULL,
+    FOREIGN KEY (id_projet) REFERENCES projet(code_proj) ON DELETE SET DEFAULT,
+    FOREIGN KEY (id_equipe) REFERENCES equipe(code_equipe) ON DELETE SET DEFAULT,
+    FOREIGN KEY (id_volet) REFERENCES volet(code_vol) ON DELETE SET DEFAULT
+
+);
 CREATE TABLE IF NOT EXISTS activite (
     code_act INTEGER PRIMARY KEY NOT NULL, 
     intitule TEXT NOT NULL, 
@@ -39,7 +68,6 @@ CREATE TABLE IF NOT EXISTS collaborateur (
 
 CREATE TABLE IF NOT EXISTS utilisateurs (
     code_util INTEGER PRIMARY KEY NOT NULL, 
-    id_proj TEXT NOT NULL,
     id_equipe INTEGER NOT NULL,
     img Blob, 
     nom TEXT NOT NULL, 
@@ -55,7 +83,8 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
     mot_passe TEXT NOT NULL, 
     situation_compte TEXT NOT NULL, 
     statuts_equipe TEXT NOT NULL,
-    statuts_compte TEXT NOT NULL
+    statuts_compte TEXT NOT NULL,
+    FOREIGN KEY (id_equipe) REFERENCES equipe(code_equipe) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS participe_proj_activ (
     code INTEGER PRIMARY KEY NOT NULL, 
@@ -314,36 +343,6 @@ PRAGMA ctas_version = 1;
     });
   });
   export const equipe:  Array<any> = dataInsertEquipe;*/
-
-  /** Insert Utilisateurs
-  export const data_Users: Array<Utilisateurs> = [
-      {
-        code_util: 1, 
-        id_equipe: 2, 
-        type: 'mobile', 
-        role: 'simple', 
-        mot_passe: 'azerty', 
-        situation: 'active', 
-        statuts: 'Non actif'
-      },
-      {
-        code_util: 2, 
-        id_equipe: 1, 
-        type: 'mobile', 
-        role: 'simple', 
-        mot_passe: 'azertyuiop', 
-        situation: 'active', 
-        statuts: 'Non actif'
-      }
-  ];
-  const dataInsertUsers = [];
-  data_Users.forEach((elem: Utilisateurs) => {
-    dataInsertUsers.push({
-        req: `INSERT INTO utilisateurs(code_util, id_equipe, type, role, mot_passe, situation, statuts) 
-                VALUES (${elem.code_util},${elem.id_equipe},"${elem.type}","${elem.role}","${elem.mot_passe}", "${elem.situation}", "${elem.statuts}");`
-    });
-  });
-  export const users: Array<any> = dataInsertUsers;*/
 
   // Insert Volet
   export const data_volet: Array<Volet> = [
