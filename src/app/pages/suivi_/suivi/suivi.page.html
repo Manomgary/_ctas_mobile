@@ -1,0 +1,310 @@
+<ion-header>
+  <div class="container-header-flex">
+    <div class="flex-container" fxLayout="row">
+      <div class="flex-child-1" fxLayoutAlign="center center">
+        <ion-buttons>
+          <ion-menu-button autoHide="false"></ion-menu-button>
+        </ion-buttons>
+      </div>
+
+      <div class="flex-child-2 width100" fxLayoutAlign="center center">
+        <div class="flex-container width100" fxLayout="column">
+          <div class="column-child-1" fxLayoutAlign="center center"><!--Projet {{projet.nom}} -->
+            <div class="ion-text-center ion-text-wrap">
+              gestion de culture et carnet de suivi
+            </div>
+          </div> 
+          <div class="column-child-2">
+            <div class="flex-container" fxLayout="row" fxLayoutGap="5px" style="justify-content: space-around;">
+              <div class="child1-row-flex" fxLayout="row" fxLayoutGap="2px">
+                <div class="label-region" fxLayoutAlign="center center">Region</div>
+                <mat-card class="item-matcard-flex" fxLayoutAlign="start center">{{region.nom_reg}}</mat-card> 
+              </div>
+              <div class="child2-row-flex" fxLayout="row" fxLayoutGap="2px">
+                <div class="label-region" fxLayoutAlign="center center">District</div>
+                <mat-card class="item-matcard-flex" fxLayoutAlign="start center">{{district.nom_dist}}</mat-card> 
+              </div>
+              <div class="child3-row-flex" fxLayout="row" fxLayoutGap="2px">
+                <div class="label-region" fxLayoutAlign="center center">Commune</div>
+                <mat-card class="item-matcard-flex" fxLayoutAlign="start center">{{commune.nom_com}}</mat-card>
+              </div>
+            </div>
+          </div> 
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content>
+  <!-- visualiser liste beneficiaire -->
+  <mat-tab-group mat-align-tabs="start">
+    <mat-tab label="Cultures">  
+      <!--Contonair flex-->
+      <div class="contonaire-content-flex">
+        <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
+          <!--Column Filtre modifier-->
+          <div class="content-column-child-1" fxLayoutAlign="center center" style="justify-content: flex-start;">
+            <!--Contonair filtre modifier-->
+            <div class="flex-container width100" fxLayout="row" fxLayoutGap="5px" style="background-color: rgb(144, 233, 248);justify-content: space-between">
+              <!-- Row Filtre-->
+              <div class="child-row-Filtre width100" fxLayout="row">
+                <div class="child-flex-Filtre1" fxLayoutAlign="center center">
+                  <mat-form-field floatLabel="never">
+                    <!--<mat-label>Filtre par association</mat-label>-->
+                    <mat-select [(ngModel)]="selectedAssoc" (ngModelChange)="applyFilterSelect($event, 'association')"
+                      placeholder="Filtre par association">
+                      <mat-option (click)="applyFilterTout('association')" [value]="">tout</mat-option>
+                      <mat-option *ngFor="let assoc of filterDataAssoc" [value]="assoc">
+                        {{ assoc }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="child-flex-Filtre2" fxLayoutAlign="center center">
+                  <mat-form-field floatLabel="never">
+                    <!--<mat-label>Filtre par beneficaire</mat-label>-->
+                    <mat-select [(ngModel)]="selectedBeneficiare" (ngModelChange)="applyFilterSelect($event, 'association')" placeholder="Filtre par beneficaire">
+                      <mat-option (click)="applyFilterTout('association')" [value]="">tout</mat-option>
+                      <mat-option *ngFor="let benef of filterDataBenef" [value]="benef">
+                        {{ benef }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="child-flex-Filtre3" fxLayoutAlign="center center">
+                  <mat-form-field floatLabel="never">
+                    <!--<mat-label>parcelle</mat-label>-->
+                    <mat-select [(ngModel)]="selectedParcelle" (ngModelChange)="applyFilterSelect($event, 'parcelle')" 
+                      placeholder="parcelle">
+                      <mat-option (click)="applyFilterTout('parcelle')" [value]="">tout</mat-option>
+                      <mat-option *ngFor="let parce of filterDataParce" [value]="parce">
+                        {{ parce }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+              <!-- Row modifier-->
+              <div class="child-row-modifier" fxLayoutAlign="center center" fxLayout="row" fxLayoutGap="4px">
+                <div class="child-row-modifier1" *ngIf="!isUpdated">
+                  <button mat-raised-button (click)="onUpdate()" class="demo-button">
+                    Modification
+                  </button>
+                </div>
+                <div class="child-row-modifier1" *ngIf="isUpdated" style="padding-right: 10px;">
+                  <button mat-raised-button (click)="onCancelSauvegarde()()" class="demo-button">
+                    Annuler
+                  </button>
+                </div>
+                <div class="child-row-modifier1" *ngIf="isUpdated">
+                  <button mat-raised-button (click)="onSauvegarde()" class="demo-button">
+                    Sauvegarder
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--Column Bouton Ajouter-->
+          <div class="content-column-child-3" style="justify-content: flex-start;" *ngIf="isUpdated">
+            <button mat-raised-button (click)="onAdd()" class="demo-button">
+              Ajouter
+            </button>
+          </div>
+          <!--Column table-->
+          <div class="content-column-child-4" style="justify-content: flex-start;">
+            <div class="container-matTab mat-elevation-z8">
+              <div class="table-container">
+                <table mat-table [dataSource]="dataSource">
+      
+                  <!-- Saison Column -->
+                  <ng-container matColumnDef="saison">
+                    <th mat-header-cell *matHeaderCellDef> Saison </th>
+                    <td mat-cell *matCellDef="let row; let i = index"> 
+                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                        {{row.saison}} 
+                      </span>
+                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                        mf:{{row.saison}}
+                      </span>
+                    </td>
+                  </ng-container>
+                  <!-- New Saison Column -->
+                  <ng-container matColumnDef="new_saison">
+                    <th mat-header-cell *matHeaderCellDef>
+                      <span>
+                        new
+                      </span>
+                    </th>
+                  </ng-container>
+        
+                  <!-- Association Column -->
+                  <ng-container matColumnDef="association">
+                    <th mat-header-cell *matHeaderCellDef> Association </th>
+                    <td mat-cell *matCellDef="let row"> {{row.association}} </td>
+                  </ng-container>
+                  <!-- New Association Column -->
+                  <ng-container matColumnDef="new_association">
+                    <th mat-header-cell *matHeaderCellDef> new </th>
+                  </ng-container>                  
+        
+                  <!-- code Pms Column -->
+                  <ng-container matColumnDef="code_pms">
+                    <th mat-header-cell *matHeaderCellDef> code Pms </th>
+                    <td mat-cell *matCellDef="let row"> {{row.code_pms}} </td>
+                  </ng-container>
+                  <!-- New code Pms Column -->
+                  <ng-container matColumnDef="new_code_pms">
+                    <th mat-header-cell *matHeaderCellDef> new </th>
+                  </ng-container>                  
+        
+                  <!-- nom_pms Column -->
+                  <ng-container matColumnDef="nom_pms">
+                    <th mat-header-cell *matHeaderCellDef> nom </th>
+                    <td mat-cell *matCellDef="let row"> {{row.nom_pms}} </td>
+                  </ng-container>
+                  <!-- new nom_pms Column -->
+                  <ng-container matColumnDef="new_nom_pms">
+                    <th mat-header-cell *matHeaderCellDef> new </th>
+                  </ng-container>                  
+        
+                  <!-- code_parce Column -->
+                  <ng-container matColumnDef="code_parce">
+                    <th mat-header-cell *matHeaderCellDef> code_parce </th>
+                    <td mat-cell *matCellDef="let row; let i = index">
+                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                        {{row.code_parce}} 
+                      </span> 
+                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                        mdf--
+                      </span>
+                    </td>
+                  </ng-container>
+                  <!-- New code_parce Column -->
+                  <ng-container matColumnDef="new_code_parce">
+                    <th mat-header-cell *matHeaderCellDef> new </th>
+                  </ng-container>                  
+        
+                  <!-- variette Column -->
+                  <ng-container matColumnDef="variette">
+                    <th mat-header-cell *matHeaderCellDef> variette </th>
+                    <td mat-cell *matCellDef="let row"> {{row.variette}} </td>
+                  </ng-container>
+                  <!-- variette Column -->
+                  <ng-container matColumnDef="new_variette">
+                    <th mat-header-cell *matHeaderCellDef> new </th>
+                  </ng-container>                  
+        
+                  <!-- qsa Column -->
+                  <ng-container matColumnDef="qsa">
+                    <th mat-header-cell *matHeaderCellDef> qsa(kap) </th>
+                    <td mat-cell *matCellDef="let row"> {{row.qsa}} </td>
+                  </ng-container>
+                  <!-- New qsa Column -->
+                  <ng-container matColumnDef="new_qsa">
+                    <th mat-header-cell *matHeaderCellDef> new </th>
+                  </ng-container>                  
+        
+                  <!-- img_fact Column -->
+                  <ng-container matColumnDef="img_fact">
+                    <th mat-header-cell *matHeaderCellDef> img_fact </th>
+                    <td mat-cell *matCellDef="let row"> </td>
+                  </ng-container>
+                  <!-- New img_fact Column -->
+                  <ng-container matColumnDef="new_img_fact">
+                    <th mat-header-cell *matHeaderCellDef> new </th>
+                  </ng-container>                  
+        
+                  <!-- Date de semis Responsable Column -->
+                  <ng-container matColumnDef="dds">
+                    <th mat-header-cell *matHeaderCellDef> DDS </th>
+                    <td mat-cell *matCellDef="let row"> {{row.dds}} </td>
+                  </ng-container>
+                  <!-- New Date de semis Responsable Column -->
+                  <ng-container matColumnDef="new_dds">
+                    <th mat-header-cell *matHeaderCellDef> new </th>
+                  </ng-container>                  
+      
+                  <!-- sfce Responsable Column -->
+                  <ng-container matColumnDef="sfce">
+                    <th mat-header-cell *matHeaderCellDef> sfce </th>
+                    <td mat-cell *matCellDef="let row"> {{row.sfce}} </td>
+                  </ng-container>
+                  <!-- New sfce Responsable Column -->
+                  <ng-container matColumnDef="new_sfce">
+                    <th mat-header-cell *matHeaderCellDef> sfce </th>
+                  </ng-container>                  
+      
+                  <!-- objectif Responsable Column -->
+                  <ng-container matColumnDef="objectif">
+                    <th mat-header-cell *matHeaderCellDef> objectif </th>
+                    <td mat-cell *matCellDef="let row"> {{row.objectif}} </td>
+                  </ng-container>
+                  <!-- New objectif Responsable Column -->
+                  <ng-container matColumnDef="new_objectif">
+                    <th mat-header-cell *matHeaderCellDef> new </th>
+                  </ng-container>                  
+      
+                  <!-- sc Responsable Column -->
+                  <ng-container matColumnDef="sc">
+                    <th mat-header-cell *matHeaderCellDef> sc </th>
+                    <td mat-cell *matCellDef="let row"> {{row.sc}} </td>
+                  </ng-container>
+                  <!-- New sc Responsable Column -->
+                  <ng-container matColumnDef="new_sc">
+                    <th mat-header-cell *matHeaderCellDef> new </th>
+                  </ng-container>   
+
+                  <!-- ea Responsable Column -->
+                  <ng-container matColumnDef="ea">
+                    <th mat-header-cell *matHeaderCellDef> ea </th>
+                    <td mat-cell *matCellDef="let row"> {{row.ea}} </td>
+                  </ng-container>
+                  <!-- New ea Responsable Column -->
+                  <ng-container matColumnDef="new_ea">
+                    <th mat-header-cell *matHeaderCellDef> new </th>
+                  </ng-container>
+
+                  <!-- New action Responsable Column -->
+                  <ng-container matColumnDef="new_action">
+                    <th mat-header-cell *matHeaderCellDef>
+                      <a (click)="onClickDoneAction()">Done</a> |
+                      <a (click)="onClickCancelAction()">Cancel</a>
+                    </th>
+                  </ng-container>                                         
+
+                  <!-- Action Column -->
+                  <ng-container *ngIf="isUpdated" matColumnDef="action">
+                    <th mat-header-cell *matHeaderCellDef> Action </th>
+                    <td mat-cell *matCellDef="let row; let i = index" class="action-link">
+                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                        <a (click)="onClickEditDoneAction('culture', row)">modifier</a> |
+                        <a (click)="onClickEditCancelAction('culture')">Annuler</a>
+                      </span>
+                      <span *ngIf="!isEditableCulte && !isNewCultureClicked">
+                        <a (click)="onClickModifElement(i, row)">Edit</a> |
+                        <a (click)="openDialog(row)">Delete</a>
+                      </span>
+                    </td>
+                  </ng-container>
+      
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                  <tr [hidden]="!isNewCultureClicked" mat-header-row *matHeaderRowDef="displayedColumnsNew" class="second-header-row"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              
+                  <!-- Row shown when there is no matching data. -->
+                  <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="4">Aucun enregistrement"</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab label="suivi">
+      <p>suivi</p>
+    </mat-tab>
+  </mat-tab-group>
+</ion-content>

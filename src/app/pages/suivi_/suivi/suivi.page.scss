@@ -1,0 +1,95 @@
+.container-matTab {
+    position: relative;
+    width: 100%;
+} 
+
+.table-container {
+    position: relative;
+    min-height: 250px;
+    max-height: 400px;
+    overflow: auto;
+}
+table {
+    width: 100%;
+}
+tr.mat-header-row {
+    height: 30px;
+    background-color: rgb(116 177 198);;
+}
+::ng-deep .second-header-row {
+    background-color: rgb(223 235 228) !important;
+}
+th.mat-header-cell:first-of-type, td.mat-cell:first-of-type, td.mat-footer-cell:first-of-type {
+    padding-left: 2px;
+}
+th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:last-of-type {
+    padding-right: 0px;
+}
+tr.mat-row, tr.mat-footer-row {
+    height: 25px;
+}
+th.mat-header-cell, td.mat-cell, td.mat-footer-cell {
+    border-right-width: 0.4px;
+    border-right-style: inset;
+}
+.content-column-child-4 {
+    .mat-column-saison {
+        width: 40px;
+    }
+    .mat-column-dds {
+        width: 56px;
+    }
+    .mat-column-qsa {
+        width: 49px;
+    }
+    .mat-column-association {
+        width: 130px;
+    } 
+    .mat-column-img_fact{
+        width: 51px;
+    }
+}
+
+.contonaire-content-flex {
+    background-color: rgb(248, 248, 136);
+}
+.child-row-modifier {
+    justify-content: center;
+}
+.child-row-Filtre > .child-flex-Filtre1 {
+    justify-content: flex-start;
+}
+.child-flex-Filtre1, .child-flex-Filtre2, .child-flex-Filtre3 {
+    padding-right: 18px;
+}
+.child-flex-Filtre1 .mat-form-field, .child-flex-Filtre2 .mat-form-field {
+    width: 170px;
+}
+.child-flex-Filtre3 .mat-form-field {
+    width: 100px;
+}
+
+/**
+* Forme field
+*/
+
+::ng-deep {
+    /**
+    *appearance-legacy
+    */
+    .mat-form-field-appearance-legacy .mat-form-field-wrapper {
+        /** same value in the mat-form-field-underline*/
+        padding-bottom: 0 !important;
+    }
+    .mat-form-field-appearance-legacy .mat-form-field-underline {
+        /** same value in the .mat-form-field-wrapper*/
+        bottom: 0 !important;
+    }
+    .mat-form-field-appearance-legacy .mat-select-arrow-wrapper {
+        vertical-align: inherit !important;
+    }
+    .mat-form-field-appearance-legacy .mat-form-field-infix {
+        padding: .3375em 0;
+        margin-top: -14px;
+    }
+}

@@ -19,8 +19,12 @@ const routes: Routes = [
         loadChildren: () => import('../pages/beneficiaire-bloc/beneficiaire-bloc-routing.module').then( m => m.BeneficiaireBlocPageRoutingModule)
       },
       {
-        path: 'suivi',
-        loadChildren: () => import('../pages/suivi/suivi-routing.module').then( m => m.SuiviPageRoutingModule)
+        path: 'suivi_rp',
+        loadChildren: () => import('../pages/suivi_/suivi/suivi-routing.module').then( m => m.SuiviPageRoutingModule)
+      },
+      {
+        path: 'suivi_bloc',
+        loadChildren: () => import('../pages/suivi_/suivi-bloc/suivi-bloc-routing.module').then( m => m.SuiviBlocPageRoutingModule)
       },
       {
         path: 'synchronisation',

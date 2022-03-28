@@ -28,6 +28,41 @@
 .my-custom-modal {
     &::part(content) {
         height: 60%;
-        width: 85%;
+        width: 75%;
+        border-radius: 30px;
     }
+}
+.my-custom-modal-suivi {
+    &::part(content) {
+        height: 80%;
+        width: 65%;
+        border-radius: 30px;
+    }
+}
+/**
+* Css Header flex
+*/
+.container-header-flex {
+    height:63px;
+    padding: 3px 1px 1px;
+    background-color: rgb(17, 100, 59);;
+}
+.width100 {
+    width: 100%;
+}
+.flex-child-2 {
+    //border: 1px solid;
+}
+.flex-child-1 {
+    //background-color: rgb(85, 146, 238);
+}
+.column-child-1 {
+    //background-color: aquamarine;
+    padding: 1px 0;
+}
+.column-child-2 {
+    //background-color: rgb(228, 172, 98);
+}
+.item-matcard-flex {
+    height:30px;
 }

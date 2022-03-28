@@ -120,4 +120,24 @@ export class ApiService {
     return this.http.post<any>(this.base_path + 'beneficiaire/findBenefBlocByProjet', data, this.httpOptions);
   }
 
+  // beneficiaire Parcelle
+  getBenefParcelle(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'parcelle', data, this.httpOptions);
+  }
+
+    // beneficiaire Parcelle Bloc
+  getBenefParcelleBloc(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'parcelle/findAllParceBenefBloc', data, this.httpOptions);
+  }
+
+    // beneficiaire Parcelle Ass
+  getAssociationParcelle(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'parcelle/findParcelleAss', data, this.httpOptions);
+  }
+
+  // beneficiaire Parcelle Bloc
+  getBlocParcelle(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'parcelle/findParcelleBloc', data, this.httpOptions);
+  }
+
 }

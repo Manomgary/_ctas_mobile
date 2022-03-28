@@ -4,10 +4,25 @@
     width: 100%;
   }
 
-.example-container {
-  width: 100%;
-  overflow: auto;
+.container-matTab {
+  /**width: 100%;
+  overflow: auto;*/
+  position: relative;
 }  
+.table-container {
+  position: relative;
+  min-height: 200px;
+  max-height: 400px;
+  overflow: auto;
+}
+
+tr.example-element-row:active {
+  background: rgb(155, 149, 149);
+  font-weight: bold;
+  border-bottom: 1px solid transparent;
+  border-top: 1px solid transparent;
+}
+
 table {
   width: 90%;
 }

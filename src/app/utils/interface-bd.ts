@@ -9,6 +9,7 @@ export interface Projet {
 export interface Equipe {
     code_equipe: number, 
     img: Blob, 
+    matricule: string,
     nom: string, 
     prenom: string, 
     sexe: string, 
@@ -86,31 +87,69 @@ export interface Participe_proj_volet {
     statuts: string
 }
 export interface Region {
-    code_reg: number, 
+    code_reg: string, 
     nom_reg: string
 }
 export interface District {
-    code_dist: number, 
+    code_dist: string, 
     nom_dist: string, 
-    id_reg: number
+    id_reg: string
 }
 export interface Commune {
-    code_com: number, 
+    code_com: string, 
     nom_com: string, 
-    id_dist: number
+    id_dist: string
 }
 export interface Fonkotany {
-    code_fkt: number, 
+    code_fkt: string, 
     nom_fkt: string, 
-    id_com: number
+    id_com: string
 }
 export interface Collaborateur {
-    code_col: number, 
+    code_col: string, 
     nom: string, 
     description: string
 }
 export interface Collaborateur_activ {
     code: number, 
-    id_col: number, 
+    id_col: string, 
     id_activ: number
+}
+export interface Parcelle {
+    id_association: string,
+    nom: string,
+    code_parce: string,
+    id_benef: string,
+    ref_gps: string,
+    lat: number,
+    log: number,
+    superficie: number,
+    id_fkt: string,
+    status: string
+}
+export interface Parcelle_bl {
+    id_bloc: string,
+    nom_bloc: string,
+    code_parce: string,
+    id_benef: string,
+    ref_gps: string,
+    lat: number,
+    log: number,
+    superficie: number,
+    id_fkt: string,
+    status: string
+}
+export interface Parcelle_Association {
+    code: number,
+    id_assoc: string,
+    id_parce: string,
+    annee_adheran: string,
+    status: string
+}
+export interface bloc_Parcelle {
+    code_blparce: number,
+    id_bloc: string,
+    id_parce: string,
+    anne_adheran: string,
+    status: string
 }

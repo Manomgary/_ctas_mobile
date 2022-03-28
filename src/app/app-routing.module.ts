@@ -26,6 +26,10 @@ const routes: Routes = [
   {
     path: 'beneficiaire-bloc',
     loadChildren: () => import('./pages/beneficiaire-bloc/beneficiaire-bloc.module').then( m => m.BeneficiaireBlocPageModule)
+  },
+  {
+    path: 'suivi-bloc',
+    loadChildren: () => import('./pages/suivi_/suivi-bloc/suivi-bloc.module').then( m => m.SuiviBlocPageModule)
   }
 ];
 

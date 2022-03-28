@@ -53,27 +53,27 @@ export class HomePage implements OnInit {
     const modal = await this.modalCtrl.create({
       component: ModalPage,
       cssClass: 'my-custom-modal',
-      backdropDismiss: false,
+      //backdropDismiss: false,
       componentProps: {
         'isHome': true,
         'selectedActivite': data
       }
     });
-    modal.onDidDismiss().then((data) => {
-        this.modalData = data;
-        console.log(this.modalData);
-        if (!this.modalData.dismissed) {
+    modal.onDidDismiss().then(async (data_dism) => {
+        console.log(data_dism);
+        if (data_dism.data != undefined) {
           console.log("*****Modal Data*****");
+          this.modalData = data_dism;
           const navigationExtras: NavigationExtras = {
             state : {
               zone: JSON.stringify(this.modalData),
               projet: JSON.stringify(this.selectedProjet),
-              activite: this.selectedActive
+              activite: this.selectedActive,
+              users: this.users
             }
           };
           console.log(navigationExtras);
-          this.route.navigate(['menu'], navigationExtras);
-          
+          this.route.navigate(['menu'], navigationExtras);          
         }
     });
     await modal.present();

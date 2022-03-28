@@ -6,7 +6,7 @@ import { NavigationExtras, Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ToastController } from '@ionic/angular'; 
-import { Utilisateurs } from '../utils/interface-bd';
+import { ProjetEquipe, Utilisateurs } from '../utils/interface-bd';
 import { Storage } from '@capacitor/storage';
 import { ImportDataService } from '../services/import-data.service';
 import { LoadDataService } from '../services/local/load-data.service';
@@ -34,6 +34,9 @@ export class LoginPage implements OnInit {
   isConnected = true;
   Activite_Projet: any[] = [];
   private isAuthenticate: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  isValidate: boolean = false;
+  isDataReady: BehaviorSubject<boolean> = new BehaviorSubject(false);
+
 
   constructor(
               public navCtrl: NavController, 
@@ -41,6 +44,7 @@ export class LoginPage implements OnInit {
               private api: ApiService,
               private importData: ImportDataService,
               private loadData: LoadDataService,
+              private importService: ImportDataService,
               private formBuilder: FormBuilder,
               public toastCtrl: ToastController,
               private loadingCtrl: LoadingController,
@@ -72,10 +76,13 @@ export class LoginPage implements OnInit {
 
   async doLogin() {
 
+    //this.loginForm.reset();
+    this.isValidate = true;
     this.submitted = true;
     const firstConnect = await Storage.get({ key: FIRST_CONNECT_KEY });
 
     if (this.loginForm.invalid) {
+      this.isValidate = false;
       return;
     }
     console.log(this.loginForm.value);
@@ -101,23 +108,86 @@ export class LoginPage implements OnInit {
               if (isReady) {
                 console.log("----Data isReady---- " + isReady);
                 setTimeout(() => {
-                  this.presentModal();
-                  loading.dismiss();
+                  //this.presentModal();
+                  this.isDataReady.next(true);
+                  //loading.dismiss();
                 }, 7000);
               } else console.log("-----Data is not Ready---- " + isReady);
             });
-            /**this.importData.getStateImp().subscribe(isReady => {
-              console.log("Login isReady *** " + isReady);
-              if (isReady) {
-                setTimeout(() => {
-                  this.presentModal();
-                  loading.dismiss();
-                }, 5000);
-              }
-            });*/
+
+            // Import DataProjet
+            this.isDataReady.subscribe(isRead => {
+              if (isRead) {
+                console.log("******Data is Ready*******Login****");
+                this.users.forEach((elem_user, i) => {
+                  if ((this.users.length -1) == i) {
+                    let data = {
+                      code_equipe: elem_user.id_equipe
+                    }
+                    let data_equipe_pr: ProjetEquipe[];
+                    let isAllDataReady = false;
+                    // Insert Projet
+                    this.api.getProjetEquipe(data).subscribe(async (res: ProjetEquipe[]) => {  
+                      console.log("************************Load login ::: PROJET EQUIPE....");
+                      console.log(res);
+                      data_equipe_pr = res;
+  
+                      if (data_equipe_pr.length > 0) {
+                        data_equipe_pr.forEach(async (elem_pr_equip, i) => {
+                          console.log(elem_pr_equip);
+                          /**
+                           * inserer tous les données de l'équipe projet concerné
+                           */
+                          let id_pr = {
+                            id_projet: elem_pr_equip.id_projet,
+                            id_equipe: elem_user.id_equipe
+                          }
+                          /**
+                           * pour inserer juste le données de l'utilisateurs connecter
+                           */
+                          /**let dat_pr = {
+                            code_pr : {
+                              id_projet: elem_equip.id_projet
+                            },
+                            code_equipe: data
+                          }*/
+                          this.importService.loadProjet(id_pr);
+              
+                          if (i == (data_equipe_pr.length - 1)) {
+                            console.log("==Fin du boucle ProjetEquipe===========<> Importation terminer");
+                            let isFinish: BehaviorSubject<boolean> = new BehaviorSubject(false);
+                            setTimeout(() => {
+                              this.modalCtrl.dismiss();
+                              isFinish.next(true);
+                              loading.dismiss();
+                            }, 11000);
+
+                            /**
+                             * go to Url page homme
+                             */
+                            isFinish.subscribe(isFinished => {
+                              if (isFinished) {
+                                const navigationExtras: NavigationExtras = {
+                                  state : {
+                                    users: JSON.stringify(this.users),
+                                    //activeProjet: JSON.stringify(this.Activite_Projet),
+                                    isFirstConnect: true
+                                  }
+                                };
+                                this.route.navigate(['homes'], navigationExtras);
+                              }
+                            });
+                            await Storage.set({ key: FIRST_CONNECT_KEY, value:  '1'});
+                          }
+                        });
+                      }
+                    });
+                  }
+                });
+              } else console.log("---------Data initiale is not ready-------");
+            });
           }
         }, error => {
-          console.log(error);
           loading.dismiss();
           this.openToast("Erreur serveur ou vérifier votre réseaux!");
         });
@@ -152,6 +222,7 @@ export class LoginPage implements OnInit {
         }
       });
     }
+    this.isValidate = false;
   }
 
   async presentModal() {

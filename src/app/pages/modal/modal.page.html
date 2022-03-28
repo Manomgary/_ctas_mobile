@@ -10,6 +10,9 @@
                 <div class="ion-text-center ion-text-wrap">
                   <span *ngIf="isLogin">Importation de donnée</span> 
                 </div>
+                <div class="ion-text-center ion-text-wrap">
+                  <span *ngIf="isSuiviRp">Ajouter nouveau culture</span> 
+                </div>
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
@@ -63,12 +66,119 @@
                     {{subtask.nom}}
                   </mat-checkbox>
                 </mat-list-item>
-             </mat-list>              
+             </mat-list>    
+             
+             <!--Login page-->
+             <div *ngIf="isSuiviRp">
+               <div class="contonair-flex">
+                 <div fxLayout="column width100">
+                  <div class="child-column-flex1" fxLayout="row">
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline" floatLabel="auto">
+                        <mat-label>saison</mat-label>
+                        <mat-select [(value)]="selected_saison">
+                          <mat-option>none</mat-option>
+                          <mat-option *ngFor="let saison of data_saison" [value]="saison">
+                            {{ saison.nom_reg }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>	
+                    </div>
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline" floatLabel="auto">
+                        <mat-label>Association</mat-label>
+                        <mat-select [(value)]="selected_association">
+                          <mat-option>none</mat-option>
+                          <mat-option *ngFor="let assoc of data_association" [value]="assoc">
+                            {{ assoc.nom_reg }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>	
+                    </div>
+                  </div>
+                  <div class="chold-column-flex2" fxLayout="row">
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline" floatLabel="auto">
+                        <mat-label>pms</mat-label>
+                        <mat-select [(value)]="selected_pms">
+                          <mat-option>none</mat-option>
+                          <mat-option (click)="onSelectPms()" *ngFor="let pms of data_pms" [value]="pms">
+                            {{ pms.nom_reg }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>	
+                    </div>
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline" floatLabel="auto">
+                        <mat-label>parcelle</mat-label>
+                        <mat-select  [(value)]="selected_parcelle">
+                          <mat-option>none</mat-option>
+                          <mat-option *ngFor="let parce of data_parcelle" [value]="parce">
+                            {{ parce.nom_reg }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>	
+                    </div>
+                  </div>
+                  <div class="child-column-flex3" fxLayout="row">
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline">
+                        <mat-label>espece</mat-label>
+                        <mat-select [(value)]="selected_espece">
+                          <mat-option>none</mat-option>
+                          <mat-option (click)="onSelectEspece()" *ngFor="let espece of data_espece" [value]="espece">
+                            {{ espece.nom_reg }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>	
+                    </div>
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline">
+                        <mat-label>variette</mat-label>
+                        <mat-select [(value)]="selected_variette">
+                          <mat-option>none</mat-option>
+                          <mat-option *ngFor="let variette of data_variette" [value]="variette">
+                            {{ variette.nom_reg }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>	
+                    </div>
+                  </div>
+                  <div class="child-column-flex4" fxLayout="row">
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Systeme cultural</mat-label>
+                        <mat-select [(value)]="selected_sc">
+                          <mat-option>none</mat-option>
+                          <mat-option (click)="onSeletSc()" *ngFor="let sc of data_sc" [value]="sc">
+                            {{ sc.nom_reg }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>	
+                    </div>
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Culture Associer</mat-label>
+                        <mat-select [(value)]="selected_ea">
+                          <mat-option>none</mat-option>
+                          <mat-option *ngFor="let ea of data_ea" [value]="ea">
+                            {{ ea.nom_reg }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>	
+                    </div>
+                  </div>
+                 </div>
+               </div>
+             </div>
             </mat-card-content>
             <mat-card-actions fxLayoutAlign="center center" fxFlexFill>
               <button *ngIf="isHome" mat-button (click)="revenirModal()" color="warning">Revenir</button>
               <button *ngIf="isHome" mat-raised-button color="primary" type="submit" (click)="closeModal()">valider</button>                
-              <button *ngIf="isLogin" mat-raised-button color="primary" type="submit" (click)="importData()">importer</button>   
+              <button *ngIf="isLogin" mat-raised-button color="primary" type="submit" (click)="importData()">importer</button>
+              <!--button suivi rp-->
+              <button *ngIf="isSuiviRp" mat-raised-button color="danger" type="submit" (click)="revenirModal()">annuler</button>
+              <button *ngIf="isSuiviRp" mat-raised-button color="success" type="submit" (click)="addCulture()">valider</button>      
             </mat-card-actions>
           </mat-card>
       </div>

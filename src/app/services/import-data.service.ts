@@ -6,7 +6,8 @@ import { DB_NAME } from '../utils/global-variables';
 import { DatabaseService } from './database.service';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { ApiService } from './api.service';
-import { Activite, Collaborateur, Collaborateur_activ, Commune, District, Equipe, Fonkotany, Participe_proj_activ, Projet, ProjetEquipe, Region, Utilisateurs, Volet } from '../utils/interface-bd';
+import { Activite, bloc_Parcelle, Collaborateur, Collaborateur_activ, Commune, District, Equipe, Fonkotany, Parcelle, Parcelle_Association, Parcelle_bl, 
+        Participe_proj_activ, Projet, ProjetEquipe, Region, Utilisateurs, Volet } from '../utils/interface-bd';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -30,6 +31,7 @@ export class ImportDataService implements OnInit, OnDestroy {
   private isDistrictLoaded: BehaviorSubject<boolean> = new BehaviorSubject(false);
   private isComLoaded: BehaviorSubject<boolean> = new BehaviorSubject(false);
   private isFktLoaded: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  private isParcelleLoaded: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
 
   constructor(private _sqlite: SqliteService, private dbService: DatabaseService, private api: ApiService) { 
@@ -81,8 +83,8 @@ export class ImportDataService implements OnInit, OnDestroy {
           data_equipe = res;
           data_equipe.forEach((elem, i) => {
     
-            const insert = `INSERT OR IGNORE INTO equipe(code_equipe, img, nom, prenom, sexe, dt_nais, cin, dt_delivrance, lieu_delivrance, img_cin, email, num_perso, num_float, id_fonct, intitule_fct, statuts) 
-                            VALUES (${elem.code_equipe},"${elem.img}","${elem.nom}","${elem.prenom}","${elem.sexe}", strftime('%Y-%m-%d','${elem.dt_nais}'), ${elem.cin}, strftime('%Y-%m-%d','${elem.dt_delivrance}'), "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.email}", "${elem.num_perso}", "${elem.num_float}", ${elem.id_fonct}, "${elem.intitule_fct}", "${elem.statuts}");`;
+            const insert = `INSERT OR IGNORE INTO equipe(code_equipe, img, matricule, nom, prenom, sexe, dt_nais, cin, dt_delivrance, lieu_delivrance, img_cin, email, num_perso, num_float, id_fonct, intitule_fct, statuts) 
+                            VALUES (${elem.code_equipe}, "${elem.img}", "${elem.matricule}", "${elem.nom}","${elem.prenom}","${elem.sexe}", strftime('%Y-%m-%d','${elem.dt_nais}'), ${elem.cin}, strftime('%Y-%m-%d','${elem.dt_delivrance}'), "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.email}", "${elem.num_perso}", "${elem.num_float}", ${elem.id_fonct}, "${elem.intitule_fct}", "${elem.statuts}");`;
             
             console.log(elem);
             this.insertData(insert);
@@ -150,7 +152,7 @@ export class ImportDataService implements OnInit, OnDestroy {
           
           data_fkt.forEach((elem, i) => {
             const insert = `INSERT INTO zone_fonkotany(code_fkt, nom_fkt, id_com)
-                            VALUES (${elem.code_fkt},"${elem.nom_fkt}", ${elem.id_com});`;
+                            VALUES ("${elem.code_fkt}","${elem.nom_fkt}", "${elem.id_com}");`;
             console.log(elem);
             this.insertData(insert);
 
@@ -202,7 +204,7 @@ export class ImportDataService implements OnInit, OnDestroy {
 
       data_region.forEach((elem, i) => {
         const insert = `INSERT INTO zone_region(code_reg, nom_reg)
-                        VALUES (${elem.code_reg},"${elem.nom_reg}");`;
+                        VALUES ("${elem.code_reg}", "${elem.nom_reg}");`;
         console.log(elem);
         this.insertData(insert);
 
@@ -224,7 +226,7 @@ export class ImportDataService implements OnInit, OnDestroy {
       
       data_district.forEach((elem, i) => {
         const insert = `INSERT INTO zone_district(code_dist, nom_dist, id_reg)
-                        VALUES (${elem.code_dist},"${elem.nom_dist}", ${elem.id_reg});`;
+                        VALUES ("${elem.code_dist}","${elem.nom_dist}", "${elem.id_reg}");`;
         console.log(elem);
         this.insertData(insert);
 
@@ -247,7 +249,7 @@ export class ImportDataService implements OnInit, OnDestroy {
       
       data_commune.forEach((elem, i) => {
         const insert = `INSERT INTO zone_commune(code_com, nom_com, id_dist)
-                        VALUES (${elem.code_com},"${elem.nom_com}", ${elem.id_dist});`;
+                        VALUES ("${elem.code_com}","${elem.nom_com}", "${elem.id_dist}");`;
         console.log(elem);
         this.insertData(insert);
 
@@ -286,12 +288,15 @@ export class ImportDataService implements OnInit, OnDestroy {
     });
   }
 
-  loadProjet(id_pr) {
+  loadProjet(id_pr_equipe) {
+    const id_projet = {
+      id_projet: id_pr_equipe.id_projet
+    }
     this.isImported.subscribe(isImport => {
       if (isImport) {
         let data_projet: Projet[];
         // Insert Projet
-        this.api.getListProjet(id_pr).subscribe((res: Projet[]) => {  
+        this.api.getListProjet(id_projet).subscribe((res: Projet[]) => {  
           console.log("************************Import Data Service::: PROJET....");
           console.log(res);
           data_projet = res;
@@ -308,13 +313,13 @@ export class ImportDataService implements OnInit, OnDestroy {
 
               this.isActiviteLoaded.subscribe(isLoaded => {
                 if (isLoaded) {
-                  this.loadActivProjet(id_pr);
+                  this.loadEquipe(id_projet);
+                  this.loadActivProjet(id_pr_equipe);
                 }
               });
-              this.loadEquipe(id_pr);
-              //this.loadProjetEquipe(id_pr);
-              this.loadBloc(id_pr);
-              this.loadAssociation(id_pr);
+              //this.loadProjetEquipe(id_projet);
+              //this.loadBloc(id_pr_equipe);
+              //this.loadAssociation(id_pr_equipe);
             }
           });
         });
@@ -343,11 +348,15 @@ export class ImportDataService implements OnInit, OnDestroy {
     });
   }
 
-  loadActivProjet(id_pr: any) {
+  loadActivProjet(data_equipe_pr: any) {
     // Import Activité projet
     let data_activite_projet: any[];
 
-    this.api.getListActiveProjet(id_pr).subscribe((res: any[]) => {
+    const id_projet = {
+      id_projet: data_equipe_pr.id_projet
+    }
+
+    this.api.getListActiveProjet(id_projet).subscribe((res: any[]) => {
       console.log("Import Data Service::: ActiveProjet....");
       data_activite_projet = res;
       let id_activite: any[] = [];
@@ -366,19 +375,21 @@ export class ImportDataService implements OnInit, OnDestroy {
            *****************************************/
           let intitule: string = elem.intitule;
           if (intitule.toUpperCase() === 'RP') {
-            console.log("============ RP ACTIVITE +++++ " + id_pr.id_projet);
+            console.log("============ RP ACTIVITE +++++ " + data_equipe_pr.id_projet);
             let data_rp = {
-              id_projet: id_pr.id_projet,
+              id_projet: data_equipe_pr.id_projet,
               code_act: elem.id_activ
             }
-            this.loadBenefRp(data_rp);
+            this.loadAssociation(data_equipe_pr, data_rp);
+            //this.loadBenefRp(data_rp);
           } else if (intitule.toUpperCase() === 'BLOC') {
-            console.log("============ ACTIVITE BLOC +++++ " + id_pr.id_projet);
-            let data_bl = {
-              id_projet: id_pr.id_projet,
+            console.log("============ ACTIVITE BLOC +++++ " + data_equipe_pr.id_projet);
+            let data_bl_benef = {
+              id_projet: data_equipe_pr.id_projet,
               code_act: elem.id_activ
             }
-            this.loadBenefBloc(data_bl);
+            this.loadBloc(data_equipe_pr, data_bl_benef);
+            //this.loadBenefBloc(data_bl_benef);
           }
 
   
@@ -393,7 +404,7 @@ export class ImportDataService implements OnInit, OnDestroy {
             this.loadCollActivite(data);
           }
         });
-      } else console.log("Aucune association disponible pour le projet ", id_pr.id_projet);
+      } else console.log("Aucune association disponible pour le projet ", data_equipe_pr.id_projet);
     });
   }
   loadCollaborateur() {
@@ -405,7 +416,7 @@ export class ImportDataService implements OnInit, OnDestroy {
 
       data_coll.forEach((elem, i) => {
         const insert = `INSERT INTO collaborateur(code_col, nom, description) 
-                        VALUES (${elem.code_col}, "${elem.nom}", "${elem.description}");`;
+                        VALUES ("${elem.code_col}", "${elem.nom}", "${elem.description}");`;
         console.log(elem);
         this.insertData(insert);
 
@@ -430,7 +441,7 @@ export class ImportDataService implements OnInit, OnDestroy {
               console.log(item);
 
               const insert = `INSERT OR IGNORE INTO collaborateur_activ(code, id_col, id_activ) 
-                              VALUES (${item.code}, ${item.code_col}, ${item.code_act});`;
+                              VALUES (${item.code}, "${item.code_col}", ${item.code_act});`;
               this.insertData(insert);
               
               if ((elem.length - 1) === i) {
@@ -450,21 +461,23 @@ export class ImportDataService implements OnInit, OnDestroy {
    * Imported BLOC
    * 
    */
-  loadBloc(id_pr: any) {
+  loadBloc(id_pr_equipe: any, data_bl_benef: any) {
     let data_bloc: any[];
     let code_bloc: any[] = [];
     this.isProjImported.subscribe(isReady => {
       if (isReady) {
-        this.api.getBloc(id_pr).subscribe((data: Collaborateur[]) => {
+        this.api.getBloc(id_pr_equipe).subscribe((data: Collaborateur[]) => {
           console.log("Import Data Service::: BLOC....");
           data_bloc = data;
     
           if (data_bloc.length > 0) {
             data_bloc.forEach((elem, i) => {
-              const insert = `INSERT OR IGNORE INTO bloc(code_bloc, nom, id_prjt, status) 
-                              VALUES (${elem.code_bloc}, "${elem.nom_bloc}", "${elem.code_proj}", "${elem.status}");`;
+              const insert = `INSERT OR IGNORE INTO bloc(code_bloc, nom, id_prjt, id_tech, status) 
+                              VALUES ("${elem.code_bloc}", "${elem.nom_bloc}", "${elem.code_proj}", "${elem.id_tech}", "${elem.status}");`;
               code_bloc.push({
-                id_bloc: elem.code_bloc
+                id_bloc: elem.code_bloc,
+                id_projet: data_bl_benef.id_projet,
+                code_act: data_bl_benef.code_act
               });
               console.log(elem);
               this.insertData(insert);
@@ -472,14 +485,18 @@ export class ImportDataService implements OnInit, OnDestroy {
               if ((data_bloc.length - 1) == i) {
                 console.log("==Fin du boucle BLOC==");      
                 let data = {
-                  bloc: code_bloc
+                  bloc: code_bloc,
                 }
-                this.loadBlocZone(data);
+                /**let code_bl = {
+                  id_bloc: code_bloc
+                }*/
+                this.loadBenefBloc(data);
+
                 this.isBlocImported.next(true);
                 this.select("bloc", data_bloc);
               }
             });
-          } else console.log("Aucune bloc trouvé pour ", id_pr.id_projet);
+          } else console.log("Aucune bloc trouvé pour ", id_pr_equipe.id_projet);
     
         });
       } else console.log("-------- Projet Is not Imported---------")
@@ -497,8 +514,8 @@ export class ImportDataService implements OnInit, OnDestroy {
             elem.forEach((item: any, i) => {
               console.log(item);
 
-              const insert = `INSERT OR IGNORE INTO bloc_zone(code, id_commune, id_bloc) 
-                              VALUES (${item.code}, ${item.code_com}, ${item.code_bloc});`;
+              const insert = `INSERT OR IGNORE INTO bloc_zone(code, id_fkt, id_bloc, id_km) 
+                              VALUES (${item.code}, "${item.id_fkt}", "${item.code_bloc}", "${item.id_km}");`;
               this.insertData(insert);
               
               if ((elem.length - 1) == i) {
@@ -519,26 +536,35 @@ export class ImportDataService implements OnInit, OnDestroy {
    * imported Association
    * 
    */
-  loadAssociation(id_pr) {
+  loadAssociation(id_pr_equipe: any, data_pms: any) {
     let data_association: any[];
-    // Insert Projet
-    this.api.getAssociation(id_pr).subscribe((res: any[]) => {  
+    // Inserer association par équipe et par projet
+    this.api.getAssociation(id_pr_equipe).subscribe((res: any[]) => {  
       console.log("************************Import Data Service::: ASSOCIATION....");
       console.log(res);
       data_association = res;
       if (data_association.length > 0) {
         data_association.forEach((elem, i) => {
-          const insert = `INSERT OR IGNORE INTO association(code_ass, nom, id_prjt, id_tech, id_pms, id_fkt, status) 
-                          VALUES (${elem.code_ass},"${elem.nom_ass}","${elem.code_proj}", ${elem.id_tech}, "${elem.id_pms}", ${elem.code_fkt},"${elem.status}");`;
+          const insert = `INSERT OR IGNORE INTO association(code_ass, nom, id_prjt, id_tech, id_fkt, status) 
+                          VALUES ("${elem.code_ass}","${elem.nom_ass}","${elem.code_proj}", ${elem.id_tech}, "${elem.code_fkt}","${elem.status}");`;
           console.log(elem);
           this.insertData(insert);
+          /**
+           * INSERER BENEFICIAIRE PMS
+           */
+          let data_benef_pms = {
+            id_projet: data_pms.id_projet,
+            code_act: data_pms.code_act,
+            code_ass: elem.code_ass
+          }
+          this.loadBenefRp(data_benef_pms);
           if (i == (data_association.length - 1)) {
             console.log("==Fin du boucle association==");
             this.select("association", data_association);
             this.isAssociationImported.next(true);
           }
         });
-      } else console.log("Aucune association disponible pour le projet ", id_pr.id_projet);
+      } else console.log("Aucune association disponible pour le projet ", id_pr_equipe.id_projet);
     });
   }
 
@@ -548,55 +574,54 @@ export class ImportDataService implements OnInit, OnDestroy {
    * 
    **********************/
   loadBenefRp(data: any) {
-    this.isAssociationImported.subscribe(isLoaded => {
-      if (isLoaded) {
-        let data_benef: any[];
-        // Insert Projet
-        this.api.getBenefRp(data).subscribe((res: any[]) => {  
-          console.log("************************Load Data BENEFICIAIRE PMS....");
-          console.log(res);
-          data_benef = res;
-          if (data_benef.length > 0) {
-            data_benef.forEach((elem, i) => {
-              const insert = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, dt_Insert, statut) 
-                              VALUES ("${elem.code_benef}", "${elem.img_benef}","${elem.nom}", "${elem.prenom}", "${elem.sexe}", "${elem.dt_nais}","${elem.surnom}", ${elem.cin}, "${elem.dt_delivrance}", "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.contact}", ${elem.id_fkt}, "${elem.dt_Insert}", "${elem.statut}");`;
-              console.log(elem);
-              this.insertData(insert);
-              if (i == (data_benef.length - 1)) {
-                console.log("==Fin du boucle beneficiaire PMS==");
-                this.select("beneficiaire", data_benef);
-    
-                data_benef.forEach((item, index) => {
-                  const insert_pms = `INSERT OR IGNORE INTO benef_activ_pms(code_benef_pms, id_proj, id_activ, id_benef, id_association, id_collaborateur , status) 
-                                      VALUES ("${item.code_benef_pms}", "${item.id_proj}", ${item.id_activ}, "${item.id_benef}", ${item.id_association}, ${item.id_collaborateur},"${item.status_pms}");`;
-                  this.insertData(insert_pms);  
-                  
-                  if (index == (data_benef.length - 1)) {
-                    console.log("==Fin du boucle definitive BENEFICIAIRE ACTIVITE PMS==");
-                    this.select("benef_activ_pms", data_benef)
-                  }
-                })
-    
+    let data_benef: any[];
+    // Insert Projet
+    this.api.getBenefRp(data).subscribe((res: any[]) => {  
+      console.log("************************Load Data BENEFICIAIRE PMS....");
+      console.log(res);
+      data_benef = res;
+      if (data_benef.length > 0) {
+        data_benef.forEach((elem, i) => {
+          const insert = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, dt_Insert, statut) 
+                          VALUES ("${elem.code_benef}", "${elem.img_benef}","${elem.nom}", "${elem.prenom}", "${elem.sexe}", "${elem.dt_nais}","${elem.surnom}", ${elem.cin}, "${elem.dt_delivrance}", "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.contact}", "${elem.id_fkt}", "${elem.dt_Insert}", "${elem.statut}");`;
+          console.log(elem);
+          this.insertData(insert);
+          if (i == (data_benef.length - 1)) {
+            console.log("==Fin du boucle beneficiaire PMS==");
+            this.select("beneficiaire", data_benef);
+
+            data_benef.forEach((item, index) => {
+              const insert_pms = `INSERT OR IGNORE INTO benef_activ_pms(code_benef_pms, id_proj, id_activ, id_benef, id_association, id_collaborateur , status) 
+                                  VALUES ("${item.code_benef_pms}", "${item.id_proj}", ${item.id_activ}, "${item.id_benef}", "${item.id_association}", "${item.id_collaborateur}","${item.status_pms}");`;
+              this.insertData(insert_pms);  
+              
+              if (index == (data_benef.length - 1)) {
+                console.log("==Fin du boucle definitive BENEFICIAIRE ACTIVITE PMS==");
+                this.select("benef_activ_pms", data_benef);
+                // Inserer parcelle beneficiaire par association
+                this.loadParcelleBenef(data);
               }
-            });
-          } else console.log("Aucune beneficiaire PMS disponible pour le projet ", data.id_projet);
+            })
+
+          }
         });
-      } else console.log("Association not loaded");
+      } else console.log("Aucune beneficiaire PMS disponible pour le projet ", data.id_projet);
     });
   }
   loadBenefBloc(data: any) {
-    this.isBlocImported.subscribe(isLoaded => {
-      if (isLoaded) {
-        let data_benef: any[];
-        // Insert Projet
-        this.api.getBenefBloc(data).subscribe((res: any[]) => {  
-          console.log("************************Load Data BENEFICIAIRE BLOC....");
-          console.log(res);
-          data_benef = res;
+    let data_benef: any[] = [];
+    // Insert Projet
+    this.api.getBenefBloc(data).subscribe((res: any[]) => {  
+      console.log("************************Load Data BENEFICIAIRE BLOC....");
+      console.log(res);
+      if (res.length > 0) {
+        res.forEach((element: any[], i) => {
+          console.log(element);
+          data_benef = element;
           if (data_benef.length > 0) {
             data_benef.forEach((elem, i) => {
               const insert = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, dt_Insert, statut) 
-                              VALUES ("${elem.code_benef}", "${elem.img_benef}","${elem.nom}", "${elem.prenom}", "${elem.sexe}", "${elem.dt_nais}","${elem.surnom}", ${elem.cin}, "${elem.dt_delivrance}", "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.contact}", ${elem.id_fkt}, "${elem.dt_Insert}", "${elem.status_benef}");`;
+                              VALUES ("${elem.code_benef}", "${elem.img_benef}","${elem.nom}", "${elem.prenom}", "${elem.sexe}", "${elem.dt_nais}","${elem.surnom}", ${elem.cin}, "${elem.dt_delivrance}", "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.contact}", "${elem.id_fkt}", "${elem.dt_Insert}", "${elem.status_benef}");`;
               console.log(elem);
               this.insertData(insert);
               if (i == (data_benef.length - 1)) {
@@ -605,20 +630,144 @@ export class ImportDataService implements OnInit, OnDestroy {
     
                 data_benef.forEach((item, index) => {
                   const insert_bl = `INSERT OR IGNORE INTO benef_activ_bl(code_benef_bl, id_proj, id_activ, id_benef, id_bloc, id_collaborateur, status) 
-                                      VALUES ("${item.code_benef_bl}", "${item.id_proj}", ${item.id_activ}, "${item.id_benef}", ${item.id_bloc}, ${item.id_collaborateur},"${item.status_benef_bloc}");`;
+                                      VALUES ("${item.code_benef_bl}", "${item.id_proj}", ${item.id_activ}, "${item.id_benef}", "${item.id_bloc}", "${item.id_collaborateur}","${item.status_benef_bloc}");`;
                   this.insertData(insert_bl);  
                   
                   if (index == (data_benef.length - 1)) {
                     console.log("==Fin du boucle definitive BENEFICIAIRE ACTIVITE BLOC==");
-                    this.select("benef_activ_bl", data_benef)
+                    this.select("benef_activ_bl", data_benef);
                   }
-                })
-    
+                });
               }
             });
           } else console.log("Aucune beneficiaire bloc disponible pour le projet ", data.id_projet);
+          // load Bloc Zone
+          if (i == (res.length - 1)) {
+            console.log("==Fin du boucle Data BENEFICIAIRE BLOC==");
+            this.loadBlocZone(data);
+            this.loadParcelleBenefBloc(data);
+          }
         });
-      } else console.log("---------Bloc Is not Imported-------")
+      }
+    });
+  }
+
+  loadParcelleBenef(data: any) {
+    let data_benef_parce: Parcelle[];
+    // Inserer association par équipe et par projet
+    this.api.getBenefParcelle(data).subscribe((res: any[]) => {  
+      console.log("************************Import Data Service::: ASSOCIATION....");
+      console.log(res);
+      data_benef_parce = res;
+      if (data_benef_parce.length > 0) {
+        data_benef_parce.forEach((elem, i) => {
+          const insert = `INSERT OR IGNORE INTO parcelle(code_parce, id_benef, ref_gps , lat, log, superficie, id_fkt, status) 
+                            VALUES ("${elem.code_parce}","${elem.id_benef}","${elem.ref_gps}", ${elem.lat}, ${elem.log}, ${elem.superficie}, "${elem.id_fkt}", "${elem.status}");`;
+          console.log(elem);
+          this.insertData(insert);
+          if (i == (data_benef_parce.length - 1)) {
+            console.log("==Fin du boucle parcelle==");
+            this.select("parcelle", data_benef_parce);
+            // Inserer Parcelle Asociation 
+            this.loadParcAssoc(data);
+          }
+        });
+      } else console.log("***Aucune Parcelle disponible pour les béneficiaire de l'association de ::", data.code_ass);
+    });
+  }
+  loadParcAssoc(data: any) {
+    let data_assoc_parce: Parcelle_Association[] = [];
+    // Inserer association par équipe et par projet
+    this.api.getAssociationParcelle(data).subscribe((res: Parcelle_Association[]) => {  
+      console.log("************************Import Data Service::: ASSOCIATION....");
+      console.log(res);
+      data_assoc_parce = res;
+      if (data_assoc_parce.length > 0) {
+        data_assoc_parce.forEach((elem, i) => {
+          const insert = `INSERT OR IGNORE INTO assoc_parce(code, id_assoc, id_parce, annee_adheran, status) 
+                            VALUES (${elem.code},"${elem.id_assoc}","${elem.id_parce}",  ${elem.annee_adheran}, "${elem.status}");`;
+          console.log(elem);
+          this.insertData(insert);
+          if (i == (data_assoc_parce.length - 1)) {
+            console.log("==Fin du boucle assoc_parce==");
+            this.select("assoc_parce", data_assoc_parce);
+          }
+        });
+      } else console.log("***Aucune assoc_parce disponible pour l'association de ::", data.code_ass);
+    });
+  }
+  async loadParcelleBenefBloc(data: any) {
+    console.log(data);
+    let code_bl: any[] = [];
+    code_bl = data.bloc;
+    console.log("********Parcelle Beneficiare Code bloc********");
+    console.log(code_bl);
+    if (code_bl.length> 0) {
+      code_bl.forEach((elem_bl, index) => {
+        console.log("********element Code bloc********");
+        console.log(elem_bl);
+        // Insertion Parcelle beneficiaire bloc
+        const code_bloc = {
+          id_bloc: elem_bl.id_bloc
+        }
+        let data_benef_parce: Parcelle_bl[] = [];
+
+        this.api.getBenefParcelleBloc(code_bloc).subscribe((res: Parcelle_bl[]) => {
+          console.log(res);
+          data_benef_parce = res;
+          if (data_benef_parce.length > 0) {
+            data_benef_parce.forEach((elem_parce, i) => {
+              const insert = `INSERT OR IGNORE INTO parcelle(code_parce, id_benef, ref_gps , lat, log, superficie, id_fkt, status) 
+                              VALUES ("${elem_parce.code_parce}","${elem_parce.id_benef}","${elem_parce.ref_gps}", ${elem_parce.lat}, ${elem_parce.log}, ${elem_parce.superficie}, "${elem_parce.id_fkt}", "${elem_parce.status}");`;
+              this.insertData(insert);
+    
+              if (i == (data_benef_parce.length - 1)) {
+                console.log("==Fin du boucle parcelle==");
+                this.select("parcelle", data_benef_parce);
+              }
+            });
+          }
+        });
+        if (index === (code_bl.length - 1)) {
+            console.log("*******Fin du boucle Parcelle benf bloc*********");
+            this.isParcelleLoaded.next(true);
+        }
+      });
+      // Loaded Parcelle Bloc
+      await this.isParcelleLoaded.subscribe(isLoaded => {
+        if (isLoaded) {
+          code_bl.forEach((elem_sbl, ind) => {
+            const id_bloc = {
+              id_bloc: elem_sbl.id_bloc
+            }
+            // Load Bloc Parcelle
+            this.loadParceBloc(id_bloc);
+            if (ind == (code_bl.length - 1)) {
+              this.isParcelleLoaded.next(false);
+            }
+          });
+        } else console.log("======Parcelle Bloc Not loaded=====");
+      });
+    }
+  }
+
+  loadParceBloc(data: any) {
+    let data_bloc_parce: bloc_Parcelle[] = [];
+
+    this.api.getBlocParcelle(data).subscribe(res_bloc => {
+      console.log(res_bloc);
+      data_bloc_parce = res_bloc;
+      if (data_bloc_parce.length > 0) {
+        data_bloc_parce.forEach((elem_blparc, i) => {
+          const insert = `INSERT OR IGNORE INTO bloc_parce(code_blparce, id_bloc, id_parce, anne_adheran, status) 
+                            VALUES (${elem_blparc.code_blparce},"${elem_blparc.id_bloc}","${elem_blparc.id_parce}",  ${elem_blparc.anne_adheran}, "${elem_blparc.status}");`;
+          this.insertData(insert);
+          if (i == (data_bloc_parce.length - 1)) {
+            console.log("==Fin du boucle assoc_parce==");
+            this.select("bloc_parce", data_bloc_parce);
+          }
+        });
+      }
     });
   }
 
@@ -641,7 +790,7 @@ export class ImportDataService implements OnInit, OnDestroy {
             code_equipe: elem.id_equipe
           }
           /**
-           * Inser Equipe table
+           * Inserer Equipe table
            */
           this.api.getEquipe(id_equipe).subscribe((res: Equipe[]) => {  
             console.log("************************Import Data Service::: EQUIPE....");
@@ -649,8 +798,8 @@ export class ImportDataService implements OnInit, OnDestroy {
             data_equipe = res;
             data_equipe.forEach((elem_equipe, i) => {
       
-              const insert_eq = `INSERT OR IGNORE INTO equipe(code_equipe, img, nom, prenom, sexe, dt_nais, cin, dt_delivrance, lieu_delivrance, img_cin, email, num_perso, num_float, id_fonct, intitule_fct, statuts) 
-                              VALUES (${elem_equipe.code_equipe},"${elem_equipe.img}","${elem_equipe.nom}","${elem_equipe.prenom}","${elem_equipe.sexe}", strftime('%Y-%m-%d','${elem_equipe.dt_nais}'), ${elem_equipe.cin}, strftime('%Y-%m-%d','${elem_equipe.dt_delivrance}'), "${elem_equipe.lieu_delivrance}", "${elem_equipe.img_cin}", "${elem_equipe.email}", "${elem_equipe.num_perso}", "${elem_equipe.num_float}", ${elem_equipe.id_fonct}, "${elem_equipe.intitule_fct}", "${elem_equipe.statuts}");`;
+              const insert_eq = `INSERT OR IGNORE INTO equipe(code_equipe, img, matricule, nom, prenom, sexe, dt_nais, cin, dt_delivrance, lieu_delivrance, img_cin, email, num_perso, num_float, id_fonct, intitule_fct, statuts) 
+                                  VALUES (${elem_equipe.code_equipe},"${elem_equipe.img}", "${elem_equipe.matricule}", "${elem_equipe.nom}","${elem_equipe.prenom}","${elem_equipe.sexe}", strftime('%Y-%m-%d','${elem_equipe.dt_nais}'), ${elem_equipe.cin}, strftime('%Y-%m-%d','${elem_equipe.dt_delivrance}'), "${elem_equipe.lieu_delivrance}", "${elem_equipe.img_cin}", "${elem_equipe.email}", "${elem_equipe.num_perso}", "${elem_equipe.num_float}", ${elem_equipe.id_fonct}, "${elem_equipe.intitule_fct}", "${elem_equipe.statuts}");`;
               
               console.log(elem_equipe);
               this.insertData(insert_eq);
@@ -698,13 +847,13 @@ export class ImportDataService implements OnInit, OnDestroy {
           data_equipe_pr.forEach((elem, i) => {
             console.log(elem);
             const insert = `INSERT OR IGNORE INTO projet_equipe(code, id_projet, id_equipe, id_volet, status_pe) 
-            VALUES (${elem.code},"${elem.id_projet}",${elem.id_equipe}, ${elem.id_volet},"${elem.status_pe}");`;
+                            VALUES (${elem.code},"${elem.id_projet}",${elem.id_equipe}, ${elem.id_volet},"${elem.status_pe}");`;
 
             console.log(elem);
             this.insertData(insert);
 
             if (i == (data_equipe_pr.length - 1)) {
-              console.log("==Fin du boucle Equipe==");
+              console.log("==Fin du boucle PROJET EQUIPE==");
               this.select("projet_equipe", data_equipe_pr);
               //this.isEquipeLoaded.next(true);
             }

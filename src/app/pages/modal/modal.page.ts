@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { Loc_Commune } from 'src/app/interfaces/interfaces-local';
 import { ApiService } from 'src/app/services/api.service';
 import { ImportDataService } from 'src/app/services/import-data.service';
 import { Projet } from 'src/app/utils/interface-bd';
@@ -22,10 +23,20 @@ export class ModalPage implements OnInit {
   // Data passed in by componentProps
   isHome: boolean = false;
   isLogin: boolean = false;
+  isSuiviRp: boolean = false;
 
   data_region: any[] = [];
   data_district: any[] = [];
-  data_commune: any[] = [];
+  data_commune: Loc_Commune[] = [];
+  //suivi Rp
+  data_saison: any[] = ['CS', 'GS'];
+  data_association: any[] = ['AVOTRA', 'RANOVELO AVIAVY'];
+  data_pms: any[] =  ['NJAKAMANA', 'MONJAVELO', 'MANAMBALA'];
+  data_parcelle: any[] = ['PARC01', 'PARC02'];
+  data_espece: any[] = [  'SORGO', 'MIL'];
+  data_variette: any[] = ['Rasta', 'Besomotse'];
+  data_sc: any[] = ['Culture Pure', 'Culture associé', 'Culture bande'];
+  data_ea: any[] = ['Niébé'];
 
   data_users: any[] = [];
   checkedProject: any[] = [];
@@ -33,6 +44,15 @@ export class ModalPage implements OnInit {
   selected_region: any;
   selected_district: any;
   selected_commune: any;
+  //suiviRp
+  selected_saison: any;
+  selected_association: any;
+  selected_pms: any;
+  selected_parcelle: any;
+  selected_espece: any;
+  selected_variette: any;
+  selected_sc: any;
+  selected_ea: any;
 
   task: Task = {
     nom: 'selectionner tout',
@@ -96,6 +116,14 @@ export class ModalPage implements OnInit {
         this.data_region = res;
         console.log(this.data_region);
       });
+    } else if (this.navParams.get('isSuiviRp')) {
+      this.isSuiviRp = this.navParams.get('isSuiviRp');
+      this.loadData.loadRegion().subscribe((res) => {
+        console.log("*** MODAL CONTROLLER REGION ****");
+        console.log(res);
+        this.data_region = res;
+        console.log(this.data_region);
+      });
     }
   }
 
@@ -137,10 +165,8 @@ export class ModalPage implements OnInit {
     this.isHome = false;
     this.isBloc = false;
   }
-  async revenirModal() {
-    await this.modalCtrl.dismiss({
-      dismissed: true
-    });
+  revenirModal() {
+    this.modalCtrl.dismiss();
   }
 
   async importData() {
@@ -169,9 +195,17 @@ export class ModalPage implements OnInit {
           this.modalCtrl.dismiss();
           this.isLogin = false;
           loading.dismiss();
-        }, 15000);
+        }, 11000);
       }
     });
+  }
+
+  // Suivi Rp
+  addCulture() {
+    const dismissed = {
+      dismissed: true
+    }
+    this.modalCtrl.dismiss(dismissed);
   }
 
   onRegion() {
@@ -187,13 +221,16 @@ export class ModalPage implements OnInit {
   }
 
   onDistrict() {
+    this.data_commune = [];
     console.log("Selected District!!!");
     console.log(this.selected_district.code_dist);
     let id_dist = this.selected_district.code_dist;
-    this.loadData.loadCommune(id_dist).subscribe(res => {
+    this.loadData.loadCommune(id_dist).then(res => {
       console.log("*** MODAL CONTROLLER COMMUNE ****");
       console.log(res);
-      this.data_commune = res;
+      res.values.forEach(elem_com => {
+        this.data_commune.push(elem_com);
+      });
     },
     error => {
       console.log("Modal error Request response ==> " + error);

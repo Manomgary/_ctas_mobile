@@ -1,0 +1,14 @@
+.container-matTab {
+    /**width: 100%;
+    overflow: auto;*/
+    position: relative;
+}  
+.table-container {
+    position: relative;
+    min-height: 200px;
+    max-height: 300px;
+    overflow: auto;
+}
+table {
+    width: 90%;
+}

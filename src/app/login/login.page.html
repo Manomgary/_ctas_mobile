@@ -1,51 +1,58 @@
 <ion-header>
-	<ion-toolbar>
-		<ion-grid>  
-			<ion-row>
-				<ion-col class="ion-align-self-start" size="2">
-					<ion-thumbnail>
-						<ion-img src="../../assets/ctas/logo_ctas.jpg"></ion-img>
-					</ion-thumbnail>
-				</ion-col>
-				<ion-col class="ion-align-self-start" size="10">
-					<ion-title>
-						<div class="ion-text-center ion-text-wrap">
-							Bienvenue sur l'app mobile CTAS
+	<div class="container-header-flex">
+		<div class="flex-container" fxLayout="row">
+			<!--Flex row logo-->
+			<div class="flex-child-1" fxLayoutAlign="center center">
+				<ion-thumbnail>
+					<ion-img src="../../assets/ctas/logo_ctas.jpg"></ion-img>
+				</ion-thumbnail>
+			</div>
+			<!--Flex row 2-->
+			<div class="flex-child-2 width100" fxLayoutAlign="center center">
+				<div class="flex-container width100" fxLayout="column">
+					<div class="column-child-1" fxLayoutAlign="center center">Fenetre de connection</div> 
+					<div class="column-child-2" >
+						<div class="ion-text-center ion-text-wrap" style="font-size: 10px;">
+							Bienvenue sur l'application mobile de ctas
 						</div>
-					</ion-title>
-				</ion-col>
-			</ion-row>
-		  </ion-grid>
-	</ion-toolbar>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
   </ion-header>
   
   <ion-content>
 	  <form fxLayoutAlign="center center" fxFlexFill [formGroup]="loginForm" (ngSubmit)="doLogin()">
-		<mat-card fxFlex="90" class="login-card">
+		<mat-card fxFlex="70" class="login-card">
 			<mat-card-header fxLayoutAlign="center center" color="success">
 				<div mat-card-avatar class="logo-header-image"></div>
 				<mat-card-title>Se connecter à ctas</mat-card-title>
 			</mat-card-header>
 			<mat-card-content>
-				<div  class="form-content">
-					<mat-form-field appearance="fill">
-						<mat-label>Identifiant</mat-label>
-						<input matInput formControlName="userName">
-						<!--<mat-error *ngIf="f['userName'].errors['required']">Name is required</mat-error>-->
-					</mat-form-field>
-					<mat-form-field appearance="fill">
-						<mat-label>Mot de passe</mat-label>
-						<input matInput [type]="hide ? 'password' : 'text'" formControlName="passWord"> 
-						<button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide" type="button" >
-							<mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
-						</button>
-						<!--<mat-error *ngIf="!isNotPass"> {{msg}} </mat-error>-->
-					</mat-form-field>	
+				<div  class="flex-container width100" fxLayout="column" style="justify-content: space-evenly;padding-top: 10px">
+					<div class="content-flex-child-1" fxLayoutAlign="center center" style="padding-bottom: 8px;">
+						<mat-form-field appearance="outline">
+							<mat-label>Identifiant</mat-label>
+							<input matInput formControlName="userName" placeholder="Merci d'identifier par votre nume telephone">
+							<!--<mat-error *ngIf="f['userName'].errors['required']">Name is required</mat-error>-->
+						</mat-form-field>
+					</div>
+					<div class="content-flex-child-1" fxLayoutAlign="center center">
+						<mat-form-field appearance="outline">
+							<mat-label>Mot de passe</mat-label>
+							<input matInput [type]="hide ? 'password' : 'text'" formControlName="passWord" placeholder="saisir votre mot de passe"> 
+							<button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide" type="button" >
+								<mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+							</button>
+							<!--<mat-error *ngIf="!isNotPass"> {{msg}} </mat-error>-->
+						</mat-form-field>	
+					</div>
 				</div>
 			</mat-card-content>
 			<mat-card-actions fxLayoutAlign="center center" fxFlexFill>
 				<button mat-raised-button type="button" (click)="onReset()">Reset</button>
-				<button mat-raised-button color="primary" type="submit" [disabled]="!loginForm.valid">connexion</button>
+				<button mat-raised-button color="primary" type="submit" [disabled]="!loginForm.valid || isValidate">connexion</button>
 
 			</mat-card-actions>
 		</mat-card>
