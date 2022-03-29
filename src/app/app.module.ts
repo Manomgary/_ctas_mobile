@@ -5,6 +5,7 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
+import { File } from '@ionic-native/file/ngx';
 
 // Import
 import { HttpClientModule, HttpClient } from '@angular/common/http';
@@ -73,7 +74,8 @@ import { LoadDataService } from './services/local/load-data.service';
     ImportDataService,
     ApiService,
     LoadDataService,
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    File
   ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

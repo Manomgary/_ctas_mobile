@@ -7,6 +7,9 @@ import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
 import { ModalPage } from '../../modal/modal.page';
 
+import * as XLSX from 'xlsx';
+import { File } from '@ionic-native/file/ngx';
+
 const DATA_CULTURE = [
   {
     saison : 'CS', 
@@ -81,6 +84,8 @@ export class SuiviPage implements OnInit {
   private filterDataBenef: any[];
   private filterDataParce: any [];
 
+  arr:any[] = [];
+
 
   private displayedColumns: string[] = ['saison', 'association', 'code_pms', 'nom_pms', 'code_parce', 'variette', 'qsa', 'img_fact', 'dds', 'sfce', 'objectif', 'sc', 'ea'];
   private displayedColumnsNew: string[] = ['new_saison', 'new_association', 'new_code_pms', 'new_nom_pms', 'new_code_parce', 'new_variette', 'new_qsa', 'new_img_fact', 'new_dds', 'new_sfce', 'new_objectif', 'new_sc', 'new_ea', 'new_action'];
@@ -89,7 +94,8 @@ export class SuiviPage implements OnInit {
 
   constructor(private router: Router, 
               private loadService: LoadDataService,
-              private modalCtrl: ModalController) { 
+              private modalCtrl: ModalController,
+              private file: File) { 
     const routeState = this.router.getCurrentNavigation().extras.state;
     if (routeState) {
       let zone: any;
@@ -117,6 +123,42 @@ export class SuiviPage implements OnInit {
   }
 
   ngOnInit() {
+
+    for(var i=0;i<30;i++) {
+      var obj = {
+        id: "id" + i.toString(),
+        name: "name" + i.toString(),
+        email: "email" + i.toString()
+      };
+      this.arr.push(obj);
+    }
+  }
+
+  // export excelle
+  createExcel() {
+    var ws = XLSX.utils.json_to_sheet(this.arr);
+    var wb = {
+      Sheets: {'data': ws}, 
+      SheetNames: ['data']
+    };
+    var buffer = XLSX.write(
+      wb, 
+      {
+        bookType: 'xlsx', 
+        type: 'array'
+      }
+    );
+    this.saveToPhone(buffer);
+  }
+  saveToPhone(buffer) {
+    var fileType= 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    var fileExtension = ".xlsx";
+    var fileName = Date.now().toString();
+    var data:Blob = new Blob([buffer], {type: fileType});
+    this.file.writeFile(this.file.externalRootDirectory, fileName+fileExtension,data,{replace: true})
+          .then(() => {
+            alert("excel file saved in phone");
+          });
   }
 
   onUpdate() {
