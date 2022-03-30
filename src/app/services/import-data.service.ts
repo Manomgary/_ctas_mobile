@@ -599,7 +599,8 @@ export class ImportDataService implements OnInit, OnDestroy {
                 console.log("==Fin du boucle definitive BENEFICIAIRE ACTIVITE PMS==");
                 this.select("benef_activ_pms", data_benef);
                 // Inserer parcelle beneficiaire par association
-                this.loadParcelleBenef(data);
+                //this.loadParcelleBenef(data);
+                this.loadParcAssoc(data);
               }
             })
 
@@ -675,6 +676,7 @@ export class ImportDataService implements OnInit, OnDestroy {
       } else console.log("***Aucune Parcelle disponible pour les béneficiaire de l'association de ::", data.code_ass);
     });
   }
+  // Load parcelle Association
   loadParcAssoc(data: any) {
     let data_assoc_parce: Parcelle_Association[] = [];
     // Inserer association par équipe et par projet
@@ -684,8 +686,8 @@ export class ImportDataService implements OnInit, OnDestroy {
       data_assoc_parce = res;
       if (data_assoc_parce.length > 0) {
         data_assoc_parce.forEach((elem, i) => {
-          const insert = `INSERT OR IGNORE INTO assoc_parce(code, id_assoc, id_parce, annee_adheran, status) 
-                            VALUES (${elem.code},"${elem.id_assoc}","${elem.id_parce}",  ${elem.annee_adheran}, "${elem.status}");`;
+          const insert = `INSERT OR IGNORE INTO assoc_parce(code_parce, id_assoc, id_benef, ref_gps, lat, log, superficie, id_fkt, anne_adheran, status) 
+                            VALUES ("${elem.code_parce}","${elem.id_assoc}", "${elem.id_benef}", "${elem.ref_gps}", ${elem.lat}, ${elem.log}, ${elem.superficie}, "${elem.id_fkt}", ${elem.anne_adheran}, "${elem.status}");`;
           console.log(elem);
           this.insertData(insert);
           if (i == (data_assoc_parce.length - 1)) {
@@ -697,6 +699,24 @@ export class ImportDataService implements OnInit, OnDestroy {
     });
   }
   async loadParcelleBenefBloc(data: any) {
+    console.log(data);
+    let code_bl: any[] = [];
+    code_bl = data.bloc;
+    console.log("********Parcelle Beneficiare Code bloc********");
+    console.log(code_bl);
+    if (code_bl.length> 0) {
+      // Loaded Parcelle Bloc
+      code_bl.forEach((elem_bl, ind) => {
+        const id_bloc = {
+          id_bloc: elem_bl.id_bloc
+        }
+        // Load Bloc Parcelle
+        this.loadParceBloc(id_bloc);
+      });
+    }
+  }
+
+  /**async loadParcelleBenefBloc(data: any) {
     console.log(data);
     let code_bl: any[] = [];
     code_bl = data.bloc;
@@ -749,7 +769,7 @@ export class ImportDataService implements OnInit, OnDestroy {
         } else console.log("======Parcelle Bloc Not loaded=====");
       });
     }
-  }
+  }*/
 
   loadParceBloc(data: any) {
     let data_bloc_parce: bloc_Parcelle[] = [];
@@ -759,8 +779,8 @@ export class ImportDataService implements OnInit, OnDestroy {
       data_bloc_parce = res_bloc;
       if (data_bloc_parce.length > 0) {
         data_bloc_parce.forEach((elem_blparc, i) => {
-          const insert = `INSERT OR IGNORE INTO bloc_parce(code_blparce, id_bloc, id_parce, anne_adheran, status) 
-                            VALUES (${elem_blparc.code_blparce},"${elem_blparc.id_bloc}","${elem_blparc.id_parce}",  ${elem_blparc.anne_adheran}, "${elem_blparc.status}");`;
+          const insert = `INSERT OR IGNORE INTO bloc_parce(code_parce, id_bloc, id_benef, ref_gps, lat, log, superficie, id_fkt, anne_adheran, status) 
+                          VALUES ("${elem_blparc.code_parce}","${elem_blparc.id_bloc}", "${elem_blparc.id_benef}", "${elem_blparc.ref_gps}", ${elem_blparc.lat}, ${elem_blparc.log}, ${elem_blparc.superficie}, "${elem_blparc.id_fkt}", ${elem_blparc.anne_adheran}, "${elem_blparc.status}");`;
           this.insertData(insert);
           if (i == (data_bloc_parce.length - 1)) {
             console.log("==Fin du boucle assoc_parce==");

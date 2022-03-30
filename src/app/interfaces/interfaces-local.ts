@@ -109,7 +109,8 @@ export interface Local_benef_activ_bl {
     id_collaborateur: string,
     nom_collab: string,
     status: string,
-    nb_parce: string
+    nb_parce: number,
+    sum_superficie: number
 }
 export interface Local_bloc_zone {
     code: number,
@@ -123,17 +124,16 @@ export interface Local_bloc_zone {
     prenom: string
 }
 export interface Local_bloc_parce {
-    code_blparce: number,
     id_bloc: string,
     nom_bloc: string,
     code_benef_bl: string,
     nom: string,
     prenom: string,
-    id_parce: string,
+    code_parce: string,
     ref_gps: string,
-    lat: string,
-    log: string,
-    superficie: string,
+    lat: number,
+    log: number,
+    superficie: number,
     anne_adheran: string,
     status: string
 }

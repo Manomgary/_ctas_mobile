@@ -127,6 +127,7 @@ export interface Parcelle {
     id_fkt: string,
     status: string
 }
+// Non active
 export interface Parcelle_bl {
     id_bloc: string,
     nom_bloc: string,
@@ -140,16 +141,30 @@ export interface Parcelle_bl {
     status: string
 }
 export interface Parcelle_Association {
-    code: number,
+    code_parce: string,
     id_assoc: string,
-    id_parce: string,
-    annee_adheran: string,
+    nom_ass: string,
+    id_benef: string,
+    nom_benef: string,
+    ref_gps: string,
+    lat: number,
+    log: number,
+    superficie: number,
+    id_fkt: string,
+    anne_adheran: string,
     status: string
 }
 export interface bloc_Parcelle {
-    code_blparce: number,
+    code_parce: string,
     id_bloc: string,
-    id_parce: string,
+    nom_bloc: string,
+    id_benef: string,
+    nom_benef: string,
+    ref_gps: string,
+    lat: number,
+    log: number,
+    superficie: number,
+    id_fkt: string,
     anne_adheran: string,
     status: string
 }

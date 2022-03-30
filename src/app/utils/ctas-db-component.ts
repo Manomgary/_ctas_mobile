@@ -209,22 +209,34 @@ CREATE TABLE IF NOT EXISTS parcelle (
     FOREIGN KEY (id_benef) REFERENCES beneficiaire(code_benef) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS assoc_parce (
-    code INTEGER PRIMARY KEY NOT NULL, 
+    code_parce TEXT PRIMARY KEY NOT NULL, 
     id_assoc TEXT NOT NULL, 
-    id_parce TEXT NOT NULL, 
-    annee_adheran INTEGER,
+    id_benef TEXT NOT NULL, 
+    ref_gps TEXT, 
+    lat DOUBLE, 
+    log DOUBLE, 
+    superficie INTEGER, 
+    id_fkt TEXT NOT NULL, 
+    anne_adheran INTEGER, 
     status TEXT NOT NULL,
     FOREIGN KEY (id_assoc) REFERENCES association(code_ass) ON DELETE SET DEFAULT,
-    FOREIGN KEY (id_parce) REFERENCES parcelle(code_parce) ON DELETE SET DEFAULT
+    FOREIGN KEY (id_fkt) REFERENCES zone_fonkotany(code_fkt) ON DELETE SET DEFAULT,
+    FOREIGN KEY (id_benef) REFERENCES beneficiaire(code_benef) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS bloc_parce (
-    code_blparce INTEGER PRIMARY KEY NOT NULL, 
+    code_parce TEXT PRIMARY KEY NOT NULL, 
     id_bloc TEXT NOT NULL, 
-    id_parce TEXT NOT NULL, 
-    anne_adheran INTEGER,
+    id_benef TEXT NOT NULL, 
+    ref_gps TEXT, 
+    lat DOUBLE, 
+    log DOUBLE, 
+    superficie INTEGER, 
+    id_fkt TEXT NOT NULL, 
+    anne_adheran INTEGER, 
     status TEXT NOT NULL,
     FOREIGN KEY (id_bloc) REFERENCES bloc(code_bloc) ON DELETE SET DEFAULT,
-    FOREIGN KEY (id_parce) REFERENCES parcelle(code_parce) ON DELETE SET DEFAULT
+    FOREIGN KEY (id_fkt) REFERENCES zone_fonkotany(code_fkt) ON DELETE SET DEFAULT,
+    FOREIGN KEY (id_benef) REFERENCES beneficiaire(code_benef) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS saison (
     code_saison INTEGER PRIMARY KEY NOT NULL, 

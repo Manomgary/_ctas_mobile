@@ -24,16 +24,16 @@ export class BeneficiaireBlocPage implements OnInit {
   // Displayed Column
   displayedColumns: string[] = ['code_bloc', 'nom_bloc', 'nom_com', 'nb_fkt_concerner'];
   displayedColumnsZone: string[] = ['code_bloc', 'nom_bloc', 'commune', 'fkt', 'km_responsable'];
-  displayedColumnsBenef: string[] = ['nom_bloc', 'code_benef_bl', 'nom', 'sexe', 'surnom', 'cin', 'nom_com', 'nom_fkt', 'nb_parcelle'];
+  displayedColumnsBenef: string[] = ['nom_bloc', 'code_benef_bl', 'nom', 'sexe', 'surnom', 'cin', 'nom_com', 'nom_fkt', 'nb_parcelle', 'sum_superficie'];
   displayedColumnsParcelle: string[] = ['id_parce', 'nom_bloc', 'code_benef_bl', 'nom', 'km_responsable', 'fokontany', 'lat', 'log', 'superficie', 'nb_culture'];
-  displayedColumnsParceBenef: string[] = ['nom_bloc', 'code_benef', 'nom_benef', 'code_parce', 'lat', 'log', 'superficie', 'nb_culture'];
+  displayedColumnsParceBenef: string[] = ['nom_bloc', 'code_benef', 'nom_benef', 'code_parce', 'ref_gps', 'lat', 'log', 'superficie', 'nb_culture'];
 
   // Data Source
   dataSource = new MatTableDataSource<Loc_Bloc>();
   dataSourceZone = new MatTableDataSource<Local_bloc_zone>();
   dataSourceBenef = new MatTableDataSource<Local_benef_activ_bl>();
   dataSourceParcelle = new MatTableDataSource<Local_bloc_parce>();
-  dataSourceParceBenef = new MatTableDataSource<any>();
+  dataSourceParceBenef = new MatTableDataSource<Local_bloc_parce>();
   filterDataBloc: any[] = [];
 
   region: any;
@@ -150,6 +150,9 @@ export class BeneficiaireBlocPage implements OnInit {
             console.log(res_bloc);
             if (res_bloc.values.length > 0) {
               res_bloc.values.forEach(elem_bloc => {
+                let code_bloc = {
+                  code_bloc: elem_bloc.code_bloc
+                }
                 this.data_bloc.push(elem_bloc);
                 this.filterDataBloc.push(elem_bloc.nom_bloc);
                 this.loadData.loadBenefBloc(elem_bloc.code_bloc).then(res_benef => {
@@ -158,7 +161,7 @@ export class BeneficiaireBlocPage implements OnInit {
                     this.data_benef.push(elem_benef);
                   });
                 });
-                this.loadData.loadBlocParce(elem_bloc.code_bloc).then(parce_bloc => {
+                this.loadData.loadBlocParce(code_bloc).then(parce_bloc => {
                   console.log(parce_bloc);
                   if (parce_bloc.values.length > 0) {
                     parce_bloc.values.forEach(elem_blparc => {
@@ -234,8 +237,22 @@ export class BeneficiaireBlocPage implements OnInit {
   }
 
   onRowBenefClicked(data: any) {
-    this.isClickedBenef = true;
     console.log(data);
+    let data_bloc_parce_benef: Local_bloc_parce[] = [];
+    let code_benef = {
+      code_benef_bl: data.code_benef_bl
+    }
+    this.isClickedBenef = true;
+    this.loadData.loadBlocParce(code_benef).then(parce_benef => {
+      console.log(parce_benef);
+      if (parce_benef.values.length > 0) {
+        parce_benef.values.forEach(elem_blparc => {
+          console.log(elem_blparc);
+          data_bloc_parce_benef.push(elem_blparc);
+        });
+        this.dataSourceParceBenef.data = data_bloc_parce_benef;
+      } else this.dataSourceParceBenef.data = data_bloc_parce_benef;
+    });
   }
 
   selectMatTab(index: number) {

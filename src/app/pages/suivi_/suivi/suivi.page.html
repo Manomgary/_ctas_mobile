@@ -88,15 +88,17 @@
               <!-- Row modifier-->
               <div class="child-row-modifier" fxLayoutAlign="center center" fxLayout="row" fxLayoutGap="4px">
                 <div class="child-row-modifier1" *ngIf="!isUpdated">
-                  <button mat-raised-button (click)="onUpdate()" class="demo-button">
-                    Modification
-                  </button>
                   <button mat-raised-button (click)="createExcel()" class="demo-button">
                     Exporter xcel
                   </button>
                 </div>
+                <div class="child-row-modifier1" *ngIf="!isUpdated">
+                  <button mat-raised-button (click)="onUpdate()" class="demo-button">
+                    Modification
+                  </button>
+                </div>
                 <div class="child-row-modifier1" *ngIf="isUpdated" style="padding-right: 10px;">
-                  <button mat-raised-button (click)="onCancelSauvegarde()()" class="demo-button">
+                  <button mat-raised-button (click)="onCancelSauvegarde()" class="demo-button">
                     Annuler
                   </button>
                 </div>
@@ -136,7 +138,7 @@
                   <ng-container matColumnDef="new_saison">
                     <th mat-header-cell *matHeaderCellDef>
                       <span>
-                        new
+                        {{ new_culte.saison }}
                       </span>
                     </th>
                   </ng-container>
@@ -148,7 +150,7 @@
                   </ng-container>
                   <!-- New Association Column -->
                   <ng-container matColumnDef="new_association">
-                    <th mat-header-cell *matHeaderCellDef> new </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.association }} </th>
                   </ng-container>                  
         
                   <!-- code Pms Column -->
@@ -158,7 +160,7 @@
                   </ng-container>
                   <!-- New code Pms Column -->
                   <ng-container matColumnDef="new_code_pms">
-                    <th mat-header-cell *matHeaderCellDef> new </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.pms }} </th>
                   </ng-container>                  
         
                   <!-- nom_pms Column -->
@@ -168,7 +170,7 @@
                   </ng-container>
                   <!-- new nom_pms Column -->
                   <ng-container matColumnDef="new_nom_pms">
-                    <th mat-header-cell *matHeaderCellDef> new </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.pms }} </th>
                   </ng-container>                  
         
                   <!-- code_parce Column -->
@@ -185,7 +187,7 @@
                   </ng-container>
                   <!-- New code_parce Column -->
                   <ng-container matColumnDef="new_code_parce">
-                    <th mat-header-cell *matHeaderCellDef> new </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.parcelle }} </th>
                   </ng-container>                  
         
                   <!-- variette Column -->
@@ -195,7 +197,7 @@
                   </ng-container>
                   <!-- variette Column -->
                   <ng-container matColumnDef="new_variette">
-                    <th mat-header-cell *matHeaderCellDef> new </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.variette }} </th>
                   </ng-container>                  
         
                   <!-- qsa Column -->
@@ -255,7 +257,7 @@
                   </ng-container>
                   <!-- New sc Responsable Column -->
                   <ng-container matColumnDef="new_sc">
-                    <th mat-header-cell *matHeaderCellDef> new </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.sc }} </th>
                   </ng-container>   
 
                   <!-- ea Responsable Column -->
@@ -265,7 +267,7 @@
                   </ng-container>
                   <!-- New ea Responsable Column -->
                   <ng-container matColumnDef="new_ea">
-                    <th mat-header-cell *matHeaderCellDef> new </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.ea }} </th>
                   </ng-container>
 
                   <!-- New action Responsable Column -->

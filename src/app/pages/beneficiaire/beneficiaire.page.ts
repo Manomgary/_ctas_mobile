@@ -85,7 +85,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
       console.log(routeState);
       console.log(data);
       console.log(projet);
-      console.log(this.user)
+      console.log(this.user);
       this.region = data.data.region;
       this.district = data.data.district;
       this.commune = data.data.commune;
@@ -105,7 +105,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
         this.isRouterActive.next(false);
       }
     });
-    this.loadData.loadASSParce().then(res => {
+    /**this.loadData.loadASSParce().then(res => {
       console.log(res);
     });
     this.loadData.loadParce().then(res => {
@@ -115,7 +115,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
     this.loadData.loadAllAssociation().then(res => {
       console.log("Select All Association");
       console.log(res);
-    });
+    });*/
   }
 
   ngOnInit() {
@@ -250,6 +250,9 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
               console.log("response assocciation");
               console.log(res_assoc);
               res_assoc.values.forEach(elem => {
+                const data_pms = {
+                  code_ass: elem.code_ass
+                }
                 this.association.push({
                   id_prjt: elem.id_prjt,
                   code_proj: elem.code_proj, 
@@ -278,7 +281,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
                     this.data_pms.push(elem_pms);
                   });
                 });
-                this.loadData.loadParcelle(elem.code_ass).then(res_parce => {
+                this.loadData.loadParcelle(data_pms).then(res_parce => {
                   console.log(res_parce);
                   res_parce.values.forEach(elem_parce => {
                     this.parcelle_pms.push(elem_parce);
@@ -316,8 +319,10 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
     console.log(row);
     this.isClickedBenef = true;
     console.log(this.isClickedBenef);
-    
-    this.loadData.loadParcelleSingle(row.code_benef_pms).then(res_val => {
+    const data = {
+      code_benef_pms: row.code_benef_pms
+    }   
+    this.loadData.loadParcelle(data).then(res_val => {
       console.log(res_val.values);
       if (res_val.values.length != 0) {
         res_val.values.forEach(elem_val => {

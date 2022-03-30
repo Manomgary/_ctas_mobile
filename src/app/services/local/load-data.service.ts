@@ -374,49 +374,22 @@ export class LoadDataService {
     return await this.db.query(req);
   }
 
-  async loadParcelle(code_ass: string) {
-    const stat = `SELECT fkt.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom As nom_ass, BPMS.code_benef_pms, B.nom, B.prenom, PARC.code_parce, PARC.id_benef, PARC.ref_gps, PARC.lat, PARC.log, PARC.superficie, PARC.id_fkt, PARC.status 
-                  FROM parcelle PARC 
-                  INNER JOIN beneficiaire B ON B.code_benef = PARC.id_benef 
-                  INNER JOIN benef_activ_pms BPMS ON BPMS.id_benef = B.code_benef 
-                  INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association 
+  async loadParcelle(data: any) {
+    let stat = `SELECT fkt.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom As nom_ass, BPMS.code_benef_pms, B.nom, B.prenom, ASS_PRC.code_parce, ASS_PRC.id_benef, ASS_PRC.ref_gps, ASS_PRC.lat, ASS_PRC.log, ASS_PRC.superficie, ASS_PRC.id_fkt, ASS_PRC.status 
+                  FROM assoc_parce ASS_PRC 
+                  INNER JOIN beneficiaire B ON B.code_benef = ASS_PRC.id_benef 
+                  INNER JOIN association ASS ON ASS.code_ass = ASS_PRC.id_assoc
                   INNER JOIN zone_fonkotany fkt ON fkt.code_fkt = ASS.id_fkt
-                  INNER JOIN assoc_parce ASS_PRC ON (ASS_PRC.id_parce = PARC.code_parce AND ASS_PRC.id_assoc = ASS.code_ass)
-                  WHERE ASS_PRC.status = "active" AND PARC.status = "active" AND ASS_PRC.id_assoc = "${code_ass}"`;
+                  INNER JOIN benef_activ_pms BPMS ON (BPMS.id_benef = ASS_PRC.id_benef AND BPMS.id_association = ASS_PRC.id_assoc)`;
+    if (!(Object.keys(data).length === 0)) {
+      if (data.code_ass != undefined) {
+        stat += ` WHERE ASS_PRC.status = "active" AND B.statut = "active" AND BPMS.status = "active" AND ASS_PRC.id_assoc = "${data.code_ass}"`;
+      } else if (data.code_benef_pms != undefined) {
+        stat += ` WHERE ASS_PRC.status = "active" AND B.statut = "active" AND BPMS.status = "active" AND BPMS.code_benef_pms = "${data.code_benef_pms}"`;
+      }
+    }
     return await this.db.query(stat);
   }
-  async loadParcelleSingle(code_benef_pms: string) {
-    const stat = `SELECT BPMS.id_association, ASS.nom As nom_ass, BPMS.code_benef_pms, B.nom, B.prenom, PARC.code_parce, PARC.id_benef, PARC.ref_gps, PARC.lat, PARC.log, PARC.superficie, PARC.id_fkt, PARC.status 
-    FROM parcelle PARC 
-    INNER JOIN beneficiaire B ON B.code_benef = PARC.id_benef 
-    INNER JOIN benef_activ_pms BPMS ON BPMS.id_benef = B.code_benef 
-    INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association 
-    INNER JOIN assoc_parce ASS_PRC ON (ASS_PRC.id_parce = PARC.code_parce AND ASS_PRC.id_assoc = ASS.code_ass)
-    WHERE BPMS.code_benef_pms = '${code_benef_pms}' AND ASS_PRC.status = "active" AND PARC.status = "active"`;
-    return await this.db.query(stat);
-  }
-
-  /**
-   * 
-   * 
-   * SELECT B.code_bloc, B.nom, B.id_prjt, B.id_tech, B.status, COUNT(BLZ.id_fkt) AS nb_fkt
-FROM bloc B
-INNER JOIN bloc_zone BLZ ON BLZ.id_bloc = B.code_bloc
-WHERE B.status = "active"
-GROUP BY B.code_bloc
-    UNION
-SELECT B.code_bloc, B.nom, B.id_prjt, B.id_tech, B.status, 0
-FROM bloc B
-WHERE B.status = "active" AND B.code_bloc NOT IN(
-    SELECT B.code_bloc
-    FROM bloc B
-    INNER JOIN bloc_zone BLZ ON BLZ.id_bloc = B.code_bloc
-    WHERE B.status = "active"
-    GROUP BY B.code_bloc
-)
-   * 
-   * 
-   */
 
   async loadBlocEquipeZone(data: any) {
     const statement = `SELECT B.code_bloc, B.nom AS nom_bloc, B.id_prjt, B.id_tech, B.status, BLZ.id_fkt, FKT.nom_fkt, C.code_com, C.nom_com, COUNT(BLZ.id_fkt) as nb_fkt
@@ -430,39 +403,36 @@ WHERE B.status = "active" AND B.code_bloc NOT IN(
   }
 
   async loadBenefBloc(code_bloc: any) {
-    const req = `SELECT BABL.code_benef_bl, B.nom, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, 
-    COM.nom_com, B.id_fkt, FKT.nom_fkt, B.statut AS statut_benef, BABL.id_proj, BABL.id_activ, BABL.id_benef, BABL.id_bloc, BL.nom AS nom_bloc, BABL.id_collaborateur, CL.nom AS nom_collab, BABL.status, COUNT(BPARC.id_parce) AS nb_parce
-    FROM benef_activ_bl BABL
-    INNER JOIN beneficiaire B ON B.code_benef = BABL.id_benef 
-    INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
-    INNER JOIN zone_commune COM ON COM.code_com = FKT.id_com
-    INNER JOIN bloc BL ON BL.code_bloc = BABL.id_bloc
-    INNER JOIN collaborateur CL ON CL.code_col = BABL.id_collaborateur
-    INNER JOIN parcelle PARC ON PARC.id_benef = BABL.id_benef
-    INNER JOIN bloc_parce BPARC ON BPARC.id_parce = PARC.code_parce
-    WHERE B.statut = "active" AND BABL.status = "active"  AND BABL.id_bloc = "${code_bloc}"
-    GROUP BY BABL.code_benef_bl 
-      UNION
-    SELECT BABL.code_benef_bl, B.nom, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, 
-    COM.nom_com, B.id_fkt, FKT.nom_fkt, B.statut AS statut_benef, BABL.id_proj, BABL.id_activ, BABL.id_benef, BABL.id_bloc, BL.nom AS nom_bloc, BABL.id_collaborateur, CL.nom AS nom_collab, BABL.status, 0
-    FROM benef_activ_bl BABL
-    INNER JOIN beneficiaire B ON B.code_benef = BABL.id_benef 
-    INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
-    INNER JOIN zone_commune COM ON COM.code_com = FKT.id_com
-    INNER JOIN bloc BL ON BL.code_bloc = BABL.id_bloc
-    INNER JOIN collaborateur CL ON CL.code_col = BABL.id_collaborateur
-    WHERE B.statut = "active" AND BABL.status = "active"  AND BABL.id_bloc = "${code_bloc}" AND BABL.code_benef_bl NOT IN (
-      SELECT BABL.code_benef_bl
-        FROM benef_activ_bl BABL
-        INNER JOIN beneficiaire B ON B.code_benef = BABL.id_benef 
-        INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
-        INNER JOIN bloc BL ON BL.code_bloc = BABL.id_bloc
-        INNER JOIN collaborateur CL ON CL.code_col = BABL.id_collaborateur
-        INNER JOIN parcelle PARC ON PARC.id_benef = BABL.id_benef
-        INNER JOIN bloc_parce BPARC ON BPARC.id_parce = PARC.code_parce
-        WHERE B.statut = "active" AND BABL.status = "active"  AND BABL.id_bloc = "${code_bloc}" 
-        GROUP BY BABL.code_benef_bl
-    )`;
+    const req = `SELECT BABL.code_benef_bl, B.nom, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, COM.nom_com, B.id_fkt, FKT.nom_fkt, B.statut AS statut_benef, BABL.id_proj, BABL.id_activ, BABL.id_benef, BABL.id_bloc, BL.nom AS nom_bloc, BABL.id_collaborateur, CL.nom AS nom_collab, BABL.status, COUNT(BPARC.code_parce) AS nb_parce, SUM(BPARC.superficie) AS sum_superficie
+                FROM benef_activ_bl BABL
+                INNER JOIN beneficiaire B ON B.code_benef = BABL.id_benef 
+                INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
+                INNER JOIN zone_commune COM ON COM.code_com = FKT.id_com
+                INNER JOIN bloc BL ON BL.code_bloc = BABL.id_bloc
+                INNER JOIN collaborateur CL ON CL.code_col = BABL.id_collaborateur
+                INNER JOIN bloc_parce BPARC ON (BPARC.id_bloc = BABL.id_bloc AND BPARC.id_benef = BABL.id_benef)
+                WHERE B.statut = "active" AND BABL.status = "active" AND BPARC.status = "active" AND BABL.id_bloc = "${code_bloc}"
+                GROUP BY BABL.code_benef_bl
+                  UNION
+                SELECT BABL.code_benef_bl, B.nom, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, 
+                COM.nom_com, B.id_fkt, FKT.nom_fkt, B.statut AS statut_benef, BABL.id_proj, BABL.id_activ, BABL.id_benef, BABL.id_bloc, BL.nom AS nom_bloc, BABL.id_collaborateur, CL.nom AS nom_collab, BABL.status, 0, 0
+                FROM benef_activ_bl BABL
+                INNER JOIN beneficiaire B ON B.code_benef = BABL.id_benef 
+                INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
+                INNER JOIN zone_commune COM ON COM.code_com = FKT.id_com
+                INNER JOIN bloc BL ON BL.code_bloc = BABL.id_bloc
+                INNER JOIN collaborateur CL ON CL.code_col = BABL.id_collaborateur
+                WHERE B.statut = "active" AND BABL.status = "active"  AND BABL.id_bloc = "${code_bloc}" AND BABL.code_benef_bl NOT IN (
+                  SELECT BABL.code_benef_bl
+                  FROM benef_activ_bl BABL
+                  INNER JOIN beneficiaire B ON B.code_benef = BABL.id_benef 
+                  INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
+                  INNER JOIN zone_commune COM ON COM.code_com = FKT.id_com
+                  INNER JOIN bloc BL ON BL.code_bloc = BABL.id_bloc
+                  INNER JOIN collaborateur CL ON CL.code_col = BABL.id_collaborateur
+                  INNER JOIN bloc_parce BPARC ON (BPARC.id_bloc = BABL.id_bloc AND BPARC.id_benef = BABL.id_benef)
+                  WHERE B.statut = "active" AND BABL.status = "active" AND BPARC.status = "active" AND BABL.id_bloc = "${code_bloc}"
+                  GROUP BY BABL.code_benef_bl)`;
     return await this.db.query(req);
   }
 
@@ -585,50 +555,48 @@ WHERE B.status = "active" AND B.code_bloc NOT IN(
   }
 
   /***
-   * Teste teble
+   * Teste table
    */
   async loadBeneficiairePms(code_ass: any) {
         /**
          * Séléctionner béneficiaire Association + nombre de parcelle
          */
-        const statement = `SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms,	PARC.code_parce, COUNT(PARC.code_parce) AS nb_parcelle, SUM(PARC.superficie) AS sum_superf, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, FKT.nom_fkt AS adress, BPMS.id_collaborateur, C.nom as nom_collab, B.statut
-          FROM benef_activ_pms BPMS 
-            INNER JOIN projet P ON P.code_proj = BPMS.id_proj
-            INNER JOIN activite A ON A.code_act = BPMS.id_activ
-            INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef
-            INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association
-            INNER JOIN collaborateur C ON C.code_col = BPMS.id_collaborateur
-            INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
-            INNER JOIN zone_fonkotany FKT_ASS ON FKT_ASS.code_fkt = ASS.id_fkt
-            INNER JOIN parcelle PARC ON PARC.id_benef = B.code_benef
-            INNER JOIN assoc_parce PARC_ASS ON (PARC_ASS.id_parce = PARC.code_parce AND PARC_ASS.id_assoc = BPMS.id_association)
-          WHERE BPMS.status = "active" AND PARC.status = "active" AND PARC_ASS.status = "active" AND BPMS.id_association = "${code_ass}"
-          GROUP BY BPMS.code_benef_pms
-              UNION
-          SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, NULL, 0, 0, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, FKT.nom_fkt AS adress, BPMS.id_collaborateur, C.nom as nom_collab, B.statut
-                  FROM benef_activ_pms BPMS 
-                    INNER JOIN projet P ON P.code_proj = BPMS.id_proj
-                    INNER JOIN activite A ON A.code_act = BPMS.id_activ
-                    INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef
-                    INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association
-                    INNER JOIN collaborateur C ON C.code_col = BPMS.id_collaborateur
-                    INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
-                    INNER JOIN zone_fonkotany FKT_ASS ON FKT_ASS.code_fkt = ASS.id_fkt
-          WHERE BPMS.status = "active" AND BPMS.id_association =  "${code_ass}" AND BPMS.code_benef_pms NOT IN (
-                SELECT BPMS.code_benef_pms
-                  FROM benef_activ_pms BPMS 
-                    INNER JOIN projet P ON P.code_proj = BPMS.id_proj
-                    INNER JOIN activite A ON A.code_act = BPMS.id_activ
-                    INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef
-                    INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association
-                    INNER JOIN collaborateur C ON C.code_col = BPMS.id_collaborateur
-                    INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
-                    INNER JOIN zone_fonkotany FKT_ASS ON FKT_ASS.code_fkt = ASS.id_fkt
-                    INNER JOIN parcelle PARC ON PARC.id_benef = B.code_benef
-                    INNER JOIN assoc_parce PARC_ASS ON (PARC_ASS.id_parce = PARC.code_parce AND PARC_ASS.id_assoc = BPMS.id_association)
-          WHERE BPMS.status = "active" AND PARC.status = "active" AND PARC_ASS.status = "active" AND BPMS.id_association = "${code_ass}"
-          GROUP BY BPMS.code_benef_pms
-            );`;
+        const statement = `SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, PARC_ASS.code_parce, COUNT(PARC_ASS.code_parce) AS nb_parcelle, SUM(PARC_ASS.superficie) AS sum_superf, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, FKT.nom_fkt AS adress, BPMS.id_collaborateur, C.nom as nom_collab, B.statut
+                          FROM benef_activ_pms BPMS 
+                          INNER JOIN projet P ON P.code_proj = BPMS.id_proj
+                          INNER JOIN activite A ON A.code_act = BPMS.id_activ
+                          INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef
+                          INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association
+                          INNER JOIN collaborateur C ON C.code_col = BPMS.id_collaborateur
+                          INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
+                          INNER JOIN zone_fonkotany FKT_ASS ON FKT_ASS.code_fkt = ASS.id_fkt
+                          INNER JOIN assoc_parce PARC_ASS ON (PARC_ASS.id_assoc = BPMS.id_association AND PARC_ASS.id_benef = B.code_benef)
+                          WHERE BPMS.status = "active" AND PARC_ASS.status = "active" AND ASS.code_ass  = "${code_ass}"
+                          GROUP BY BPMS.code_benef_pms
+                              UNION
+                          SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, '', 0, 0, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, FKT.nom_fkt AS adress, BPMS.id_collaborateur, C.nom as nom_collab, B.statut
+                          FROM benef_activ_pms BPMS 
+                            INNER JOIN projet P ON P.code_proj = BPMS.id_proj
+                            INNER JOIN activite A ON A.code_act = BPMS.id_activ
+                            INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef
+                            INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association
+                            INNER JOIN collaborateur C ON C.code_col = BPMS.id_collaborateur
+                            INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
+                            INNER JOIN zone_fonkotany FKT_ASS ON FKT_ASS.code_fkt = ASS.id_fkt
+                          WHERE BPMS.status = "active" AND BPMS.id_association =  "${code_ass}" AND BPMS.code_benef_pms NOT IN (
+                            SELECT BPMS.code_benef_pms
+                            FROM benef_activ_pms BPMS 
+                            INNER JOIN projet P ON P.code_proj = BPMS.id_proj
+                            INNER JOIN activite A ON A.code_act = BPMS.id_activ
+                            INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef
+                            INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association
+                            INNER JOIN collaborateur C ON C.code_col = BPMS.id_collaborateur
+                            INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
+                            INNER JOIN zone_fonkotany FKT_ASS ON FKT_ASS.code_fkt = ASS.id_fkt
+                            INNER JOIN assoc_parce PARC_ASS ON (PARC_ASS.id_assoc = BPMS.id_association AND PARC_ASS.id_benef = B.code_benef)
+                            WHERE BPMS.status = "active" AND PARC_ASS.status = "active" AND ASS.code_ass  = "${code_ass}"
+                            GROUP BY BPMS.code_benef_pms
+                            );`;
 
     return await this.db.query(statement);
   }
@@ -703,15 +671,19 @@ WHERE B.status = "active" AND B.code_bloc NOT IN(
     return this.beneficiaire_bloc.asObservable();
   }
 
-  async loadBlocParce(code_bloc: any) {
-    const state = `SELECT BPARC.code_blparce, BPARC.id_bloc, BL.nom AS nom_bloc, BABL.code_benef_bl, BENF.nom, BENF.prenom, BPARC.id_parce, 
-    PARC.ref_gps, PARC.lat, PARC.log, PARC.superficie, BPARC.anne_adheran, BPARC.status
+  async loadBlocParce(data: any) {
+    let state = `SELECT BPARC.code_parce, BPARC.id_bloc, BL.nom AS nom_bloc, BABL.code_benef_bl, BENF.nom, BENF.prenom,  BPARC.ref_gps, BPARC.lat, BPARC.log, BPARC.superficie, BPARC.anne_adheran, BPARC.status
     FROM bloc_parce BPARC 
     INNER JOIN bloc BL ON BL.code_bloc = BPARC.id_bloc
-    INNER JOIN parcelle PARC ON PARC.code_parce =  BPARC.id_parce
-    INNER JOIN beneficiaire BENF ON PARC.id_benef = BENF.code_benef
-    INNER JOIN benef_activ_bl BABL ON BABL.id_benef = BENF.code_benef
-    WHERE PARC.status = "active" AND BL.code_bloc = "${code_bloc}"`;
+    INNER JOIN beneficiaire BENF ON BENF.code_benef = BPARC.id_benef
+    INNER JOIN benef_activ_bl BABL ON (BABL.id_benef = BPARC.id_benef AND BABL.id_bloc = BPARC.id_bloc)`;
+    if (!(Object.keys(data).length === 0)) {
+      if (data.code_bloc != undefined) {
+        state += ` WHERE BENF.statut = "active" AND BPARC.status = "active" AND BABL.status = "active" AND BL.code_bloc = "${data.code_bloc}"`;
+      } else if(data.code_benef_bl != undefined) {
+        state += ` WHERE BENF.statut = "active" AND BPARC.status = "active" AND BABL.status = "active" AND BABL.code_benef_bl = "${data.code_benef_bl}"`;
+      }
+    }
     return await this.db.query(state);
   }
 

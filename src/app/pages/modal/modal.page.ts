@@ -202,7 +202,18 @@ export class ModalPage implements OnInit {
 
   // Suivi Rp
   addCulture() {
+    const dataCulture = {
+      saison: this.selected_saison,
+      association: this.selected_association,
+      pms: this.selected_pms,
+      parcelle: this.selected_parcelle,
+      espece: this.selected_espece,
+      variette: this.selected_variette,
+      sc: this.selected_sc,
+      ea: this.selected_ea
+    }
     const dismissed = {
+      new_cult: dataCulture,
       dismissed: true
     }
     this.modalCtrl.dismiss(dismissed);
@@ -240,6 +251,20 @@ export class ModalPage implements OnInit {
   onCommune() {
     console.log("Selected Commune!!!");
     console.log(this.selected_commune);
+  }
+
+  // suivi PMS
+
+  onSelectPms() {
+
+  }
+
+  onSelectEspece() {
+
+  }
+
+  onSeletSc() {
+
   }
 
   /**

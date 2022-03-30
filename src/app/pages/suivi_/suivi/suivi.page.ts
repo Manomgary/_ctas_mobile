@@ -76,6 +76,7 @@ export class SuiviPage implements OnInit {
   private isEditableCulte: boolean = false;
   private indexRowEdit: number;
   private isNewCultureClicked: boolean = false;
+  private new_culte: any = {};
   /**Filtre */
   private selectedAssoc: any;
   private selectedBeneficiare: any;
@@ -222,10 +223,14 @@ export class SuiviPage implements OnInit {
       }
     });
     // dismissed
-    modal.onDidDismiss().then((data) => {
+    modal.onDidDismiss().then((data_modal) => {
       console.log("*** Modal Suivi dismissed ****");
-      console.log(data);
-      this.isNewCultureClicked = !this.isNewCultureClicked;
+      console.log(data_modal);
+      if (data_modal.data != undefined) {
+        let res = data_modal.data;
+        this.new_culte = res.new_cult;
+        this.isNewCultureClicked = !this.isNewCultureClicked;
+      }
     });
     await modal.present();
   }
