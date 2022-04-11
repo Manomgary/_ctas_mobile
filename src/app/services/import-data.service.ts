@@ -6,8 +6,8 @@ import { DB_NAME } from '../utils/global-variables';
 import { DatabaseService } from './database.service';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { ApiService } from './api.service';
-import { Activite, bloc_Parcelle, Collaborateur, Collaborateur_activ, Commune, District, Equipe, Fonkotany, Parcelle, Parcelle_Association, Parcelle_bl, 
-        Participe_proj_activ, Projet, ProjetEquipe, Region, Utilisateurs, Volet } from '../utils/interface-bd';
+import { Activite, bloc_Parcelle, Catego_espece, Collaborateur, Collaborateur_activ, Commune, District, Equipe, Espece, Fonkotany, Parcelle, Parcelle_Association, Parcelle_bl, 
+        Participe_proj_activ, Projet, ProjetEquipe, Region, Saison, Utilisateurs, Variette, Volet } from '../utils/interface-bd';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -32,6 +32,8 @@ export class ImportDataService implements OnInit, OnDestroy {
   private isComLoaded: BehaviorSubject<boolean> = new BehaviorSubject(false);
   private isFktLoaded: BehaviorSubject<boolean> = new BehaviorSubject(false);
   private isParcelleLoaded: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  //private isCategoEspeceLoaded: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  //private isEspeceLoaded: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
 
   constructor(private _sqlite: SqliteService, private dbService: DatabaseService, private api: ApiService) { 
@@ -115,6 +117,8 @@ export class ImportDataService implements OnInit, OnDestroy {
       if (isLoaded) {
         this.loadRegion();
         this.loadVolet();
+        this.loadSaison();
+        this.loadCategEspece();
       } else console.log('-----------Users not imported--------');
     });
 
@@ -265,9 +269,28 @@ export class ImportDataService implements OnInit, OnDestroy {
 
   /*****************
    * 
-   * Imported VOLET, PROJET, ACTIVITE
+   * Imported VOLET, PROJET, ACTIVITE, SAISON
    * 
    ****************/
+  loadSaison() {
+    let data_saison: Saison[] = [];
+    this.api.getSaison().subscribe((res: Saison[]) => {
+      console.log(res);
+      data_saison = res;
+      if (data_saison.length > 0) {
+        data_saison.forEach((elem_sais, i) => {
+          const insert  = `INSERT INTO saison(code_saison, intitule, description) 
+                          VALUES ("${elem_sais.code_saison}","${elem_sais.intitule}","${elem_sais.description}");`;
+          this.insertData(insert);
+          if ((data_saison.length -1) === i) {
+            console.log("==Fin du boucle Saison==");
+            this.select("saison", data_saison);
+          }
+        });
+      }
+    });
+  }
+
   loadVolet() {
     // Import Volet
     let data_volet: Volet[];
@@ -288,6 +311,68 @@ export class ImportDataService implements OnInit, OnDestroy {
     });
   }
 
+  loadCategEspece() {
+    // Import Categorie Espece
+    let data_categEspece: Catego_espece[] = [];
+    this.api.getCategEspece().subscribe((res: Catego_espece[] ) => {
+      console.log(res);
+      data_categEspece = res;
+      if (data_categEspece.length > 0) {
+        data_categEspece.forEach((elem, i) => {
+          const insert = `INSERT INTO categorie_espece(code_cat, libelle) 
+                          VALUES (${elem.code_cat},"${elem.libelle}");`;
+          this.insertData(insert);  
+          if (i === (data_categEspece.length - 1)) {
+            console.log("****Fin du boucle CategEspce****");
+            this.select("categorie_espece", data_categEspece);
+            this.loadEspece();
+          }
+        });
+      }
+    });
+  }
+
+  loadEspece() {
+    // Import Espece
+    let data_espece: Espece[] = [];
+    this.api.getEspece().subscribe((res: Espece[] ) => {
+      console.log(res);
+      data_espece = res;
+      if (data_espece.length > 0) {
+        data_espece.forEach((elem, i) => {
+          const insert = `INSERT INTO espece(code_espece, nom_espece, id_categ) 
+                          VALUES ("${elem.code_espece}","${elem.nom_espece}", ${elem.id_categ});`;
+          this.insertData(insert);  
+          if (i === (data_espece.length - 1)) {
+            console.log("****Fin du boucle Espce****");
+            this.select("espece", data_espece);
+            this.loadVariette();
+          }
+        });
+      }
+    });
+  }
+
+  loadVariette() {
+    // Import Espece
+    let data_variette: Variette[] = [];
+    this.api.getVariette().subscribe((res: Variette[] ) => {
+      console.log(res);
+      data_variette = res;
+      if (data_variette.length > 0) {
+        data_variette.forEach((elem, i) => {
+          const insert = `INSERT INTO variette(code_var, nom_var, id_espece) 
+                          VALUES ("${elem.code_var}","${elem.nom_var}", "${elem.id_espece}");`;
+          this.insertData(insert);  
+          if (i === (data_variette.length - 1)) {
+            console.log("****Fin du boucle variette****");
+            this.select("variette", data_variette);
+          }
+        });
+      }
+    });
+  }
+
   loadProjet(id_pr_equipe) {
     const id_projet = {
       id_projet: id_pr_equipe.id_projet
@@ -301,8 +386,8 @@ export class ImportDataService implements OnInit, OnDestroy {
           console.log(res);
           data_projet = res;
           data_projet.forEach((elem, i) => {
-            const insert = `INSERT INTO projet(code_proj, nom, description, logo, statuts) 
-                            VALUES ("${elem.code_proj}","${elem.nom}","${elem.description}","${elem.logo}","${elem.statuts}");`;
+            const insert = `INSERT INTO projet(numero, code_proj, nom, description, logo, statuts) 
+                            VALUES (${elem.numero}, "${elem.code_proj}","${elem.nom}","${elem.description}","${elem.logo}","${elem.statuts}");`;
             console.log(elem);
             this.insertData(insert);
 
@@ -545,8 +630,8 @@ export class ImportDataService implements OnInit, OnDestroy {
       data_association = res;
       if (data_association.length > 0) {
         data_association.forEach((elem, i) => {
-          const insert = `INSERT OR IGNORE INTO association(code_ass, nom, id_prjt, id_tech, id_fkt, status) 
-                          VALUES ("${elem.code_ass}","${elem.nom_ass}","${elem.code_proj}", ${elem.id_tech}, "${elem.code_fkt}","${elem.status}");`;
+          const insert = `INSERT OR IGNORE INTO association(numero, code_ass, nom, id_prjt, id_tech, id_fkt, status) 
+                          VALUES (${elem.numero}, "${elem.code_ass}","${elem.nom_ass}","${elem.code_proj}", ${elem.id_tech}, "${elem.code_fkt}","${elem.status}");`;
           console.log(elem);
           this.insertData(insert);
           /**

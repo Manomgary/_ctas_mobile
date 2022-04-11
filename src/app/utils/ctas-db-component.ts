@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS  projet (
     nom TEXT NOT NULL, 
     description TEXT,
     logo BLOB,  
-    statuts TEXT NOT NULL
+    statuts TEXT NOT NULL,
+    numero INTEGER NOT NULL
   );
   CREATE TABLE IF NOT EXISTS  equipe (
     code_equipe INTEGER PRIMARY KEY NOT NULL, 
@@ -121,6 +122,7 @@ CREATE TABLE IF NOT EXISTS zone_fonkotany (
 );
 
 CREATE TABLE IF NOT EXISTS association (
+    numero INTEGER NOT NULL,
     code_ass TEXT PRIMARY KEY NOT NULL, 
     nom TEXT NOT NULL, 
     id_prjt TEXT NOT NULL, 
@@ -239,7 +241,7 @@ CREATE TABLE IF NOT EXISTS bloc_parce (
     FOREIGN KEY (id_benef) REFERENCES beneficiaire(code_benef) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS saison (
-    code_saison INTEGER PRIMARY KEY NOT NULL, 
+    code_saison TEXT PRIMARY KEY NOT NULL, 
     intitule TEXT NOT NULL, 
     description TEXT NOT NULL
 );
@@ -253,10 +255,51 @@ CREATE TABLE IF NOT EXISTS espece (
     id_categ INTEGER NOT NULL,
     FOREIGN KEY (id_categ) REFERENCES categorie_espece(code_cat) ON DELETE SET DEFAULT
 );
+CREATE TABLE IF NOT EXISTS variette (
+    code_var TEXT PRIMARY KEY NOT NULL, 
+    nom_var TEXT NOT NULL, 
+    id_espece TEXT NOT NULL,
+    FOREIGN KEY (id_espece) REFERENCES espece(code_espece) ON DELETE SET DEFAULT
+);
+CREATE TABLE IF NOT EXISTS cultures_pms (
+    code_culture TEXT PRIMARY KEY NOT NULL, 
+    id_parce TEXT NOT NULL, 
+    id_var TEXT NOT NULL,
+    id_saison TEXT NOT NULL,
+    annee_du TEXT NOT NULL,
+    ddp TEXT NOT NULL,
+    dt_creation TEXT NOT NULL,
+    dt_modification TEXT NOT NULL,
+    qsa INTEGER NOT NULL,
+    img_fact Blob,
+    dds TEXT,
+    sfce INTEGER,
+    objectif INTEGER,
+    sc TEXT NOT NULL,
+    ea_id_variette TEXT,
+    ea_autres TEXT,
+    statuts TEXT NOT NULL,
+    Etat TEXT NOT NULL,
+    FOREIGN KEY(id_parce) REFERENCES assoc_parce(code_parce) ON DELETE SET DEFAULT,
+    FOREIGN KEY(id_saison) REFERENCES saison(code_saison) ON DELETE SET DEFAULT,
+    FOREIGN KEY(id_var) REFERENCES variette(code_var) ON DELETE SET DEFAULT
+);
+CREATE TABLE IF NOT EXISTS suivi_pms (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    id_culture TEXT NOT NULL, 
+    ddp TEXT NOT NULL,
+    stc TEXT NOT NULL,
+    ec TEXT NOT NULL,
+    pb TEXT,
+    ex TEXT,
+    img_cult BLOB,
+    controle TEXT,
+    FOREIGN KEY (id_culture) REFERENCES cultures_pms(code_culture) ON DELETE SET DEFAULT
+);
 PRAGMA ctas_version = 1;
 `;
 
-  export const data_projet: Array<Projet> = [
+/**export const data_projet: Array<Projet> = [
     {
         code_proj: 'P001', 
         nom: 'CTAS', 
@@ -300,7 +343,7 @@ PRAGMA ctas_version = 1;
         req: `INSERT INTO projet(code_proj, nom, description, logo, statuts) VALUES ("${elem.code_proj}","${elem.nom}","${elem.description}","${elem.logo}","${elem.statuts}");`
     });
   });
-  export const projet: Array<any> = dataInsertProjet;
+  export const projet: Array<any> = dataInsertProjet;*/
 
   // Insert fonction
   export const data_fonct: Array<Fonction> = [

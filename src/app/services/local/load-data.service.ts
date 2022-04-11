@@ -99,11 +99,14 @@ export class LoadDataService {
     }
   }
 
+  /************************************
+   * Service active, called by home.ts
+   ************************************/
   loadAllProjet(data: any): Observable<any[]> {
     this.dbService.dbReady.subscribe(async isReady => {
       if (isReady) {
         let projet: any[] = [];
-        let statement = `SELECT code_proj, nom, description, logo, statuts FROM projet;`;
+        let statement = `SELECT numero, code_proj, nom, description, logo, statuts FROM projet;`;
         let req = ''
 
         if (!(Object.keys(data).length === 0)) {
@@ -118,6 +121,7 @@ export class LoadDataService {
           if (res.values.length) {
             res.values.forEach(elem => {
               projet.push({
+                numero: elem.numero,
                 code_proj: elem.code_proj, 
                 nom: elem.nom, 
                 description: elem.description,
@@ -166,7 +170,6 @@ export class LoadDataService {
         }); 
       }
     });
-
     return this.active_projet.asObservable();
   }
 
@@ -317,7 +320,7 @@ export class LoadDataService {
     /**
      * Selectionner des associations il ya des beneficiaires et de Présidents Association(PA = Col06)
      */
-    let statement1 = `SELECT ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, COUNT(BAPMS.code_benef_pms) as nb_benef, B.nom as nom_pa, B.prenom, B.sexe, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_benef 
+    let statement1 = `SELECT ASS.numero, ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, COUNT(BAPMS.code_benef_pms) as nb_benef, B.nom as nom_pa, B.prenom, B.sexe, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_benef 
                       FROM association ASS 
                       INNER JOIN projet P ON P.code_proj = ASS.id_prjt 
                       INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt 
@@ -328,7 +331,7 @@ export class LoadDataService {
         /**
      * Selectionner des associations il ya des beneficiaires mais il n' y a pas des Présidents Association
      */
-    let statement2 = `SELECT ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, COUNT(BAPMS.code_benef_pms) as nb_benef, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    let statement2 = `SELECT ASS.numero, ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, COUNT(BAPMS.code_benef_pms) as nb_benef, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
                       FROM association ASS 
                       INNER JOIN projet P ON P.code_proj = ASS.id_prjt 
                       INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt 
@@ -337,7 +340,7 @@ export class LoadDataService {
     /**
      * Selectionner des associations il n'y a aucun beneficiaires
      */
-    let statement3 = `SELECT ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    let statement3 = `SELECT ASS.numero, ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
                       FROM association ASS 
                       INNER JOIN projet P ON P.code_proj = ASS.id_prjt 
                       INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt 
@@ -463,6 +466,30 @@ export class LoadDataService {
     return await this.db.query(state);
   }
 
+  async loadSaison() {
+    const statement = `SELECT code_saison, intitule, description FROM saison`;
+    return await this.db.query(statement);
+  }
+
+  async loadCategEspece() {
+    const statement = `SELECT code_cat, libelle FROM categorie_espece`;
+    return await this.db.query(statement);
+  }
+
+  async loadEspece() {
+    const statement = `SELECT E.code_espece, E.nom_espece, E.id_categ, CE.libelle 
+                      FROM espece E
+                      INNER JOIN categorie_espece CE ON CE.code_cat = E.id_categ`;
+    return await this.db.query(statement);
+  }
+
+  async loadVariette() {
+    const statement = `SELECT V.code_var, V.nom_var, V.id_espece, E.nom_espece
+                      FROM variette V
+                      INNER JOIN espece E ON E.code_espece = V.id_espece`;
+    return await this.db.query(statement);
+  }
+
   loadEquipe(): Observable<any[]> {
     this.dbService.dbReady.subscribe(async isReady => {
       if (isReady) {
@@ -554,9 +581,9 @@ export class LoadDataService {
     return this.collabActive.asObservable();
   }
 
-  /***
-   * Teste table
-   */
+  /*****************************
+   * Load Beneficiare Pms Par association
+   ******************************/
   async loadBeneficiairePms(code_ass: any) {
         /**
          * Séléctionner béneficiaire Association + nombre de parcelle
@@ -601,20 +628,41 @@ export class LoadDataService {
     return await this.db.query(statement);
   }
 
-  async loadParce() {
-        const statement = `SELECT * FROM parcelle;`;
-  
-        return await this.db.query(statement);
+  /****************************************
+ * Load Culture ENCOURS beneficiare PMS
+ ***************************************/
+  async loadCulturesPms(data: any) {
+    let state = `SELECT CLT.code_culture, CLT.id_parce, AS_PRC.superficie, BPMS.code_benef_pms, B.nom, B.prenom, CLT.id_var, VAR.nom_var, CLT.id_saison, S.intitule as saison, ASS.code_ass, ASS.nom AS association, CLT.annee_du, CLT.ddp, CLT.qsa, CLT.img_fact, CLT.dds, CLT.sfce, CLT.objectif, CLT.sc, CLT.ea_id_variette, CLT.ea_autres, CASE 
+                  WHEN CLT.ea_id_variette != "null" THEN (SELECT V.nom_var FROM variette V WHERE V.code_var = CLT.ea_id_variette)
+                  WHEN CLT.ea_autres != "null" THEN CLT.ea_autres
+                  ELSE ''
+                  END AS ea, CLT.dt_creation, CLT.dt_modification, CLT.statuts, CLT.Etat 
+                  FROM cultures_pms CLT
+                  INNER JOIN saison S ON S.code_saison = CLT.id_saison
+                  INNER JOIN assoc_parce AS_PRC ON AS_PRC.code_parce = CLT.id_parce
+                  INNER JOIN association ASS ON ASS.code_ass = AS_PRC.id_assoc
+                  INNER JOIN benef_activ_pms BPMS ON BPMS.id_benef = AS_PRC.id_benef
+                  INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef
+                  INNER JOIN variette VAR ON VAR.code_var = CLT.id_var`;
+    if (!(Object.keys(data).length === 0)) {
+      if (data.code_ass != undefined) {
+        state += ` WHERE B.statut = "active" AND BPMS.status = "active" AND AS_PRC.status = "active" AND CLT.statuts = "EC" AND ASS.code_ass = "${data.code_ass}"
+                  ORDER BY ASS.nom, CLT.code_culture`;
+      } else if (data.code_cult != undefined) {
+        state += ` WHERE B.statut = "active" AND BPMS.status = "active" AND AS_PRC.status = "active" AND CLT.statuts = "EC" AND CLT.code_culture = "${data.code_cult}"`;
+      }
+    }
+    return await this.db.query(state);
   }
-  async loadASSParce() {
-    const statement = `SELECT * FROM assoc_parce;`;
 
-    return await this.db.query(statement);
-  }
-  async loadAllAssociation() {
-    const statement = `SELECT * FROM association;`;
-    return await this.db.query(statement);
-  }
+  /**********************************************
+  * LOAD SUIVI CULTURE
+  ***********************************************/
+ async loadSuiviCulture(code_culture: string) {
+   const state = `SELECT id, id_culture, ddp, stc, ec, pb, ex, img_cult, controle FROM suivi_pms 
+                  WHERE id_culture = '${code_culture}'`;
+   return await this.db.query(state);
+}
 
   loadBeneficiaireBloc(): Observable<any[]> {
     this.dbService.dbReady.subscribe(async isReady => {

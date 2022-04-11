@@ -1,11 +1,18 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { LoadingController, ModalController, NavParams } from '@ionic/angular';
-import { Loc_Commune } from 'src/app/interfaces/interfaces-local';
+import { Benef_activ_pms, Local_Parcelle, Loc_association, Loc_Commune, Loc_culture_Pms, Loc_Espece, Loc_saison, Loc_variette } from 'src/app/interfaces/interfaces-local';
 import { ApiService } from 'src/app/services/api.service';
 import { ImportDataService } from 'src/app/services/import-data.service';
 import { Projet } from 'src/app/utils/interface-bd';
 import { LoadDataService } from '../../services/local/load-data.service';
+
+import * as _moment from 'moment';
+import { Moment } from 'moment';
+
+const moment = _moment;
+//import 'moment/locale/ja';
+//import 'moment/locale/fr';
 
 export interface Task {
   nom: string;
@@ -29,13 +36,22 @@ export class ModalPage implements OnInit {
   data_district: any[] = [];
   data_commune: Loc_Commune[] = [];
   //suivi Rp
-  data_saison: any[] = ['CS', 'GS'];
-  data_association: any[] = ['AVOTRA', 'RANOVELO AVIAVY'];
-  data_pms: any[] =  ['NJAKAMANA', 'MONJAVELO', 'MANAMBALA'];
-  data_parcelle: any[] = ['PARC01', 'PARC02'];
-  data_espece: any[] = [  'SORGO', 'MIL'];
-  data_variette: any[] = ['Rasta', 'Besomotse'];
-  data_sc: any[] = ['Culture Pure', 'Culture associé', 'Culture bande'];
+  data_saison: Loc_saison[] = [];
+  annee_du: any[] = ['2021', '2022'];
+  data_association: Loc_association[] = [];
+  data_pms: Benef_activ_pms[] =  [];
+  data_pms_filtre: Benef_activ_pms[] =  [];
+  data_parcelle: Local_Parcelle[] = [];
+  data_parcelle_Filtre: Local_Parcelle[] = [];
+  data_espece: Loc_Espece[] = [];
+  data_variette: Loc_variette[] = [];
+  data_variette_filter: Loc_variette[] = [];
+  data_variette_filter_ea: Loc_variette[] = [];
+  data_sc: any[] = [
+    {value: 'C.Pure', description: 'Culture Pure'}, 
+    {value: 'C.associé', description: 'Culture associé'}, 
+    {value: 'C.bande', description: 'Culture bande'}
+  ];
   data_ea: any[] = ['Niébé'];
 
   data_users: any[] = [];
@@ -45,14 +61,28 @@ export class ModalPage implements OnInit {
   selected_district: any;
   selected_commune: any;
   //suiviRp
-  selected_saison: any;
-  selected_association: any;
-  selected_pms: any;
+  selected_saison: Loc_saison;
+  selected_annee: any;
+  selected_association: Loc_association;
+  selected_pms: Benef_activ_pms;
   selected_parcelle: any;
-  selected_espece: any;
-  selected_variette: any;
+  selected_espece: Loc_Espece;
+  selected_espece_ea: Loc_Espece;
+  selected_variette: Loc_variette;
+  //selected_variette_ea: Loc_variette;
+  selected_variette_ea: any;
   selected_sc: any;
   selected_ea: any;
+  isCulteAssocie: boolean = false;
+  isSelectedVarEa: boolean = false;
+  isSelectedOtherCulte: boolean = false;
+  autreCultureEa: string;
+  dateSemis: Moment;
+  ddp: Moment;
+  sfce: number;
+  Objectif: number;
+  qsa: number;
+  dd_modifie: Moment;
 
   task: Task = {
     nom: 'selectionner tout',
@@ -117,13 +147,16 @@ export class ModalPage implements OnInit {
         console.log(this.data_region);
       });
     } else if (this.navParams.get('isSuiviRp')) {
+      let espece: Loc_Espece[] = [];
+      let variette: Loc_variette[] = [];
       this.isSuiviRp = this.navParams.get('isSuiviRp');
-      this.loadData.loadRegion().subscribe((res) => {
-        console.log("*** MODAL CONTROLLER REGION ****");
-        console.log(res);
-        this.data_region = res;
-        console.log(this.data_region);
-      });
+      this.data_association = this.navParams.get('association');
+      this.data_pms = this.navParams.get('pms');
+      this.data_saison = this.navParams.get('saison');
+      this.data_parcelle = this.navParams.get('parcelle');
+      espece = this.navParams.get('espece');
+      this.data_espece = espece.filter(item => {return item.id_categ === 1}); // semences en graine
+      this.data_variette = this.navParams.get('variette');
     }
   }
 
@@ -202,15 +235,35 @@ export class ModalPage implements OnInit {
 
   // Suivi Rp
   addCulture() {
+    console.log(this.dateSemis.toObject());
+    console.log(this.ddp.toObject());
+    console.log(this.dateSemis.toISOString());
+    console.log(this.dateSemis.format("DD/MM/YYYY"));
+    console.log(this.ddp.toISOString());
+    console.log(this.ddp.format("DD/MM/YYYY"));
+    console.log(this.selected_variette_ea);
     const dataCulture = {
-      saison: this.selected_saison,
-      association: this.selected_association,
-      pms: this.selected_pms,
-      parcelle: this.selected_parcelle,
-      espece: this.selected_espece,
-      variette: this.selected_variette,
-      sc: this.selected_sc,
-      ea: this.selected_ea
+      code_saison: this.selected_saison.code_saison,
+      saison: this.selected_saison.intitule,
+      saison_descr: this.selected_saison.description,
+      annee_du: this.selected_annee,
+      order_assoc: this.selected_association.numero,
+      code_ass: this.selected_association.code_ass,
+      association: this.selected_association.nom_ass,
+      code_pms: this.selected_pms.code_benef_pms,
+      pms: this.selected_pms.nom_benef,
+      parcelle: this.selected_parcelle.code_parce,
+      espece: this.selected_espece.nom_espece,
+      code_variette: this.selected_variette.code_var,
+      variette: this.selected_variette.nom_var,
+      sc: this.selected_sc.value,
+      ea_id_variette: this.selected_variette_ea != undefined && this.selected_variette_ea.code_var != null ? this.selected_variette_ea.code_var: null,
+      ea: this.culturerEa(),
+      dateSemis: this.dateSemis,
+      ddp:this.ddp,
+      sfce: this.sfce,
+      Objectif: this.Objectif,
+      qsa: this.qsa
     }
     const dismissed = {
       new_cult: dataCulture,
@@ -254,17 +307,71 @@ export class ModalPage implements OnInit {
   }
 
   // suivi PMS
+  onSelectAssoc() {
+    console.log(this.selected_association);
+    console.log(this.data_pms);
+    this.data_pms_filtre = this.data_pms.filter(elem =>{ return elem.nom_ass === this.selected_association.nom_ass});
+    console.log(this.data_pms.filter(elem =>{ return elem.nom_ass === this.selected_association.nom_ass}));
+    console.log(this.data_pms_filtre);
+  }
 
   onSelectPms() {
-
+    console.log(this.selected_parcelle);
+    console.log(this.data_parcelle);
+    this.data_parcelle_Filtre = this.data_parcelle.filter(elem => {return elem.code_benef_pms  === this.selected_pms.code_benef_pms});
+    console.log(this.data_parcelle_Filtre);
   }
 
   onSelectEspece() {
-
+    console.log(this.selected_espece);
+    console.log(this.data_variette);
+    this.data_variette_filter = this.data_variette.filter(elem => {return elem.id_espece === this.selected_espece.code_espece});
   }
 
   onSeletSc() {
+    if (this.selected_sc.value === "C.associé") {
+      if (this.selected_variette_ea != undefined && this.selected_variette_ea.code_var != null) {
+        this.selected_variette_ea = Object.keys(this.selected_variette_ea).reduce((accumulator, key) => {
+          return {...accumulator, [key]: null};
+        }, {});
+      }
+      this.autreCultureEa = null;
+      this.isSelectedOtherCulte = false;
+      this.isCulteAssocie = true;
+    } else {
+      if (this.selected_variette_ea != undefined && this.selected_variette_ea.code_var != null) {
+        this.selected_variette_ea = Object.keys(this.selected_variette_ea).reduce((accumulator, key) => {
+          return {...accumulator, [key]: null};
+        }, {});
+      }
+      this.autreCultureEa = null;
+      this.isSelectedOtherCulte = false;
+      this.isCulteAssocie = false;
+    }
+  }
+  onSelectEspeceAutre(data: any) {
+    if (data === 'autre') {
+      this.isSelectedOtherCulte = true;
+      if (this.selected_variette_ea != undefined) {
+        this.selected_variette_ea = Object.keys(this.selected_variette_ea).reduce((accumulator, key) => {
+          return {...accumulator, [key]: null};
+        }, {}); // set null value selected_variette_ea
+      }
+    } else if (data === 'espece') {
+      this.autreCultureEa = null;
+      this.isSelectedOtherCulte = false;
+      this.data_variette_filter_ea = this.data_variette.filter(elem => {return elem.id_espece === this.selected_espece_ea.code_espece});
+    }
+  }
 
+  culturerEa() {
+    if (this.selected_variette_ea != undefined && this.selected_variette_ea.code_var != null) {
+      return this.selected_variette_ea.nom_var;
+    } 
+    if (this.autreCultureEa != null) {
+      return this.autreCultureEa;
+    } 
+    return null;
   }
 
   /**

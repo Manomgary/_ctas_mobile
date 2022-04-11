@@ -38,6 +38,12 @@ import { ModalPage } from './pages/modal/modal.page';
 import { ApiService } from './services/api.service';
 import { ImportDataService } from './services/import-data.service';
 import { LoadDataService } from './services/local/load-data.service';
+import { CrudDbService } from './services/local/crud-db.service';
+
+/** Parsing Date formats */
+import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, } from '@angular/material-moment-adapter';
+import {DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE} from '@angular/material/core';
+import { MY_DATE_FORMATS } from 'src/app/utils/my-date-formats';
 
 
 
@@ -74,8 +80,16 @@ import { LoadDataService } from './services/local/load-data.service';
     ImportDataService,
     ApiService,
     LoadDataService,
+    CrudDbService,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    File
+    File,
+    {provide: MAT_DATE_LOCALE, useValue: 'fr-FR'},
+    {
+      provide: DateAdapter,
+      useClass: MomentDateAdapter,
+      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
+    },
+    {provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS},
   ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

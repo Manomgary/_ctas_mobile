@@ -1,4 +1,5 @@
-export interface Association {
+export interface Loc_association {
+    numero: number,
     id_prjt: string,
     code_proj: string, 
     nom_pr: string, 
@@ -73,6 +74,18 @@ export interface Loc_Commune {
     code_com: string, 
     nom_com: string
 }
+
+export interface Loc_Fokontany {
+    id_reg: string,
+    nom_reg: string,
+    id_dist: string,
+    nom_dist: string,
+    id_com: string,
+    nom_com: string,
+    code_fkt: string,
+    nom_fkt: string
+}
+
 export interface Loc_Bloc {
     code_bloc: string,
     nom_bloc: string,
@@ -136,4 +149,54 @@ export interface Local_bloc_parce {
     superficie: number,
     anne_adheran: string,
     status: string
+}
+export interface Loc_saison {
+    code_saison: string,
+    intitule: string,
+    description: string
+}
+export interface Loc_categEspece {
+    code_cat: number,
+    libelle: string
+}
+export interface Loc_Espece {
+    code_espece: string,
+    nom_espece: string,
+    id_categ: number,
+    libelle: string
+}
+export interface Loc_variette {
+    code_var: string,
+    nom_var: string,
+    id_espece: string,
+    nom_espece: string
+}
+export interface Loc_culture_Pms {
+    code_culture: string,
+    id_parce: string,
+    superficie: number,
+    code_benef_pms: string,
+    nom: string,
+    prenom: string,
+    id_var: string,
+    nom_var: string,
+    id_saison: string,
+    saison: string,
+    code_ass: string,
+    association: string,
+    annee_du: string,
+    ddp: string,
+    qsa: number,
+    img_fact: Blob,
+    dds: string,
+    sfce: number,
+    objectif: number,
+    sc: string,
+    ea_id_variette: string,
+    ea_autres: string,
+    ea: string,
+    dt_creation: string,
+    dt_modification: string,
+    statuts: string,
+    Etat: string
 }

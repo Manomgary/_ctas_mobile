@@ -6,7 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
-import { Association, Benef_activ_pms, Local_Parcelle } from 'src/app/interfaces/interfaces-local';
+import { Loc_association, Benef_activ_pms, Local_Parcelle } from 'src/app/interfaces/interfaces-local';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
 
@@ -28,19 +28,19 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
   displayedColumnsParce: string[] = ['code_parce', 'code_pms', 'nom', 'ref_gps', 'lat', 'log', 'superficie', 'nb_cultures', 'cultures'];
   displayedColumnsParceSingle: string[] = ['code_pms', 'nom', 'code_parce', 'ref_gps', 'lat', 'log', 'superficie', 'nb_cultures', 'cultures'];
   filterDataAssoc: string[] = [];
-  filterData: Association[] = [];
+  filterData: Loc_association[] = [];
   filterDataParce: Local_Parcelle[] = [];
   data_pms: Benef_activ_pms[] = [];
   parcelle_pms: Local_Parcelle[] = [];
   nb_parce_ass_filter: number = 0;
-  association: Association[] = []; 
+  association: Loc_association[] = []; 
   expandedElement: Benef_activ_pms | null;
   isClickedBenef: boolean = false;
   selectedAssoc: string;
   selectedAssocPms: string;
   selectedAssocParce: string;
   isFiltered: boolean = false;
-  dataSource = new MatTableDataSource<Association>();
+  dataSource = new MatTableDataSource<Loc_association>();
   dataSourceBenef = new MatTableDataSource<Benef_activ_pms>();
   dataSourceParce = new MatTableDataSource<Local_Parcelle>(); 
   dataSourceParceSingle = new MatTableDataSource<Local_Parcelle>();
@@ -162,6 +162,8 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
         this.isFiltered = true;
       } else if (table === 'pms') {
         this.dataSourceBenef.filter = filterValue.trim();
+        // actualiser la paginator
+        this.benfPaginator._changePageSize(this.benfPaginator.pageSize);
       } else if (table === 'parcelle') {
         this.dataSourceParce.filter  = filterValue.trim();
 
@@ -254,6 +256,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
                   code_ass: elem.code_ass
                 }
                 this.association.push({
+                  numero: elem.numero,
                   id_prjt: elem.id_prjt,
                   code_proj: elem.code_proj, 
                   nom_pr: elem.nom_pr, 

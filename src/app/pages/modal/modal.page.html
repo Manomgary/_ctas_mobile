@@ -72,6 +72,7 @@
              <div *ngIf="isSuiviRp">
                <div class="contonair-flex">
                  <div fxLayout="column width100">
+                   <!-- Row Saison -->
                   <div class="child-column-flex1" fxLayout="row">
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline" floatLabel="auto">
@@ -79,31 +80,51 @@
                         <mat-select [(value)]="selected_saison">
                           <mat-option>none</mat-option>
                           <mat-option *ngFor="let saison of data_saison" [value]="saison">
-                            {{ saison.nom_reg }}
+                            {{ saison.description }}
                           </mat-option>
                         </mat-select>
                       </mat-form-field>	
                     </div>
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline" floatLabel="auto">
+                        <mat-label>Annee_du</mat-label>
+                        <mat-select [(value)]="selected_annee">
+                          <mat-option>none</mat-option>
+                          <mat-option *ngFor="let annee of annee_du" [value]="annee">
+                            {{ annee }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>	
+                    </div>
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="fill">
+                        <mat-label>dds</mat-label>
+                        <input matInput [matDatepicker]="ds" [(ngModel)]="dateSemis">
+                        <mat-datepicker-toggle matSuffix [for]="ds"></mat-datepicker-toggle>
+                        <mat-datepicker #ds></mat-datepicker>
+                      </mat-form-field>	
+                    </div>
+                  </div>
+                  <!--Association pms parcelle-->
+                  <div class="chold-column-flex2" fxLayout="row">
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline" floatLabel="auto">
                         <mat-label>Association</mat-label>
                         <mat-select [(value)]="selected_association">
                           <mat-option>none</mat-option>
-                          <mat-option *ngFor="let assoc of data_association" [value]="assoc">
-                            {{ assoc.nom_reg }}
+                          <mat-option (click)="onSelectAssoc()" *ngFor="let assoc of data_association" [value]="assoc">
+                            {{ assoc.nom_ass }}
                           </mat-option>
                         </mat-select>
                       </mat-form-field>	
                     </div>
-                  </div>
-                  <div class="chold-column-flex2" fxLayout="row">
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline" floatLabel="auto">
                         <mat-label>pms</mat-label>
                         <mat-select [(value)]="selected_pms">
                           <mat-option>none</mat-option>
-                          <mat-option (click)="onSelectPms()" *ngFor="let pms of data_pms" [value]="pms">
-                            {{ pms.nom_reg }}
+                          <mat-option (click)="onSelectPms()" *ngFor="let pms of data_pms_filtre" [value]="pms">
+                            {{ pms.nom_benef }}
                           </mat-option>
                         </mat-select>
                       </mat-form-field>	
@@ -113,13 +134,14 @@
                         <mat-label>parcelle</mat-label>
                         <mat-select  [(value)]="selected_parcelle">
                           <mat-option>none</mat-option>
-                          <mat-option *ngFor="let parce of data_parcelle" [value]="parce">
-                            {{ parce.nom_reg }}
+                          <mat-option *ngFor="let parce of data_parcelle_Filtre" [value]="parce">
+                            {{ parce.code_parce }}
                           </mat-option>
                         </mat-select>
                       </mat-form-field>	
                     </div>
                   </div>
+                  <!--Espece-->
                   <div class="child-column-flex3" fxLayout="row">
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline">
@@ -127,7 +149,7 @@
                         <mat-select [(value)]="selected_espece">
                           <mat-option>none</mat-option>
                           <mat-option (click)="onSelectEspece()" *ngFor="let espece of data_espece" [value]="espece">
-                            {{ espece.nom_reg }}
+                            {{ espece.nom_espece }}
                           </mat-option>
                         </mat-select>
                       </mat-form-field>	
@@ -137,13 +159,43 @@
                         <mat-label>variette</mat-label>
                         <mat-select [(value)]="selected_variette">
                           <mat-option>none</mat-option>
-                          <mat-option *ngFor="let variette of data_variette" [value]="variette">
-                            {{ variette.nom_reg }}
+                          <mat-option *ngFor="let variette of data_variette_filter" [value]="variette">
+                            {{ variette.nom_var }}
                           </mat-option>
                         </mat-select>
                       </mat-form-field>	
                     </div>
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="fill">
+                        <mat-label>ddp</mat-label>
+                        <input matInput [matDatepicker]="dp" [(ngModel)]="ddp" disabled>
+                        <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                        <mat-datepicker #dp disabled="false"></mat-datepicker>
+                      </mat-form-field>	
+                    </div>
                   </div>
+                  <!--Saisie formulaire qsa, dds, objectif,  sfce-->
+                  <div class="child-column-flex3" fxLayout="row">
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline">
+                        <mat-label>qsa</mat-label>
+                        <input matInput type="number" maxLength="5" placeholder="Merci de saisissez!" [(ngModel)]="qsa">
+                      </mat-form-field>	
+                    </div>
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline">
+                        <mat-label>sfce</mat-label>
+                        <input matInput type="number" placeholder="Merci de saisissez!" [(ngModel)]="sfce">
+                      </mat-form-field>	
+                    </div>
+                    <div class="child-row-flex">
+                      <mat-form-field appearance="outline">
+                        <mat-label>objectif</mat-label>
+                        <input matInput type="number" placeholder="Merci de saisissez!" [(ngModel)]="Objectif">
+                      </mat-form-field>	
+                    </div>
+                  </div>
+                  <!--Systeme culturale-->
                   <div class="child-column-flex4" fxLayout="row">
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline">
@@ -151,20 +203,37 @@
                         <mat-select [(value)]="selected_sc">
                           <mat-option>none</mat-option>
                           <mat-option (click)="onSeletSc()" *ngFor="let sc of data_sc" [value]="sc">
-                            {{ sc.nom_reg }}
+                            {{ sc.description }}
                           </mat-option>
                         </mat-select>
                       </mat-form-field>	
                     </div>
-                    <div class="child-row-flex">
+                    <div class="child-row-flex" *ngIf="isCulteAssocie">
                       <mat-form-field appearance="outline">
-                        <mat-label>Culture Associer</mat-label>
-                        <mat-select [(value)]="selected_ea">
-                          <mat-option>none</mat-option>
-                          <mat-option *ngFor="let ea of data_ea" [value]="ea">
-                            {{ ea.nom_reg }}
+                        <mat-label>espece associé</mat-label>
+                        <mat-select [(value)]="selected_espece_ea">
+                          <mat-option (click)="onSelectEspeceAutre('autre')">Autres</mat-option>
+                          <mat-option (click)="onSelectEspeceAutre('espece')" *ngFor="let espece of data_espece" [value]="espece">
+                            {{ espece.nom_espece }}
                           </mat-option>
                         </mat-select>
+                      </mat-form-field>
+                    </div>
+                    <div class="child-row-flex" *ngIf="isCulteAssocie && !isSelectedOtherCulte">
+                      <mat-form-field appearance="outline">
+                        <mat-label>variette associé</mat-label>
+                        <mat-select [(value)]="selected_variette_ea">
+                          <mat-option>none</mat-option>
+                          <mat-option *ngFor="let variette of data_variette_filter_ea" [value]="variette">
+                            {{ variette.nom_var }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>	
+                    </div>
+                    <div class="child-row-flex" *ngIf="isSelectedOtherCulte">
+                      <mat-form-field appearance="outline">
+                        <mat-label>autres culture</mat-label>
+                        <input matInput placeholder="Merci de saisissez!" [(ngModel)]="autreCultureEa">
                       </mat-form-field>	
                     </div>
                   </div>

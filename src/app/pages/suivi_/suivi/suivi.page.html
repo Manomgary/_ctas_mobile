@@ -38,7 +38,7 @@
 
 <ion-content>
   <!-- visualiser liste beneficiaire -->
-  <mat-tab-group mat-align-tabs="start">
+  <mat-tab-group mat-align-tabs="start" (selectedIndexChange)="selectMatTab($event)"><!--selectedTabChange-->
     <mat-tab label="Cultures">  
       <!--Contonair flex-->
       <div class="contonaire-content-flex">
@@ -88,12 +88,12 @@
               <!-- Row modifier-->
               <div class="child-row-modifier" fxLayoutAlign="center center" fxLayout="row" fxLayoutGap="4px">
                 <div class="child-row-modifier1" *ngIf="!isUpdated">
-                  <button mat-raised-button (click)="createExcel()" class="demo-button">
+                  <button mat-raised-button (click)="createExcel()" class="demo-button" [disabled]="isSuiviClicked">
                     Exporter xcel
                   </button>
                 </div>
                 <div class="child-row-modifier1" *ngIf="!isUpdated">
-                  <button mat-raised-button (click)="onUpdate()" class="demo-button">
+                  <button mat-raised-button (click)="onUpdate()" class="demo-button" [disabled]="isSuiviClicked">
                     Modification
                   </button>
                 </div>
@@ -111,9 +111,12 @@
             </div>
           </div>
           <!--Column Bouton Ajouter-->
-          <div class="content-column-child-3" style="justify-content: flex-start;" *ngIf="isUpdated">
-            <button mat-raised-button (click)="onAdd()" class="demo-button">
+          <div class="content-column-child-3" style="justify-content: flex-start;">
+            <button mat-raised-button (click)="onAdd()" class="demo-button" *ngIf="isUpdated">
               Ajouter
+            </button>
+            <button mat-raised-button (click)="onClickSuivi()" class="demo-button" *ngIf="!isUpdated" [disabled]="isSuiviClicked">
+              Suivi
             </button>
           </div>
           <!--Column table-->
@@ -156,17 +159,17 @@
                   <!-- code Pms Column -->
                   <ng-container matColumnDef="code_pms">
                     <th mat-header-cell *matHeaderCellDef> code Pms </th>
-                    <td mat-cell *matCellDef="let row"> {{row.code_pms}} </td>
+                    <td mat-cell *matCellDef="let row"> {{row.code_benef_pms}} </td>
                   </ng-container>
                   <!-- New code Pms Column -->
                   <ng-container matColumnDef="new_code_pms">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.pms }} </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.code_pms }} </th>
                   </ng-container>                  
         
                   <!-- nom_pms Column -->
                   <ng-container matColumnDef="nom_pms">
                     <th mat-header-cell *matHeaderCellDef> nom </th>
-                    <td mat-cell *matCellDef="let row"> {{row.nom_pms}} </td>
+                    <td mat-cell *matCellDef="let row"> {{row.nom}} {{row.prenom}} </td>
                   </ng-container>
                   <!-- new nom_pms Column -->
                   <ng-container matColumnDef="new_nom_pms">
@@ -178,7 +181,7 @@
                     <th mat-header-cell *matHeaderCellDef> code_parce </th>
                     <td mat-cell *matCellDef="let row; let i = index">
                       <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.code_parce}} 
+                        {{row.id_parce}} 
                       </span> 
                       <span *ngIf="indexRowEdit == i  && isEditableCulte">
                         mdf--
@@ -193,11 +196,11 @@
                   <!-- variette Column -->
                   <ng-container matColumnDef="variette">
                     <th mat-header-cell *matHeaderCellDef> variette </th>
-                    <td mat-cell *matCellDef="let row"> {{row.variette}} </td>
+                    <td mat-cell *matCellDef="let row"> {{row.nom_var}} </td>
                   </ng-container>
-                  <!-- variette Column -->
+                  <!-- NEW variette Column -->
                   <ng-container matColumnDef="new_variette">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.variette }} </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.espece }} {{ new_culte.variette }} </th>
                   </ng-container>                  
         
                   <!-- qsa Column -->
@@ -207,17 +210,17 @@
                   </ng-container>
                   <!-- New qsa Column -->
                   <ng-container matColumnDef="new_qsa">
-                    <th mat-header-cell *matHeaderCellDef> new </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.qsa }} </th>
                   </ng-container>                  
         
                   <!-- img_fact Column -->
                   <ng-container matColumnDef="img_fact">
                     <th mat-header-cell *matHeaderCellDef> img_fact </th>
-                    <td mat-cell *matCellDef="let row"> </td>
+                    <td mat-cell *matCellDef="let row">{{row.img_fact}} </td>
                   </ng-container>
                   <!-- New img_fact Column -->
                   <ng-container matColumnDef="new_img_fact">
-                    <th mat-header-cell *matHeaderCellDef> new </th>
+                    <th mat-header-cell *matHeaderCellDef> </th>
                   </ng-container>                  
         
                   <!-- Date de semis Responsable Column -->
@@ -227,7 +230,7 @@
                   </ng-container>
                   <!-- New Date de semis Responsable Column -->
                   <ng-container matColumnDef="new_dds">
-                    <th mat-header-cell *matHeaderCellDef> new </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.dateSemis }} </th>
                   </ng-container>                  
       
                   <!-- sfce Responsable Column -->
@@ -237,7 +240,7 @@
                   </ng-container>
                   <!-- New sfce Responsable Column -->
                   <ng-container matColumnDef="new_sfce">
-                    <th mat-header-cell *matHeaderCellDef> sfce </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.sfce }} </th>
                   </ng-container>                  
       
                   <!-- objectif Responsable Column -->
@@ -247,7 +250,7 @@
                   </ng-container>
                   <!-- New objectif Responsable Column -->
                   <ng-container matColumnDef="new_objectif">
-                    <th mat-header-cell *matHeaderCellDef> new </th>
+                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.Objectif }} </th>
                   </ng-container>                  
       
                   <!-- sc Responsable Column -->
@@ -279,16 +282,19 @@
                   </ng-container>                                         
 
                   <!-- Action Column -->
-                  <ng-container *ngIf="isUpdated" matColumnDef="action">
+                  <ng-container *ngIf="isUpdated || isSuiviClicked" matColumnDef="action">
                     <th mat-header-cell *matHeaderCellDef> Action </th>
                     <td mat-cell *matCellDef="let row; let i = index" class="action-link">
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                      <span *ngIf="indexRowEdit == i  && isEditableCulte && isUpdated">
                         <a (click)="onClickEditDoneAction('culture', row)">modifier</a> |
                         <a (click)="onClickEditCancelAction('culture')">Annuler</a>
                       </span>
-                      <span *ngIf="!isEditableCulte && !isNewCultureClicked">
+                      <span *ngIf="!isEditableCulte && !isNewCultureClicked && isUpdated">
                         <a (click)="onClickModifElement(i, row)">Edit</a> |
                         <a (click)="openDialog(row)">Delete</a>
+                      </span>
+                      <span *ngIf="isSuiviClicked">
+                        <a (click)="onClickSuiviElementCulte(i, row)">Suivi</a>
                       </span>
                     </td>
                   </ng-container>
@@ -302,6 +308,233 @@
                     <td class="mat-cell" colspan="4">Aucun enregistrement"</td>
                   </tr>
                 </table>
+              </div>
+            </div>
+          </div>
+          <!--Column Information Row Culture selected-->
+          <div class="content-column-child-5" style="justify-content: flex-start;" *ngIf="isClickedElemCultToSuivi">
+            <p>Info Culture</p>
+            <p>
+              <button mat-raised-button (click)="onAddTbSuivi()" class="demo-button" [disabled] = "isNewItemsSuivi || isEditableSuivi">
+                Ajouter
+              </button>
+            </p>
+          </div>
+          <!--Column Table Suivi-->
+          <div class="content-column-child-6" *ngIf="isClickedElemCultToSuivi">
+            <div class="container-matTab mat-elevation-z8">
+              <div class="table-container">
+                <form fxFlexFill [formGroup]="suiviForm">
+                  <table mat-table [dataSource]="dataSourceSingleSuivi">
+                    
+                    <!-- ddp Column -->
+                    <ng-container matColumnDef="ddp">
+                      <th mat-header-cell *matHeaderCellDef> ddp </th>
+                      <td mat-cell *matCellDef="let row; let i = index"> 
+                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
+                          {{row.ddp}} 
+                        </span>
+                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                          <mat-form-field appearance="fill">
+                            <mat-label>ddp</mat-label>
+                            <input matInput [matDatepicker]="dp" formControlName="ddp" disabled>
+                            <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                            <mat-datepicker #dp disabled="false"></mat-datepicker>
+                          </mat-form-field>	
+                        </span>
+                      </td>
+                    </ng-container>
+                    <!-- New Saison Column -->
+                    <ng-container matColumnDef="new_ddp">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <span>
+                          <mat-form-field appearance="fill">
+                            <mat-label>ddp</mat-label>
+                            <input matInput [matDatepicker]="dp" formControlName="ddp" disabled = "true">
+                            <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                            <mat-datepicker #dp disabled="false"></mat-datepicker>
+                          </mat-form-field>	
+                        </span>
+                      </th>
+                    </ng-container>
+          
+                    <!--Stade Cultural Column -->
+                    <ng-container matColumnDef="stc">
+                      <th mat-header-cell *matHeaderCellDef> stc </th>
+                      <td mat-cell *matCellDef="let row; let i = index"> 
+                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
+                          {{row.stc}}
+                        </span> 
+                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                          <mat-form-field appearance="outline">
+                            <mat-label>stc</mat-label>
+                            <mat-select formControlName="stc">
+                              <mat-option></mat-option>
+                              <mat-option *ngFor="let var_stc of data_stc" [value]="var_stc.value">
+                                {{ var_stc.intitule }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </span>
+                      </td>
+                    </ng-container>
+                    <!-- New Stade Cultural Column -->
+                    <ng-container matColumnDef="new_stc">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <mat-form-field appearance="outline">
+                          <mat-label>stc</mat-label>
+                          <mat-select formControlName="stc">
+                            <mat-option>none</mat-option>
+                            <mat-option *ngFor="let var_stc of data_stc" [value]="var_stc.value">
+                              {{ var_stc.intitule }}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>	
+                      </th>
+                    </ng-container>                  
+                    
+                    <!-- code Etat Cultural Column -->
+                    <ng-container matColumnDef="ec">
+                      <th mat-header-cell *matHeaderCellDef> ec </th>
+                      <td mat-cell *matCellDef="let row; let i = index"> 
+                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">{{row.ec}}</span>
+                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                          <mat-form-field appearance="outline">
+                            <mat-label>ec</mat-label>
+                            <mat-select formControlName="ec" [compareWith]="compareObjectsEc">
+                              <mat-option>none</mat-option>
+                              <mat-option *ngFor="let var_ec of data_ec" [value]="var_ec">
+                                {{ var_ec.intitule }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>	
+                        </span>
+                        </td>
+                    </ng-container>
+                    <!-- New Etat Cultural Column -->
+                    <ng-container matColumnDef="new_ec">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <mat-form-field appearance="outline">
+                          <mat-label>ec</mat-label>
+                          <mat-select formControlName="ec">
+                            <mat-option>none</mat-option>
+                            <mat-option *ngFor="let var_ec of data_ec" [value]="var_ec">
+                              {{ var_ec.intitule }}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>	
+                      </th>
+                    </ng-container>                  
+                   
+                    <!-- pb Column -->
+                    <ng-container matColumnDef="pb">
+                      <th mat-header-cell *matHeaderCellDef> pb </th>
+                      <td mat-cell *matCellDef="let row; let i = index"> 
+                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">{{row.pb}}</span>
+                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                          <mat-form-field>
+                            <input matInput placeholder="Enter pb" formControlName="pb">
+                          </mat-form-field>
+                        </span>
+                      </td>
+                    </ng-container>
+                    <!-- new pb Column -->
+                    <ng-container matColumnDef="new_pb">
+                      <th mat-header-cell *matHeaderCellDef> 
+                        <mat-form-field>
+                          <input matInput placeholder="Enter pb" formControlName="pb">
+                        </mat-form-field>
+                      </th>
+                    </ng-container>                  
+          
+                    <!-- Estimation de production Column -->
+                    <ng-container matColumnDef="ex">
+                      <th mat-header-cell *matHeaderCellDef> ex </th>
+                      <td mat-cell *matCellDef="let row; let i = index">
+                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
+                          {{row.ex}} 
+                        </span> 
+                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                          <mat-form-field>
+                            <input matInput placeholder="Enter pb" formControlName="ex">
+                          </mat-form-field>
+                        </span>
+                      </td>
+                    </ng-container>
+                    <!-- New Estimation de production Column -->
+                    <ng-container matColumnDef="new_ex">
+                      <th mat-header-cell *matHeaderCellDef> 
+                        <mat-form-field>
+                          <input matInput placeholder="Enter pb" formControlName="ex">
+                        </mat-form-field>
+                      </th>
+                    </ng-container>                  
+          
+                    <!-- img_fact Column -->
+                    <ng-container matColumnDef="img_cult">
+                      <th mat-header-cell *matHeaderCellDef> img_culture </th>
+                      <td mat-cell *matCellDef="let row"> {{row.img_cult}} </td>
+                    </ng-container>
+                    <!-- NEW new_img_fact Column -->
+                    <ng-container matColumnDef="new_img_cult">
+                      <th mat-header-cell *matHeaderCellDef> new_img_fact </th>
+                    </ng-container>                  
+          
+                    <!-- controle Column -->
+                    <ng-container matColumnDef="controle">
+                      <th mat-header-cell *matHeaderCellDef> controle </th>
+                      <td mat-cell *matCellDef="let row; let i = index"> 
+                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
+                          {{row.controle}} 
+                        </span>
+                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                          <mat-form-field>
+                            <input matInput placeholder="Enter controle" formControlName="controle">
+                          </mat-form-field>
+                        </span>
+                      </td>
+                    </ng-container>
+                    <!-- New new_controle Column -->
+                    <ng-container matColumnDef="new_controle">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <mat-form-field>
+                          <input matInput placeholder="Enter controle" formControlName="controle">
+                        </mat-form-field>
+                      </th>
+                    </ng-container>                                                                                
+  
+                    <!-- New action Responsable Column -->
+                    <ng-container matColumnDef="new_action">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <a (click)="onSaveAddSuivi()">Done</a> |
+                        <a (click)="onCancelAddSuivi()">Cancel</a>
+                      </th>
+                    </ng-container>                                         
+  
+                    <!-- Action Column -->
+                    <ng-container matColumnDef="action">
+                      <th mat-header-cell *matHeaderCellDef> Action </th>
+                      <td mat-cell *matCellDef="let row; let i = index" class="action-link">
+                        <span *ngIf="!isEditableSuivi && !isNewItemsSuivi">
+                          <a (click)="onEditElemSuivi(i, row)">Editer</a>
+                        </span>
+                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                          <a (click)="onSaveEditSuivi()">Done</a> |
+                          <a (click)="onCancelEditSuivi()">cancel</a>
+                        </span>
+                      </td>
+                    </ng-container>
+        
+                    <tr mat-header-row *matHeaderRowDef="displayedColumnsSuivi; sticky: true"></tr>
+                    <tr [hidden]="!isNewItemsSuivi" mat-header-row *matHeaderRowDef="displayedNewColumnsSuivi" class="second-header-row"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumnsSuivi;"></tr>
+                
+                    <!-- Row shown when there is no matching data. -->
+                    <tr class="mat-row" *matNoDataRow>
+                      <td class="mat-cell" colspan="4">Aucun enregistrement"</td>
+                    </tr>
+                  </table>
+                </form>
               </div>
             </div>
           </div>

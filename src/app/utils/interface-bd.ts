@@ -1,4 +1,5 @@
 export interface Projet {
+    numero: number,
     code_proj: string, 
     nom: string, 
     description: string,
@@ -167,4 +168,23 @@ export interface bloc_Parcelle {
     id_fkt: string,
     anne_adheran: string,
     status: string
+}
+export interface Saison {
+    code_saison: string,
+    intitule: string,
+    description: string
+}
+export interface Catego_espece {
+    code_cat: number,
+    libelle: string
+}
+export interface Espece {
+    code_espece: string,
+    nom_espece: string,
+    id_categ: number
+}
+export interface Variette {
+    code_var: string,
+    nom_var: string,
+    id_espece: string
 }

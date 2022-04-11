@@ -140,4 +140,24 @@ export class ApiService {
     return this.http.post<any>(this.base_path + 'parcelle/findParcelleBloc', data, this.httpOptions);
   }
 
+  // load saison
+  getSaison(): Observable<any[]>  {
+    return this.http.get<any[]>(this.base_path + 'saison');
+  }
+
+  // load Categorie Espece
+  getCategEspece(): Observable<any[]> {
+    return this.http.get<any[]>(this.base_path + 'speculation/findCategEspece');
+  }
+
+  // load Espece
+  getEspece(): Observable<any[]> {
+    return this.http.get<any[]>(this.base_path + 'speculation/findEspece');
+  }
+
+  // load variette
+  getVariette(): Observable<any[]> {
+    return this.http.get<any[]>(this.base_path + 'speculation/findVariette');
+  }
+
 }
