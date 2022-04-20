@@ -160,4 +160,13 @@ export class ApiService {
     return this.http.get<any[]>(this.base_path + 'speculation/findVariette');
   }
 
+  // load Culture
+  getCulture_pms(data: any): Observable<any[]> {
+    return this.http.post<any[]>(this.base_path + 'culture/find_culturepms', data, this.httpOptions);
+  }
+
+  // load suivi pms
+  getSuiPms(data: any): Observable<any[]> {
+    return this.http.post<any[]>(this.base_path + 'culture/find_suivipms', data, this.httpOptions);
+  }
 }

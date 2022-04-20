@@ -125,4 +125,15 @@ export class HomePage implements OnInit {
       });
     } else console.log("users vide::: Home page");
   }
+  goToRoot() {
+    const navigationExtras: NavigationExtras = {
+      state : {
+        projet: JSON.stringify(this.selectedProjet),
+        users: JSON.stringify(this.users)
+      }
+    };
+    console.log("Sync Homme Page =====>");
+    console.log(navigationExtras.state)
+    this.route.navigate(['synchro/'], navigationExtras);
+  }
 }

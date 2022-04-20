@@ -6,8 +6,8 @@ import { DB_NAME } from '../utils/global-variables';
 import { DatabaseService } from './database.service';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { ApiService } from './api.service';
-import { Activite, bloc_Parcelle, Catego_espece, Collaborateur, Collaborateur_activ, Commune, District, Equipe, Espece, Fonkotany, Parcelle, Parcelle_Association, Parcelle_bl, 
-        Participe_proj_activ, Projet, ProjetEquipe, Region, Saison, Utilisateurs, Variette, Volet } from '../utils/interface-bd';
+import { Activite, bloc_Parcelle, Catego_espece, Collaborateur, Collaborateur_activ, Commune, Culture_pms, District, Equipe, Espece, Fonkotany, Parcelle, Parcelle_Association, Parcelle_bl, 
+        Participe_proj_activ, Projet, ProjetEquipe, Region, Saison, Suivi_pms, Utilisateurs, Variette, Volet } from '../utils/interface-bd';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -387,7 +387,7 @@ export class ImportDataService implements OnInit, OnDestroy {
           data_projet = res;
           data_projet.forEach((elem, i) => {
             const insert = `INSERT INTO projet(numero, code_proj, nom, description, logo, statuts) 
-                            VALUES (${elem.numero}, "${elem.code_proj}","${elem.nom}","${elem.description}","${elem.logo}","${elem.statuts}");`;
+                            VALUES (${elem.numero}, "${elem.code_proj}","${elem.nom}","${elem.description}",'${elem.logo}',"${elem.statuts}");`;
             console.log(elem);
             this.insertData(insert);
 
@@ -636,6 +636,10 @@ export class ImportDataService implements OnInit, OnDestroy {
           this.insertData(insert);
           /**
            * INSERER BENEFICIAIRE PMS
+           * SELECT code_culture, id_parce, id_var, id_saison, annee_du, ddp, qsa, img_fact, dds, sfce, objectif, sc, ea_id_variette, ea_autres, dt_creation, dt_modification, statuts, Etat 
+           * FROM cultures_pms CPMS.
+           * WHERE 1
+           * 
            */
           let data_benef_pms = {
             id_projet: data_pms.id_projet,
@@ -778,9 +782,63 @@ export class ImportDataService implements OnInit, OnDestroy {
           if (i == (data_assoc_parce.length - 1)) {
             console.log("==Fin du boucle assoc_parce==");
             this.select("assoc_parce", data_assoc_parce);
+            this.loadCultureAssoc(data);
           }
         });
       } else console.log("***Aucune assoc_parce disponible pour l'association de ::", data.code_ass);
+    });
+  }
+  // loadCulture Association
+  loadCultureAssoc(data: any) {
+    let data_culture: Culture_pms[] = [];
+    let code_culture: any[] = [];
+
+    this.api.getCulture_pms(data).subscribe((res: Culture_pms[]) => {
+      console.log("************************Import Data Service::: CULTURE PMS....");
+      console.log(res);
+      data_culture = res;
+      if (data_culture.length > 0) {
+        data_culture.forEach((elem, i) => {
+          const insert = `INSERT OR IGNORE INTO cultures_pms(code_culture, id_parce, id_var, id_saison, annee_du, ddp, qsa, img_fact, dds, sfce, objectif, sc, ea_id_variette, ea_autres, dt_creation, dt_modification, statuts, Etat)
+                          VALUES ("${elem.code_culture}", "${elem.id_parce}", "${elem.id_var}", "${elem.id_saison}", "${elem.annee_du}", "${elem.ddp}", ${elem.qsa}, "${elem.img_fact}", "${elem.dds}", ${elem.sfce}, ${elem.objectif}, "${elem.sc}", "${elem.ea_id_variette}", "${elem.ea_autres}", "${elem.dt_creation}", "${elem.dt_modification}", "${elem.statuts}", "${elem.Etat}");`;
+          this.insertData(insert);
+          code_culture.push({
+            code_culture: elem.code_culture
+          });
+          if ((data_culture.length - 1) === i) {
+            console.log("==Fin du boucle culture pms==");
+            this.select("cultures_pms", data_culture);
+            this.loadSuiviPms(code_culture);
+          }
+        });
+      }
+    });
+  }
+  loadSuiviPms(data : any[]) {
+    let data_suivi: Suivi_pms[] = [];
+    const data_clt = {
+      data_culture: data
+    }
+    this.api.getSuiPms(data_clt).subscribe((res: any[]) => {
+      console.log(res);
+      if (res.length > 0) {
+        res.forEach((item_suivi: Suivi_pms[], i) => {
+          data_suivi = item_suivi;
+          console.log("elem_suivi_pms:::::", item_suivi);
+          item_suivi.forEach(elem_suivi => {
+            const insert = `INSERT INTO suivi_pms(id, id_culture, ddp, stc, ec, pb, ex, img_cult, name, path, controle, etat)
+                            VALUES ("${elem_suivi.id}", "${elem_suivi.id_culture}", "${elem_suivi.ddp}", "${elem_suivi.stc}", "${elem_suivi.ec}", "${elem_suivi.pb}", "${elem_suivi.ex}", "${elem_suivi.img_cult}", "${elem_suivi.name}", '', "${elem_suivi.controle}", "${elem_suivi.etat}");`;
+            this.insertData(insert).then(res => {
+              console.log("res inser elem_suivi_pms:::::", res);
+              console.log(elem_suivi);
+            });
+          });
+          if ((res.length - 1) == i) {
+            console.log("==Fin du boucle suivi pms==");
+            //this.select("suivi_pms", data_suivi);
+          }
+        });
+      }
     });
   }
   async loadParcelleBenefBloc(data: any) {

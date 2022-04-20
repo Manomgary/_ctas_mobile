@@ -268,8 +268,6 @@ CREATE TABLE IF NOT EXISTS cultures_pms (
     id_saison TEXT NOT NULL,
     annee_du TEXT NOT NULL,
     ddp TEXT NOT NULL,
-    dt_creation TEXT NOT NULL,
-    dt_modification TEXT NOT NULL,
     qsa INTEGER NOT NULL,
     img_fact Blob,
     dds TEXT,
@@ -278,6 +276,8 @@ CREATE TABLE IF NOT EXISTS cultures_pms (
     sc TEXT NOT NULL,
     ea_id_variette TEXT,
     ea_autres TEXT,
+    dt_creation TEXT NOT NULL,
+    dt_modification TEXT NOT NULL,
     statuts TEXT NOT NULL,
     Etat TEXT NOT NULL,
     FOREIGN KEY(id_parce) REFERENCES assoc_parce(code_parce) ON DELETE SET DEFAULT,
@@ -285,15 +285,18 @@ CREATE TABLE IF NOT EXISTS cultures_pms (
     FOREIGN KEY(id_var) REFERENCES variette(code_var) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS suivi_pms (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    id TEXT PRIMARY KEY, 
     id_culture TEXT NOT NULL, 
     ddp TEXT NOT NULL,
     stc TEXT NOT NULL,
     ec TEXT NOT NULL,
     pb TEXT,
     ex TEXT,
-    img_cult BLOB,
+    img_cult TEXT,
+    name TEXT,
+    path TEXT,
     controle TEXT,
+    etat TEXT NOT NULL,
     FOREIGN KEY (id_culture) REFERENCES cultures_pms(code_culture) ON DELETE SET DEFAULT
 );
 PRAGMA ctas_version = 1;

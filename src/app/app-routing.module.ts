@@ -30,6 +30,10 @@ const routes: Routes = [
   {
     path: 'suivi-bloc',
     loadChildren: () => import('./pages/suivi_/suivi-bloc/suivi-bloc.module').then( m => m.SuiviBlocPageModule)
+  },
+  {
+    path: 'synchro',
+    loadChildren: () => import('./pages/synchro/synchro-routing.module').then( m => m.SynchroPageRoutingModule)
   }
 ];
 

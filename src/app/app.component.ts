@@ -5,6 +5,8 @@ import { SqliteService } from './services/sqlite.service';
 import { Router } from '@angular/router';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { Directory, Filesystem } from '@capacitor/filesystem';
+import { IMAGE_DIR } from './utils/global-variables';
 
 @Component({
   selector: 'app-root',
@@ -49,6 +51,23 @@ export class AppComponent implements OnInit {
           SplashScreen.hide();
           //this.router.navigate(['home']);
         }
+      });
+      // create folder stored image
+      Filesystem.readdir({
+        path: IMAGE_DIR,
+        directory: Directory.Data,
+      }).then(result => {
+        console.log('FOLDER EXISTE HERE: storages_image:: ', result);
+      },
+        async (err) => {
+          // Folder does not yet exists!
+          await Filesystem.mkdir({
+            path: IMAGE_DIR,
+            directory: Directory.Data,
+          });
+        }
+      ).then(_ => {
+        //loading.dismiss();
       });
     });
   }

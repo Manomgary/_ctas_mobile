@@ -5,5 +5,16 @@
 </ion-header>
 
 <ion-content>
-
+  <p>
+    mise en place identifier : {{data_culture.length}}
+    <button mat-raised-button (click)="onSyncCulture()" class="demo-button" [disabled] = "data_culture.length === 0">
+      Sync
+    </button>
+  </p>
+  <p>
+    suivi effectuer : {{data_suivi.length}}
+    <button mat-raised-button (click)="onSyncSuivi()" class="demo-button" [disabled] = "data_suivi.length === 0">
+      Sync
+    </button>
+  </p>
 </ion-content>

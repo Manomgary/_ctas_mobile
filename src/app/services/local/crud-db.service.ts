@@ -27,18 +27,32 @@ export class CrudDbService {
       return await this.db.execute(state);
     }
   }
+  async UpdatedCulture(data: Db_Culture_pms) {
+    if (this.db_ready.dbReady.value) {
+      const state = `UPDATE cultures_pms SET id_parce = "${data.id_parce}", id_var = "${data.id_var}", 
+                    id_saison = "${data.id_saison}", annee_du = "${data.annee_du}", ddp = "${data.ddp}", 
+                    dt_creation = "${data.dt_creation}", dt_modification = "${data.dt_modification}", 
+                    qsa = ${data.qsa}, img_fact = '${data.img_fact}', dds = "${data.dds}", 
+                    sfce = ${data.sfce}, objectif = ${data.objectif}, sc = "${data.sc}", 
+                    ea_id_variette = '${data.ea_id_variette}', ea_autres = "${data.ea_autres}", 
+                    statuts = "${data.statuts}", Etat = "${data.Etat}"
+                    WHERE code_culture = "${data.code_culture}";`;
+      return await this.db.execute(state);
+    }
+  }
   async AddNewSuivi(data: Db_suivi_pms) {
     if (this.db_ready.dbReady.value) {
-      const state = `INSERT INTO suivi_pms(id_culture, ddp, stc, ec, ex, img_cult, controle)
-                    VALUES ("${data.code_culture}", "${data.ddp}", "${data.stc}", "${data.ec}", "${data.ex}", "${data.img_cult}", "${data.controle}");`;
+      const state = `INSERT INTO suivi_pms(id, id_culture, ddp, stc, ec, ex, pb, img_cult, name, path, controle, etat)
+                    VALUES ("${data.id}", "${data.code_culture}", "${data.ddp}", "${data.stc}", "${data.ec}", "${data.ex}", "${data.pb}", "${data.img_cult}", "${data.name}", "${data.path}", "${data.controle}", "${data.etat}");`;
       return await this.db.execute(state);
     }
   }
   async UpdatedSuivi(data: any) {
     if (this.db_ready.dbReady.value) {
-      const state = `UPDATE suivi_pms
-                    SET ddp = "${data.ddp}", stc = "${data.stc}", ec = "${data.ec}", ex = "${data.ex}", img_cult = "${data.img_cult}", controle = "${data.controle}"
-                    WHERE id_culture = "${data.code_culture}" AND id = ${data.id};`;
+      const state = `UPDATE suivi_pms SET ddp = "${data.ddp}", stc = "${data.stc}", 
+                    ec = "${data.ec}", ex = "${data.ex}", img_cult = "${data.img_cult}", 
+                    controle = "${data.controle}", etat = "${data.etat}"
+                    WHERE id_culture = "${data.code_culture}" AND id = "${data.id}";`;
       return await this.db.execute(state);
     }
   }

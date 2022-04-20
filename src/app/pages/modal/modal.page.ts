@@ -63,8 +63,8 @@ export class ModalPage implements OnInit {
   //suiviRp
   selected_saison: Loc_saison;
   selected_annee: any;
-  selected_association: Loc_association;
-  selected_pms: Benef_activ_pms;
+  selected_association: Loc_association;//selected_association: any;
+  selected_pms: Benef_activ_pms;// selected_pms: Benef_activ_pms;
   selected_parcelle: any;
   selected_espece: Loc_Espece;
   selected_espece_ea: Loc_Espece;
@@ -95,6 +95,7 @@ export class ModalPage implements OnInit {
   Activite_Projet: any[];
   selectedActivite: string;
   isBloc: boolean = false;
+  data_suivi_edit: Loc_culture_Pms;
 
 
   constructor(
@@ -157,7 +158,104 @@ export class ModalPage implements OnInit {
       espece = this.navParams.get('espece');
       this.data_espece = espece.filter(item => {return item.id_categ === 1}); // semences en graine
       this.data_variette = this.navParams.get('variette');
+      this.data_suivi_edit = this.navParams.get('data_edit') != undefined? this.navParams.get('data_edit'): undefined;
+      if (this.data_suivi_edit != undefined) {
+        console.log("is Mode Edition ::: ", this.navParams.get('data_edit'));
+        console.log(this.data_suivi_edit);
+        let ddp_: Moment = moment(this.data_suivi_edit.ddp, 'YYYY-MM-DD');
+        let dds_: Moment = moment(this.data_suivi_edit.dds, 'YYYY-MM-DD');
+        this.data_association.filter(item => {
+          if (item.code_ass === this.data_suivi_edit.code_ass) {
+            console.log(item);
+            this.selected_association = item;
+          }
+        });
+        this.onSelectAssoc();
+        this.data_pms_filtre.filter(item => {
+          if (item.code_benef_pms === this.data_suivi_edit.code_benef_pms) {
+            console.log("item data_pms selected ", item);
+            this.selected_pms = item;
+          }
+        });
+        //this.selected_pms.code_benef_pms = this.data_suivi_edit.code_benef_pms;
+        this.onSelectPms();
+        this.data_parcelle_Filtre.filter(item => {
+          if (item.code_parce === this.data_suivi_edit.id_parce) {
+            console.log("item data_parcelle ::: ", item);
+            this.selected_parcelle = item;
+          }
+        });
+        // Spéculation
+        this.data_espece.filter(item => {
+          if (item.code_espece === this.data_suivi_edit.code_espece) {
+            this.selected_espece = item;
+          }
+        });
+        this.onSelectEspece();
+        this.data_variette_filter.filter(elem => {
+          if (elem.code_var === this.data_suivi_edit.id_var) {
+            this.selected_variette = elem;
+          }
+        });
+        this.qsa = this.data_suivi_edit.qsa;
+        this.sfce = this.data_suivi_edit.sfce;
+        this.Objectif = this.data_suivi_edit.objectif;
+        this.dateSemis = dds_;
+        this.ddp = ddp_;
+        this.data_sc.filter(item => {
+          if (item.value === this.data_suivi_edit.sc) {
+            this.selected_sc = item;
+          }
+        });
+        this.onSeletSc();
+        if (this.data_suivi_edit.ea_id_variette !== "null") {
+          this.data_espece.filter(item => {
+            if (item.code_espece === this.data_suivi_edit.ea_id_espece) {
+              this.selected_espece_ea = item;
+            }
+          });
+          this.onSelectEspeceAutre('espece');
+          this.data_variette_filter_ea.filter(item => {
+            if (item.code_var === this.data_suivi_edit.ea_id_variette) {
+              this.selected_variette_ea = item;
+            }
+          });
+        } else if (this.data_suivi_edit.ea_autres !== "null") {
+          this.onSelectEspeceAutre('autre');
+          this.autreCultureEa = this.data_suivi_edit.ea_autres;
+        }
+        this.data_saison.filter(item => {
+          if (item.code_saison === this.data_suivi_edit.id_saison) {
+            this.selected_saison = item;
+          }
+        });
+        this.annee_du.filter(item => {
+          if (item === this.data_suivi_edit.annee_du) {
+            this.selected_annee = item;
+          }
+        });
+      }
     }
+  }
+
+  // compare with mat-select object
+  compareObjectsAssoc(ec1: Loc_association, ec2: Loc_association) {
+    console.log(ec1);
+    console.log(ec2);
+    return ec1 && ec2? ec1.code_ass === ec2.code_ass : ec1 === ec2;
+  }
+  compareObjectsPms(pms1: Benef_activ_pms, pms2: Benef_activ_pms) {
+    console.log(pms1);
+    console.log(pms2);
+    return pms1 && pms2? pms1.code_benef_pms === pms2.code_benef_pms : pms1 === pms2;
+  }
+  compareObjectsParce(prc1: Benef_activ_pms, prc2: Benef_activ_pms) {
+    console.log(prc1);
+    console.log(prc2);
+    return prc1 && prc2? prc1.code_parce === prc2.code_parce : prc1 === prc2;
+  }
+  compareObjectsEspece(esp1: Loc_Espece, esp2: Loc_Espece) {
+    return esp1 && esp2? esp1.code_espece === esp2.code_espece: esp1 === esp2;
   }
 
   async loadProjet() {
@@ -310,8 +408,7 @@ export class ModalPage implements OnInit {
   onSelectAssoc() {
     console.log(this.selected_association);
     console.log(this.data_pms);
-    this.data_pms_filtre = this.data_pms.filter(elem =>{ return elem.nom_ass === this.selected_association.nom_ass});
-    console.log(this.data_pms.filter(elem =>{ return elem.nom_ass === this.selected_association.nom_ass}));
+    this.data_pms_filtre = this.data_pms.filter(elem =>{ return elem.id_association === this.selected_association.code_ass});
     console.log(this.data_pms_filtre);
   }
 

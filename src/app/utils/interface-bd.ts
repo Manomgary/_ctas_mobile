@@ -1,3 +1,6 @@
+/**
+ * Import from the server to db local
+ */
 export interface Projet {
     numero: number,
     code_proj: string, 
@@ -187,4 +190,37 @@ export interface Variette {
     code_var: string,
     nom_var: string,
     id_espece: string
+}
+export interface Culture_pms {
+    code_culture: string,
+    id_parce: string,
+    id_var: string,
+    id_saison: string,
+    annee_du: number,
+    ddp: string,
+    qsa: number,
+    img_fact: string,
+    dds: string,
+    sfce: number,
+    objectif: number,
+    sc: string,
+    ea_id_variette: string,
+    ea_autres: string,
+    dt_creation: string,
+    dt_modification: string,
+    statuts: string,
+    Etat: string
+}
+export interface Suivi_pms {
+    id: number,
+    id_culture: string,
+    ddp: string,
+    stc: string,
+    ec: string,
+    pb: string,
+    ex: string,
+    img_cult: string,
+    name: string,
+    controle: string,
+    etat: string
 }

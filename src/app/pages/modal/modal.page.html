@@ -110,7 +110,7 @@
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline" floatLabel="auto">
                         <mat-label>Association</mat-label>
-                        <mat-select [(value)]="selected_association">
+                        <mat-select [(value)]="selected_association" [compareWith]="compareObjectsAssoc">
                           <mat-option>none</mat-option>
                           <mat-option (click)="onSelectAssoc()" *ngFor="let assoc of data_association" [value]="assoc">
                             {{ assoc.nom_ass }}
@@ -121,7 +121,7 @@
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline" floatLabel="auto">
                         <mat-label>pms</mat-label>
-                        <mat-select [(value)]="selected_pms">
+                        <mat-select [(value)]="selected_pms" [compareWith]="compareObjectsPms">
                           <mat-option>none</mat-option>
                           <mat-option (click)="onSelectPms()" *ngFor="let pms of data_pms_filtre" [value]="pms">
                             {{ pms.nom_benef }}
@@ -132,7 +132,7 @@
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline" floatLabel="auto">
                         <mat-label>parcelle</mat-label>
-                        <mat-select  [(value)]="selected_parcelle">
+                        <mat-select  [(value)]="selected_parcelle" [compareWith]="compareObjectsParce">
                           <mat-option>none</mat-option>
                           <mat-option *ngFor="let parce of data_parcelle_Filtre" [value]="parce">
                             {{ parce.code_parce }}
@@ -146,7 +146,7 @@
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline">
                         <mat-label>espece</mat-label>
-                        <mat-select [(value)]="selected_espece">
+                        <mat-select [(value)]="selected_espece" [compareWith]="compareObjectsEspece">
                           <mat-option>none</mat-option>
                           <mat-option (click)="onSelectEspece()" *ngFor="let espece of data_espece" [value]="espece">
                             {{ espece.nom_espece }}

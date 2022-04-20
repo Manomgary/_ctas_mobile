@@ -36,7 +36,7 @@ export class LoadDataService {
 
   constructor(private dbService: DatabaseService) {
     this.dbService.dbReady.subscribe(async isReady => {
-      console.log("===== Contructeur laod service ====");
+      console.log("===== Contructeur laod service ====", isReady);
     });
   }
 
@@ -632,18 +632,25 @@ export class LoadDataService {
  * Load Culture ENCOURS beneficiare PMS
  ***************************************/
   async loadCulturesPms(data: any) {
-    let state = `SELECT CLT.code_culture, CLT.id_parce, AS_PRC.superficie, BPMS.code_benef_pms, B.nom, B.prenom, CLT.id_var, VAR.nom_var, CLT.id_saison, S.intitule as saison, ASS.code_ass, ASS.nom AS association, CLT.annee_du, CLT.ddp, CLT.qsa, CLT.img_fact, CLT.dds, CLT.sfce, CLT.objectif, CLT.sc, CLT.ea_id_variette, CLT.ea_autres, CASE 
-                  WHEN CLT.ea_id_variette != "null" THEN (SELECT V.nom_var FROM variette V WHERE V.code_var = CLT.ea_id_variette)
+    let state = `SELECT CLT.code_culture, CLT.id_parce, AS_PRC.superficie, BPMS.code_benef_pms, B.nom, B.prenom, ESP.code_espece, ESP.nom_espece, CLT.id_var, VAR.nom_var, CLT.id_saison, S.intitule as saison, ASS.code_ass, ASS.nom AS association, CLT.annee_du, CLT.ddp, CLT.qsa, CLT.img_fact, CLT.dds, CLT.sfce, CLT.objectif, CLT.sc, CLT.ea_id_variette, CLT.ea_autres, CASE 
+                  WHEN CLT.ea_id_variette != "null" 
+                    THEN (SELECT V.nom_var FROM variette V WHERE V.code_var = CLT.ea_id_variette)
                   WHEN CLT.ea_autres != "null" THEN CLT.ea_autres
                   ELSE ''
-                  END AS ea, CLT.dt_creation, CLT.dt_modification, CLT.statuts, CLT.Etat 
+                  END AS ea, 
+                  CASE WHEN CLT.ea_id_variette != "null" 
+                  THEN (SELECT V.id_espece FROM variette V WHERE V.code_var = CLT.ea_id_variette)
+                  ELSE '' 
+                  END AS ea_id_espece,
+                  CLT.dt_creation, CLT.dt_modification, CLT.statuts, CLT.Etat 
                   FROM cultures_pms CLT
                   INNER JOIN saison S ON S.code_saison = CLT.id_saison
                   INNER JOIN assoc_parce AS_PRC ON AS_PRC.code_parce = CLT.id_parce
                   INNER JOIN association ASS ON ASS.code_ass = AS_PRC.id_assoc
                   INNER JOIN benef_activ_pms BPMS ON BPMS.id_benef = AS_PRC.id_benef
                   INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef
-                  INNER JOIN variette VAR ON VAR.code_var = CLT.id_var`;
+                  INNER JOIN variette VAR ON VAR.code_var = CLT.id_var
+                  INNER JOIN espece ESP ON ESP.code_espece = VAR.id_espece`;
     if (!(Object.keys(data).length === 0)) {
       if (data.code_ass != undefined) {
         state += ` WHERE B.statut = "active" AND BPMS.status = "active" AND AS_PRC.status = "active" AND CLT.statuts = "EC" AND ASS.code_ass = "${data.code_ass}"
@@ -658,11 +665,29 @@ export class LoadDataService {
   /**********************************************
   * LOAD SUIVI CULTURE
   ***********************************************/
- async loadSuiviCulture(code_culture: string) {
-   const state = `SELECT id, id_culture, ddp, stc, ec, pb, ex, img_cult, controle FROM suivi_pms 
+  async loadSuiviCulture(code_culture: string) {
+   const state = `SELECT id, id_culture, ddp, stc, ec, pb, ex, img_cult, name, path, controle FROM suivi_pms 
                   WHERE id_culture = '${code_culture}'`;
    return await this.db.query(state);
-}
+  }
+  async loadAllSuiviCulture(code_ass: string) {
+    const state = `SELECT SPMS.id, SPMS.id_culture, ASS.code_ass, ASS.nom AS association, 
+    BPMS.code_benef_pms AS code_pms, BNF.nom, BNF.prenom, CPMS.id_parce, ASS_PRC.superficie AS superficie_reel, 
+    CPMS.id_var, ESP.nom_espece || " " || VAR.nom_var as VAR.nom_var, CPMS.id_saison, SS.intitule AS saison, 
+    SS.description AS desc_saison, CPMS.annee_du, CPMS.qsa, CPMS.dds, CPMS.sfce, CPMS.objectif, CPMS.sc, SPMS.ddp, 
+    SPMS.stc, SPMS.ec, SPMS.pb, SPMS.ex, SPMS.img_cult, SPMS.name, SPMS.controle 
+    FROM suivi_pms  SPMS
+    INNER JOIN cultures_pms CPMS ON CPMS.code_culture = SPMS.id_culture
+    INNER JOIN saison SS ON SS.code_saison = CPMS.id_saison
+    INNER JOIN variette VAR ON VAR.code_var = CPMS.id_var
+    INNER JOIN espece ESP ON ESP.code_espece = VAR.id_espece
+    INNER JOIN assoc_parce ASS_PRC ON ASS_PRC.code_parce = CPMS.id_parce
+    INNER JOIN Beneficiaire BNF ON BNF.code_benef = ASS_PRC.id_benef
+    INNER JOIN benef_activ_pms BPMS ON BPMS.id_benef = BNF.code_benef
+    INNER JOIN association ASS ON ASS.code_ass = ASS_PRC.id_assoc
+    WHERE ASS.code_ass = "${code_ass}";`; // CPMS.statuts = "EC" AND ASS_PRC.status = "active" AND BPMS.status = "active" AND 
+    return await this.db.query(state);
+  }
 
   loadBeneficiaireBloc(): Observable<any[]> {
     this.dbService.dbReady.subscribe(async isReady => {

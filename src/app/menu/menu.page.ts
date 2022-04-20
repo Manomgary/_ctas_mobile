@@ -35,26 +35,26 @@ export class MenuPage implements OnInit {
 
     pages_pms = [
       { title: 'Identification de beneficiaire', url: '/menu/beneficiaire_rp', icone: 'person', color: 'primary', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users},
-      { title: 'Carnet de suivi pms', url: '/menu/suivi_rp', icone: 'navigate', color: 'primary', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users},
-      { title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success', data: this.zoneInter, projet: this.projet, activite: this.activite , user: this.users}      
+      { title: 'Carnet de suivi pms', url: '/menu/suivi_rp', icone: 'navigate', color: 'primary', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users}
+      //{ title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success', data: this.zoneInter, projet: this.projet, activite: this.activite , user: this.users}      
     ];
 
     pages_bloc = [
       { title: 'Identification de beneficiaire', url: '/menu/beneficiaire_bloc', icone: 'person', color: 'primary', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users},
       { title: 'Carnet de suivi bloc', url: '/menu/suivi_bloc', icone: 'navigate', color: 'primary', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users},
-      { title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users}      
+      //{ title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users}      
     ];
 
     pages_pr = [
       { title: 'Identification de beneficiaire', url: '/menu/beneficiaire_rp', icone: 'person', color: 'primary', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users},
       { title: 'Carnet de suivi PR', url: '/menu/suivi', icone: 'navigate', color: 'primary', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users},
-      { title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success', data: this.zoneInter, projet: this.projet , activite: this.activite, user: this.users}      
+      //{ title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success', data: this.zoneInter, projet: this.projet , activite: this.activite, user: this.users}      
     ];
 
     pages_bi = [
       { title: 'Identification de beneficiaire', url: '/menu/beneficiaire_rp', icone: 'person', color: 'primary', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users},
       { title: 'Carnet de suivi BI', url: '/menu/suivi', icone: 'navigate', color: 'primary', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users},
-      { title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users}      
+      //{ title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users}      
     ];
 
 

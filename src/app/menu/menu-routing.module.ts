@@ -25,11 +25,11 @@ const routes: Routes = [
       {
         path: 'suivi_bloc',
         loadChildren: () => import('../pages/suivi_/suivi-bloc/suivi-bloc-routing.module').then( m => m.SuiviBlocPageRoutingModule)
-      },
+      }/**,
       {
         path: 'synchronisation',
         loadChildren: () => import('../pages/tabs/tabs-routing.module').then( m => m.TabsPageRoutingModule)
-      }/**,
+      },
       {
         path: '',
         redirectTo: 'beneficiaire',

@@ -1,3 +1,6 @@
+/**************************
+ * 
+ *************************************/
 export interface Db_Culture_pms {
     code_culture: string, 
     id_parce: string, 
@@ -8,7 +11,7 @@ export interface Db_Culture_pms {
     dt_creation: string,
     dt_modification: string,
     qsa : number,
-    img_fact: Blob,
+    img_fact: string,
     dds: string,
     sfce: number,
     objectif: number,
@@ -19,11 +22,16 @@ export interface Db_Culture_pms {
     Etat: string
 }
 export interface Db_suivi_pms {
+    id: string,
     code_culture: string, 
     ddp: string, 
     stc: string, 
     ec: string, 
     ex: string, 
+    pb: string,
     img_cult: string, 
-    controle: string
+    name: string,
+    path: string,
+    controle: string,
+    etat: string
 }

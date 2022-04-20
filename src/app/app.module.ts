@@ -39,6 +39,9 @@ import { ApiService } from './services/api.service';
 import { ImportDataService } from './services/import-data.service';
 import { LoadDataService } from './services/local/load-data.service';
 import { CrudDbService } from './services/local/crud-db.service';
+import { SyncService } from './services/sync.service';
+import { LoadSyncService } from './services/local/load-sync.service';
+import { SynchroPage } from './pages/synchro/synchro.page';
 
 /** Parsing Date formats */
 import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, } from '@angular/material-moment-adapter';
@@ -58,7 +61,8 @@ import { MY_DATE_FORMATS } from 'src/app/utils/my-date-formats';
     SuiviBlocPage,
     TabsPage,
     LoginPage,
-    ModalPage
+    ModalPage,
+    SynchroPage
   ],
   entryComponents: [],
   imports: [
@@ -81,6 +85,8 @@ import { MY_DATE_FORMATS } from 'src/app/utils/my-date-formats';
     ApiService,
     LoadDataService,
     CrudDbService,
+    SyncService,
+    LoadSyncService,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     File,
     {provide: MAT_DATE_LOCALE, useValue: 'fr-FR'},
