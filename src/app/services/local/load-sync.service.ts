@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { DB_NAME } from 'src/app/utils/global-variables';
+import { DB_NAME, SYNC, UPDATE } from 'src/app/utils/global-variables';
 import { DatabaseService } from '../database.service';
 
 @Injectable({
@@ -35,4 +35,27 @@ export class LoadSyncService {
       return await this.db.query(statement);
     }
   }
+  /*********************************
+   * LOAD SYNC SERVICE
+   **********************************/
+  async loadSyncMepBl(data: any) {
+    if (this.dbService.dbReady.value) {
+      const state = `SELECT CBL.code_culture, CBL.id_parce, CBL.id_espece, CBL.id_var, CBL.id_saison, CBL.annee_du, CBL.ddp, CBL.qso, CBL.dds, CBL.sfce, CBL.sc, CBL.ea_autres, CBL.ea_id_variette, CBL.dt_creation, CBL.dt_modification, CBL.status, CBL.etat, CBL.id_equipe, CBL.type 
+                    FROM culture_bl CBL
+                    INNER JOIN bloc_parce BPRC ON BPRC.code_parce = CBL.id_parce
+                    INNER JOIN bloc BL ON BL.code_bloc = BPRC.id_bloc
+                    WHERE BL.id_tech = ${data.id_tech} AND BL.id_prjt = "${data.id_projet}" AND CBL.etat IN("${SYNC}", "${UPDATE}")`;
+      return await this.db.query(state);
+    }
+  }
+  async loadSyncSvBl(data: any) {
+    const state = `SELECT SBL.code_sv, SBL.id_culture, SBL.ddp, SBL.stc, SBL.ql, SBL.qr, SBL.long_ligne, SBL.nbre_ligne, SBL.nbre_pied, SBL.img_cult, SBL.ex, SBL.etat 
+                  FROM suivi_bl SBL
+                  INNER JOIN culture_bl CBL ON CBL.code_culture = SBL.id_culture
+                  INNER JOIN bloc_parce BPRC ON BPRC.code_parce = CBL.id_parce
+                  INNER JOIN bloc BL ON BL.code_bloc = BPRC.id_bloc
+                  WHERE BL.id_tech = ${data.id_tech} AND BL.id_prjt = "${data.id_projet}" AND SBL.etat IN("${SYNC}", "${UPDATE}")`;
+    return await this.db.query(state);
+  }
+  
 }

@@ -72,558 +72,607 @@
                     </mat-select>
                   </mat-form-field>
                 </div>
-                <!--<div class="child-flex-Filtre3" fxLayoutAlign="center center">
-                  <mat-form-field floatLabel="never">
-                    <mat-label>parcelle</mat-label>
-                    <mat-select [(ngModel)]="selectedParcelle" (ngModelChange)="applyFilterSelect($event, 'parcelle')" 
-                      placeholder="parcelle">
-                      <mat-option (click)="applyFilterTout('parcelle')" [value]="">tout</mat-option>
-                      <mat-option *ngFor="let parce of filterDataParce" [value]="parce">
-                        {{ parce }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>-->
               </div>
               <!-- Row modifier-->
               <div class="child-row-modifier" fxLayoutAlign="center center" fxLayout="row" fxLayoutGap="4px">
                 <div class="child-row-modifier1" *ngIf="!isUpdated">
-                  <button mat-raised-button (click)="createExcel()" class="demo-button" [disabled]="isSuiviClicked">
-                    Exporter xcel
+                  <button mat-raised-button (click)="createExcel()" class="demo-button" [disabled]="isSuiviClicked || data_culture.length == 0">
+                    Exporter
                   </button>
                 </div>
-                <div class="child-row-modifier1" *ngIf="!isUpdated">
+                <div class="child-row-modifier1" *ngIf="!isUpdated && !isSuiviClicked">
                   <button mat-raised-button (click)="onUpdate()" class="demo-button" [disabled]="isSuiviClicked">
                     Modification
                   </button>
                 </div>
-                <div class="child-row-modifier1" *ngIf="isUpdated" style="padding-right: 10px;">
-                  <button mat-raised-button (click)="onCancelSauvegarde()" class="demo-button">
-                    Annuler
-                  </button>
-                </div>
-                <div class="child-row-modifier1" *ngIf="isUpdated">
-                  <button mat-raised-button (click)="onSauvegarde()" class="demo-button">
-                    Sauvegarder
+                <div class="child-row-modifier1" *ngIf="isUpdated || isSuiviClicked" style="padding-right: 10px;">
+                  <button mat-raised-button (click)="onFinish()" class="button-Finish">
+                    Terminer
                   </button>
                 </div>
               </div>
             </div>
           </div>
-          <!--Column Bouton Ajouter-->
-          <div class="content-column-child-3" style="justify-content: flex-start;">
-            <button mat-raised-button (click)="onAdd()" class="demo-button" *ngIf="isUpdated">
-              Ajouter
-            </button>
-            <button mat-raised-button (click)="onClickSuivi()" class="demo-button" *ngIf="!isUpdated" [disabled]="isSuiviClicked || data_culture.length == 0">
-              Suivi
-            </button>
-          </div>
-          <!--Column table-->
-          <div class="content-column-child-4" style="justify-content: flex-start;">
-            <div class="container-matTab mat-elevation-z8">
-              <div class="table-container">
-                <table mat-table [dataSource]="dataSource">
-      
-                  <!-- Saison Column -->
-                  <ng-container matColumnDef="saison">
-                    <th mat-header-cell *matHeaderCellDef> Saison </th>
-                    <td mat-cell *matCellDef="let row; let i = index"> 
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.saison}} 
-                      </span>
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.saison }} 
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- New Saison Column -->
-                  <ng-container matColumnDef="new_saison">
-                    <th mat-header-cell *matHeaderCellDef>
-                      <span>
-                        {{ new_culte.saison }}
-                      </span>
-                    </th>
-                  </ng-container>
-        
-                  <!-- Association Column -->
-                  <ng-container matColumnDef="association">
-                    <th mat-header-cell *matHeaderCellDef> Association </th>
-                    <td mat-cell *matCellDef="let row; let i = index"> 
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.association}} 
-                      </span>
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.association }}
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- New Association Column -->
-                  <ng-container matColumnDef="new_association">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.association }} </th>
-                  </ng-container>                  
-        
-                  <!-- code Pms Column -->
-                  <ng-container matColumnDef="code_pms">
-                    <th mat-header-cell *matHeaderCellDef> code Pms </th>
-                    <td mat-cell *matCellDef="let row; let i = index">  
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.code_benef_pms}}
-                      </span>
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.code_pms }}
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- New code Pms Column -->
-                  <ng-container matColumnDef="new_code_pms">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.code_pms }} </th>
-                  </ng-container>                  
-        
-                  <!-- nom_pms Column -->
-                  <ng-container matColumnDef="nom_pms">
-                    <th mat-header-cell *matHeaderCellDef> nom </th>
-                    <td mat-cell *matCellDef="let row; let i = index"> 
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.nom}} {{row.prenom}} 
-                      </span>
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.pms }}
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- new nom_pms Column -->
-                  <ng-container matColumnDef="new_nom_pms">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.pms }} </th>
-                  </ng-container>                  
-        
-                  <!-- code_parce Column -->
-                  <ng-container matColumnDef="code_parce">
-                    <th mat-header-cell *matHeaderCellDef> code_parce </th>
-                    <td mat-cell *matCellDef="let row; let i = index">
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.id_parce}} 
-                      </span> 
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.parcelle }}
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- New code_parce Column -->
-                  <ng-container matColumnDef="new_code_parce">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.parcelle }} </th>
-                  </ng-container>                  
-        
-                  <!-- variette Column -->
-                  <ng-container matColumnDef="variette">
-                    <th mat-header-cell *matHeaderCellDef> variette </th>
-                    <td mat-cell *matCellDef="let row; let i = index"> 
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.nom_var}} 
-                      </span> 
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.espece }} {{ new_culte.variette }}
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- NEW variette Column -->
-                  <ng-container matColumnDef="new_variette">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.espece }} {{ new_culte.variette }} </th>
-                  </ng-container>                  
-        
-                  <!-- qsa Column -->
-                  <ng-container matColumnDef="qsa">
-                    <th mat-header-cell *matHeaderCellDef> qsa(kap) </th>
-                    <td mat-cell *matCellDef="let row; let i = index"> 
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.qsa}} 
-                      </span> 
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.qsa }}
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- New qsa Column -->
-                  <ng-container matColumnDef="new_qsa">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.qsa }} </th>
-                  </ng-container>                  
-        
-                  <!-- img_fact Column -->
-                  <ng-container matColumnDef="img_fact">
-                    <th mat-header-cell *matHeaderCellDef> img_fact </th>
-                    <td mat-cell *matCellDef="let row">{{row.img_fact}} </td>
-                  </ng-container>
-                  <!-- New img_fact Column -->
-                  <ng-container matColumnDef="new_img_fact">
-                    <th mat-header-cell *matHeaderCellDef> </th>
-                  </ng-container>                  
-        
-                  <!-- Date de semis Column -->
-                  <ng-container matColumnDef="dds">
-                    <th mat-header-cell *matHeaderCellDef> DDS </th>
-                    <td mat-cell *matCellDef="let row; let i = index">  
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.dds}}
-                      </span> 
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.dateSemis }}
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- New Date de semis Column -->
-                  <ng-container matColumnDef="new_dds">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.dateSemis }} </th>
-                  </ng-container>                  
-      
-                  <!-- sfce  Column -->
-                  <ng-container matColumnDef="sfce">
-                    <th mat-header-cell *matHeaderCellDef> sfce </th>
-                    <td mat-cell *matCellDef="let row; let i = index"> 
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.sfce}}
-                      </span> 
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.sfce }}
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- New sfce Column -->
-                  <ng-container matColumnDef="new_sfce">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.sfce }} </th>
-                  </ng-container>                  
-      
-                  <!-- objectif Column -->
-                  <ng-container matColumnDef="objectif">
-                    <th mat-header-cell *matHeaderCellDef> objectif </th>
-                    <td mat-cell *matCellDef="let row; let i = index"> 
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.objectif}}
-                      </span> 
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.Objectif }}
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- New objectif Column -->
-                  <ng-container matColumnDef="new_objectif">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.Objectif }} </th>
-                  </ng-container>                  
-      
-                  <!-- sc Column -->
-                  <ng-container matColumnDef="sc">
-                    <th mat-header-cell *matHeaderCellDef> sc </th>
-                    <td mat-cell *matCellDef="let row; let i = index"> 
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.sc}}
-                      </span> 
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.sc }}
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- New sc Responsable Column -->
-                  <ng-container matColumnDef="new_sc">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.sc }} </th>
-                  </ng-container>   
+          <div class="contenet-column-child2">
+            <!--Accordion liste-->
 
-                  <!-- ea Responsable Column -->
-                  <ng-container matColumnDef="ea">
-                    <th mat-header-cell *matHeaderCellDef> ea </th>
-                    <td mat-cell *matCellDef="let row; let i = index"> 
-                      <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                        {{row.ea}} 
-                      </span> 
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                        {{ new_culte.ea }}
-                      </span>
-                    </td>
-                  </ng-container>
-                  <!-- New ea Responsable Column -->
-                  <ng-container matColumnDef="new_ea">
-                    <th mat-header-cell *matHeaderCellDef> {{ new_culte.ea }} </th>
-                  </ng-container>
-
-                  <!-- New action Responsable Column -->
-                  <ng-container matColumnDef="new_action">
-                    <th mat-header-cell *matHeaderCellDef>
-                      <a (click)="onClickDoneAction()">Done</a> |
-                      <a (click)="onClickCancelAction()">Cancel</a>
-                    </th>
-                  </ng-container>                                         
-
-                  <!-- Action Column -->
-                  <ng-container *ngIf="isUpdated || isSuiviClicked" matColumnDef="action">
-                    <th mat-header-cell *matHeaderCellDef> Action </th>
-                    <td mat-cell *matCellDef="let row; let i = index" class="action-link">
-                      <span *ngIf="indexRowEdit == i  && isEditableCulte && isUpdated">
-                        <a (click)="onClickEditDoneAction('culture', row)">modifier</a> |
-                        <a (click)="onClickEditCancelAction('culture')">Annuler</a>
-                      </span>
-                      <span *ngIf="!isEditableCulte && !isNewCultureClicked && isUpdated">
-                        <a (click)="onClickModifElement(i, row)">Edit</a> |
-                        <a (click)="openDialog(row)">Delete</a>
-                      </span>
-                      <span *ngIf="isSuiviClicked">
-                        <a (click)="onClickSuiviElementMep(i, row)">Suivi</a>
-                      </span>
-                    </td>
-                  </ng-container>
-      
-                  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-                  <tr [hidden]="!isNewCultureClicked" mat-header-row *matHeaderRowDef="displayedColumnsNew" class="second-header-row"></tr>
-                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-              
-                  <!-- Row shown when there is no matching data. -->
-                  <tr class="mat-row" *matNoDataRow>
-                    <td class="mat-cell" colspan="4">Aucun enregistrement"</td>
-                  </tr>
-                </table>
-              </div>
-            </div>
-          </div>
-          <!--Column Information Row Culture selected-->
-          <div class="content-column-child-5" style="justify-content: flex-start;" *ngIf="isClickedElemCultToSuivi">
-            <p>Info Culture</p>
-            <p>
-              <button mat-raised-button (click)="onAddTbSuivi()" class="demo-button" [disabled] = "isNewItemsSuivi || isEditableSuivi">
-                Ajouter
-              </button>
-            </p>
-          </div>
-          <!--Column Table Suivi-->
-          <div class="content-column-child-6" *ngIf="isClickedElemCultToSuivi">
-            <div class="container-matTab mat-elevation-z8">
-              <div class="table-container">
-                <form fxFlexFill [formGroup]="suiviForm">
-                  <table mat-table [dataSource]="dataSourceSingleSuivi">
-                    
-                    <!-- ddp Column -->
-                    <ng-container matColumnDef="ddp">
-                      <th mat-header-cell *matHeaderCellDef> ddp </th>
-                      <td mat-cell *matCellDef="let row; let i = index"> 
-                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
-                          {{row.ddp}} 
-                        </span>
-                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
-                          <mat-form-field appearance="fill">
-                            <mat-label>ddp</mat-label>
-                            <input matInput [matDatepicker]="dp" formControlName="ddp" disabled>
-                            <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
-                            <mat-datepicker #dp disabled="false"></mat-datepicker>
-                          </mat-form-field>	
-                        </span>
-                      </td>
-                    </ng-container>
-                    <!-- New Saison Column -->
-                    <ng-container matColumnDef="new_ddp">
-                      <th mat-header-cell *matHeaderCellDef>
-                        <span>
-                          <mat-form-field appearance="fill">
-                            <mat-label>ddp</mat-label>
-                            <input matInput [matDatepicker]="dp" formControlName="ddp" disabled = "true">
-                            <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
-                            <mat-datepicker #dp disabled="false"></mat-datepicker>
-                          </mat-form-field>	
-                        </span>
-                      </th>
-                    </ng-container>
-          
-                    <!--Stade Cultural Column -->
-                    <ng-container matColumnDef="stc">
-                      <th mat-header-cell *matHeaderCellDef> stc </th>
-                      <td mat-cell *matCellDef="let row; let i = index"> 
-                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
-                          {{row.stc}}
-                        </span> 
-                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
-                          <mat-form-field appearance="outline">
-                            <mat-label>stc</mat-label>
-                            <mat-select formControlName="stc">
-                              <mat-option></mat-option>
-                              <mat-option *ngFor="let var_stc of data_stc" [value]="var_stc.value">
-                                {{ var_stc.intitule }}
-                              </mat-option>
-                            </mat-select>
-                          </mat-form-field>
-                        </span>
-                      </td>
-                    </ng-container>
-                    <!-- New Stade Cultural Column -->
-                    <ng-container matColumnDef="new_stc">
-                      <th mat-header-cell *matHeaderCellDef>
-                        <mat-form-field appearance="outline">
-                          <mat-label>stc</mat-label>
-                          <mat-select formControlName="stc">
-                            <mat-option>none</mat-option>
-                            <mat-option *ngFor="let var_stc of data_stc" [value]="var_stc.value">
-                              {{ var_stc.intitule }}
-                            </mat-option>
-                          </mat-select>
-                        </mat-form-field>	
-                      </th>
-                    </ng-container>                  
-                    
-                    <!-- code Etat Cultural Column -->
-                    <ng-container matColumnDef="ec">
-                      <th mat-header-cell *matHeaderCellDef> ec </th>
-                      <td mat-cell *matCellDef="let row; let i = index"> 
-                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">{{row.ec}}</span>
-                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
-                          <mat-form-field appearance="outline">
-                            <mat-label>ec</mat-label>
-                            <mat-select formControlName="ec" [compareWith]="compareObjectsEc">
-                              <mat-option>none</mat-option>
-                              <mat-option *ngFor="let var_ec of data_ec" [value]="var_ec">
-                                {{ var_ec.intitule }}
-                              </mat-option>
-                            </mat-select>
-                          </mat-form-field>	
-                        </span>
-                        </td>
-                    </ng-container>
-                    <!-- New Etat Cultural Column -->
-                    <ng-container matColumnDef="new_ec">
-                      <th mat-header-cell *matHeaderCellDef>
-                        <mat-form-field appearance="outline">
-                          <mat-label>ec</mat-label>
-                          <mat-select formControlName="ec">
-                            <mat-option>none</mat-option>
-                            <mat-option *ngFor="let var_ec of data_ec" [value]="var_ec">
-                              {{ var_ec.intitule }}
-                            </mat-option>
-                          </mat-select>
-                        </mat-form-field>	
-                      </th>
-                    </ng-container>                  
-                   
-                    <!-- pb Column -->
-                    <ng-container matColumnDef="pb">
-                      <th mat-header-cell *matHeaderCellDef> pb </th>
-                      <td mat-cell *matCellDef="let row; let i = index"> 
-                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">{{row.pb}}</span>
-                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
-                          <mat-form-field>
-                            <input matInput placeholder="Enter pb" formControlName="pb">
-                          </mat-form-field>
-                        </span>
-                      </td>
-                    </ng-container>
-                    <!-- new pb Column -->
-                    <ng-container matColumnDef="new_pb">
-                      <th mat-header-cell *matHeaderCellDef> 
-                        <mat-form-field>
-                          <input matInput placeholder="Enter pb" formControlName="pb">
-                        </mat-form-field>
-                      </th>
-                    </ng-container>                  
-          
-                    <!-- Estimation de production Column -->
-                    <ng-container matColumnDef="ex">
-                      <th mat-header-cell *matHeaderCellDef> ex </th>
-                      <td mat-cell *matCellDef="let row; let i = index">
-                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
-                          {{row.ex}} 
-                        </span> 
-                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
-                          <mat-form-field>
-                            <input matInput placeholder="Enter pb" formControlName="ex">
-                          </mat-form-field>
-                        </span>
-                      </td>
-                    </ng-container>
-                    <!-- New Estimation de production Column -->
-                    <ng-container matColumnDef="new_ex">
-                      <th mat-header-cell *matHeaderCellDef> 
-                        <mat-form-field>
-                          <input matInput placeholder="Enter pb" formControlName="ex">
-                        </mat-form-field>
-                      </th>
-                    </ng-container>                  
-          
-                    <!-- img_fact Column -->
-                    <ng-container matColumnDef="img_cult">
-                      <th mat-header-cell *matHeaderCellDef> img_culture </th>
-                      <td mat-cell *matCellDef="let row; let i = index">
-                        <ion-thumbnail slot="start">
-                          <ion-img [src]="row.img_cult" *ngIf="!isEditableSuivi || indexRowSuivi != i"></ion-img>
-                          <ion-img [src]="fileLastImage.data" *ngIf="indexRowSuivi == i  && isEditableSuivi && fileLastImage.data !== null"></ion-img>
-                          <ion-img [src]="row.img_cult" *ngIf="indexRowSuivi == i  && isEditableSuivi && fileLastImage.data === null"></ion-img>
-                        </ion-thumbnail>
-                        <ion-button fill="clear" color="blue" (click)="selectImage()" *ngIf="indexRowSuivi == i  && isEditableSuivi">
-                          <ion-icon slot="start" name="camera"></ion-icon>
-                        </ion-button>
-                      </td>
-                    </ng-container>
-                    <!-- NEW new_img_fact Column -->
-                    <ng-container matColumnDef="new_img_cult">
-                      <th mat-header-cell *matHeaderCellDef> 
-                        <ion-thumbnail slot="start">
-                          <ion-img [src]="fileLastImage.data"></ion-img>
-                        </ion-thumbnail>
-                        <ion-button fill="clear" expand="full" color="blue" (click)="selectImage()">
-                          <ion-icon slot="start" name="camera"></ion-icon>
-                          Select Image
-                        </ion-button>
-                      </th>
-                    </ng-container>                  
-          
-                    <!-- controle Column -->
-                    <ng-container matColumnDef="controle">
-                      <th mat-header-cell *matHeaderCellDef> controle </th>
-                      <td mat-cell *matCellDef="let row; let i = index"> 
-                        <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
-                          {{row.controle}} 
-                        </span>
-                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
-                          <mat-form-field>
-                            <input matInput placeholder="Enter controle" formControlName="controle">
-                          </mat-form-field>
-                        </span>
-                      </td>
-                    </ng-container>
-                    <!-- New new_controle Column -->
-                    <ng-container matColumnDef="new_controle">
-                      <th mat-header-cell *matHeaderCellDef>
-                        <mat-form-field>
-                          <input matInput placeholder="Enter controle" formControlName="controle">
-                        </mat-form-field>
-                      </th>
-                    </ng-container>                                                                                
-  
-                    <!-- New action Responsable Column -->
-                    <ng-container matColumnDef="new_action">
-                      <th mat-header-cell *matHeaderCellDef>
-                        <a (click)="onSaveAddSuivi()">Done</a> |
-                        <a (click)="onCancelAddSuivi()">Cancel</a>
-                      </th>
-                    </ng-container>                                         
-  
-                    <!-- Action Column -->
-                    <ng-container matColumnDef="action">
-                      <th mat-header-cell *matHeaderCellDef> Action </th>
-                      <td mat-cell *matCellDef="let row; let i = index" class="action-link">
-                        <span *ngIf="!isEditableSuivi && !isNewItemsSuivi">
-                          <a (click)="onEditElemSuivi(i, row)">Editer</a>
-                        </span>
-                        <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
-                          <a (click)="onSaveEditSuivi(row)">Done</a> |
-                          <a (click)="onCancelEditSuivi()">cancel</a>
-                        </span>
-                      </td>
-                    </ng-container>
-        
-                    <tr mat-header-row *matHeaderRowDef="displayedColumnsSuivi; sticky: true"></tr>
-                    <tr [hidden]="!isNewItemsSuivi" mat-header-row *matHeaderRowDef="displayedNewColumnsSuivi" class="second-header-row"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumnsSuivi;"></tr>
+            <!-- Multiple Accordions -->
+            <ion-accordion-group mode="ios" [multiple]="true" value="mep">
+              <!--Mise en place -->
+              <ion-accordion value="mep" class="my-accordion">
+                <ion-item slot="header" class="level1">
+                  <ion-label>Identification Mise en Place</ion-label>
+                </ion-item>
+                <div slot="content">
+                  <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
+                    <!--Column Bouton Ajouter-->
+                    <div class="content-child-1" style="justify-content: flex-start;">
+                      <button mat-raised-button (click)="onAdd()" class="demo-button" *ngIf="isUpdated">
+                        Ajouter
+                      </button>
+                      <button mat-raised-button (click)="onClickSuivi()" class="demo-button" *ngIf="!isUpdated" [disabled]="isSuiviClicked || data_culture.length == 0">
+                        Suivi
+                      </button>
+                    </div>
+                    <!--Column table-->
+                    <div class="content-child-2" style="justify-content: flex-start;">
+                      <div class="container-matTab mat-elevation-z8">
+                        <div class="table-container">
+                          <table mat-table [dataSource]="dataSource">
                 
-                    <!-- Row shown when there is no matching data. -->
-                    <tr class="mat-row" *matNoDataRow>
-                      <td class="mat-cell" colspan="4">Aucun enregistrement"</td>
-                    </tr>
-                  </table>
-                </form>
-              </div>
-            </div>
+                            <!-- Saison Column -->
+                            <ng-container matColumnDef="saison">
+                              <th mat-header-cell *matHeaderCellDef> Saison </th>
+                              <td mat-cell *matCellDef="let row; let i = index"> 
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.saison}} 
+                                </span>
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.saison }} 
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- New Saison Column -->
+                            <ng-container matColumnDef="new_saison">
+                              <th mat-header-cell *matHeaderCellDef>
+                                <span>
+                                  {{ new_culte.saison }}
+                                </span>
+                              </th>
+                            </ng-container>
+                  
+                            <!-- Association Column -->
+                            <ng-container matColumnDef="association">
+                              <th mat-header-cell *matHeaderCellDef> Association </th>
+                              <td mat-cell *matCellDef="let row; let i = index"> 
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.association}} 
+                                </span>
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.association }}
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- New Association Column -->
+                            <ng-container matColumnDef="new_association">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.association }} </th>
+                            </ng-container>                  
+                  
+                            <!-- code Pms Column -->
+                            <ng-container matColumnDef="code_pms">
+                              <th mat-header-cell *matHeaderCellDef> code Pms </th>
+                              <td mat-cell *matCellDef="let row; let i = index">  
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.code_benef_pms}}
+                                </span>
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.code_pms }}
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- New code Pms Column -->
+                            <ng-container matColumnDef="new_code_pms">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.code_pms }} </th>
+                            </ng-container>                  
+                  
+                            <!-- nom_pms Column -->
+                            <ng-container matColumnDef="nom_pms">
+                              <th mat-header-cell *matHeaderCellDef> nom </th>
+                              <td mat-cell *matCellDef="let row; let i = index"> 
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.nom}} {{row.prenom}} 
+                                </span>
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.pms }}
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- new nom_pms Column -->
+                            <ng-container matColumnDef="new_nom_pms">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.pms }} </th>
+                            </ng-container>                  
+                  
+                            <!-- code_parce Column -->
+                            <ng-container matColumnDef="code_parce">
+                              <th mat-header-cell *matHeaderCellDef> code_parce </th>
+                              <td mat-cell *matCellDef="let row; let i = index">
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.id_parce}} 
+                                </span> 
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.parcelle }}
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- New code_parce Column -->
+                            <ng-container matColumnDef="new_code_parce">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.parcelle }} </th>
+                            </ng-container>                  
+                  
+                            <!-- variette Column -->
+                            <ng-container matColumnDef="variette">
+                              <th mat-header-cell *matHeaderCellDef> variette </th>
+                              <td mat-cell *matCellDef="let row; let i = index"> 
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.nom_var}} 
+                                </span> 
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.espece }} {{ new_culte.variette }}
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- NEW variette Column -->
+                            <ng-container matColumnDef="new_variette">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.espece }} {{ new_culte.variette }} </th>
+                            </ng-container>                  
+                  
+                            <!-- qsa Column -->
+                            <ng-container matColumnDef="qsa">
+                              <th mat-header-cell *matHeaderCellDef> qsa(kap) </th>
+                              <td mat-cell *matCellDef="let row; let i = index"> 
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.qsa}} 
+                                </span> 
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.qsa }}
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- New qsa Column -->
+                            <ng-container matColumnDef="new_qsa">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.qsa }} </th>
+                            </ng-container>                  
+                  
+                            <!-- img_fact Column -->
+                            <ng-container matColumnDef="img_fact">
+                              <th mat-header-cell *matHeaderCellDef> img_fact </th>
+                              <td mat-cell *matCellDef="let row">{{row.img_fact}} </td>
+                            </ng-container>
+                            <!-- New img_fact Column -->
+                            <ng-container matColumnDef="new_img_fact">
+                              <th mat-header-cell *matHeaderCellDef> </th>
+                            </ng-container>                  
+                  
+                            <!-- Date de semis Column -->
+                            <ng-container matColumnDef="dds">
+                              <th mat-header-cell *matHeaderCellDef> DDS </th>
+                              <td mat-cell *matCellDef="let row; let i = index">  
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.dds}}
+                                </span> 
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.dateSemis }}
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- New Date de semis Column -->
+                            <ng-container matColumnDef="new_dds">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.dateSemis }} </th>
+                            </ng-container>                  
+                
+                            <!-- sfce  Column -->
+                            <ng-container matColumnDef="sfce">
+                              <th mat-header-cell *matHeaderCellDef> sfce </th>
+                              <td mat-cell *matCellDef="let row; let i = index"> 
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.sfce}}
+                                </span> 
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.sfce }}
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- New sfce Column -->
+                            <ng-container matColumnDef="new_sfce">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.sfce }} </th>
+                            </ng-container>                  
+                
+                            <!-- objectif Column -->
+                            <ng-container matColumnDef="objectif">
+                              <th mat-header-cell *matHeaderCellDef> objectif </th>
+                              <td mat-cell *matCellDef="let row; let i = index"> 
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.objectif}}
+                                </span> 
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.Objectif }}
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- New objectif Column -->
+                            <ng-container matColumnDef="new_objectif">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.Objectif }} </th>
+                            </ng-container>                  
+                
+                            <!-- sc Column -->
+                            <ng-container matColumnDef="sc">
+                              <th mat-header-cell *matHeaderCellDef> sc </th>
+                              <td mat-cell *matCellDef="let row; let i = index"> 
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.sc}}
+                                </span> 
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.sc }}
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- New sc Responsable Column -->
+                            <ng-container matColumnDef="new_sc">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.sc }} </th>
+                            </ng-container>   
+
+                            <!-- ea Responsable Column -->
+                            <ng-container matColumnDef="ea">
+                              <th mat-header-cell *matHeaderCellDef> ea </th>
+                              <td mat-cell *matCellDef="let row; let i = index"> 
+                                <span *ngIf="!isEditableCulte || indexRowEdit != i">
+                                  {{row.ea}} 
+                                </span> 
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte">
+                                  {{ new_culte.ea }}
+                                </span>
+                              </td>
+                            </ng-container>
+                            <!-- New ea Responsable Column -->
+                            <ng-container matColumnDef="new_ea">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.ea }} </th>
+                            </ng-container>
+
+                            <!-- New action Responsable Column -->
+                            <ng-container matColumnDef="new_action">
+                              <th mat-header-cell *matHeaderCellDef>
+                                <a (click)="onClickDoneAction()">Done</a> |
+                                <a (click)="onClickCancelAction()">Cancel</a>
+                              </th>
+                            </ng-container>                                         
+
+                            <!-- Action Column -->
+                            <ng-container *ngIf="isUpdated || isSuiviClicked" matColumnDef="action">
+                              <th mat-header-cell *matHeaderCellDef> Action </th>
+                              <td mat-cell *matCellDef="let row; let i = index" class="action-link">
+                                <span *ngIf="indexRowEdit == i  && isEditableCulte && isUpdated">
+                                  <a (click)="onClickEditDoneAction('culture', row)">modifier</a> |
+                                  <a (click)="onClickEditCancelAction('culture')">Annuler</a>
+                                </span>
+                                <span *ngIf="!isEditableCulte && !isNewCultureClicked && isUpdated">
+                                  <a (click)="onClickModifElement(i, row)">Edit</a> |
+                                  <a (click)="openDialog(row)">Delete</a>
+                                </span>
+                                <span *ngIf="isSuiviClicked">
+                                  <a (click)="onClickSuiviElementMep(i, row)">Suivi</a>
+                                </span>
+                              </td>
+                            </ng-container>
+                
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                            <tr [hidden]="!isNewCultureClicked" mat-header-row *matHeaderRowDef="displayedColumnsNew" class="second-header-row"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                        
+                            <!-- Row shown when there is no matching data. -->
+                            <tr class="mat-row" *matNoDataRow>
+                              <td class="mat-cell" colspan="4">Aucun enregistrement"</td>
+                            </tr>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ion-accordion>
+              <!--Suivi-->
+              <ion-accordion value="suivi" class="my-accordion" *ngIf="isClickedElemCultToSuivi">
+                <ion-item slot="header" class="level1">
+                  <ion-label>Suivi Mise en Place</ion-label>
+                </ion-item>
+                <div slot="content">
+                  <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
+                    <!--Column Information Row Culture selected-->
+                    <div class="content-child-1" fxLayout="column" style="justify-content: flex-start;">
+                      <!--Column 1-->
+                      <div class="content-column-child-1 width100" fxLayoutAlign="center center" fxLayout="row" style="justify-content: flex-start;">
+                        <div class="child-row-info width100">
+                          Annee : {{info_mep_select.annee_du}}
+                        </div>
+                        <div class="child-row-info width100">
+                          Saison : {{info_mep_select.saison}}
+                        </div>
+                        <div class="child-row-info width100">
+                          Code_parce : {{info_mep_select.id_parce}}
+                        </div>
+                        <div class="child-row-info width100">
+                          Variette : {{info_mep_select.nom_var}}
+                        </div>
+                      </div>
+                      <!--Column 2-->
+                      <div class="content-column-child-1 width100" fxLayoutAlign="center center" fxLayout="row" style="justify-content: flex-start;">
+                        <div class="child-row-info width100">
+                          Association : {{info_mep_select.association}}
+                        </div>
+                        <div class="child-row-info width100">
+                          Code_pms : {{info_mep_select.code_benef_pms}}
+                        </div>
+                        <div class="child-row-info width100">
+                          Nom_pms : {{info_mep_select.nom}} {{info_mep_select.prenom}}
+                        </div>
+                      </div>
+                      <!--Column 2-->
+                      <div class="content-column-child-1 width100" fxLayoutAlign="center center" fxLayout="row" style="justify-content: flex-start;">
+                        <div class="child-row-info width100">
+                          DDS : {{info_mep_select.dds}}
+                        </div>
+                        <div class="child-row-info width100">
+                          QSA : {{info_mep_select.qsa}}
+                        </div>
+                        <div class="child-row-info width100">
+                          Sfce Emblavee : {{info_mep_select.sfce}}
+                        </div>
+                      </div>
+                      <!--Column Ajouter-->
+                      <div class="content-column-child-1" fxLayoutAlign="start" style="justify-content: flex-start;">
+                        <button mat-raised-button (click)="onAddTbSuivi()" class="demo-button" [disabled] = "isNewItemsSuivi || isEditableSuivi">
+                          Ajouter
+                        </button>
+                      </div>
+                    </div>
+                    <!--Column Table Suivi-->
+                    <div class="content-child-2">
+                      <div class="container-matTab mat-elevation-z8">
+                        <div class="table-container">
+                          <form fxFlexFill [formGroup]="suiviForm">
+                            <table mat-table [dataSource]="dataSourceSingleSuivi">
+                              
+                              <!-- ddp Column -->
+                              <ng-container matColumnDef="ddp">
+                                <th mat-header-cell *matHeaderCellDef> ddp </th>
+                                <td mat-cell *matCellDef="let row; let i = index"> 
+                                  <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
+                                    {{row.ddp}} 
+                                  </span>
+                                  <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                                    <mat-form-field appearance="fill">
+                                      <mat-label>ddp</mat-label>
+                                      <input matInput [matDatepicker]="dp" formControlName="ddp" disabled>
+                                      <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                                      <mat-datepicker #dp disabled="false"></mat-datepicker>
+                                    </mat-form-field>	
+                                  </span>
+                                </td>
+                              </ng-container>
+                              <!-- New Saison Column -->
+                              <ng-container matColumnDef="new_ddp">
+                                <th mat-header-cell *matHeaderCellDef>
+                                  <span>
+                                    <mat-form-field appearance="fill">
+                                      <mat-label>ddp</mat-label>
+                                      <input matInput [matDatepicker]="dp" formControlName="ddp" disabled = "true">
+                                      <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                                      <mat-datepicker #dp disabled="false"></mat-datepicker>
+                                    </mat-form-field>	
+                                  </span>
+                                </th>
+                              </ng-container>
+                    
+                              <!--Stade Cultural Column -->
+                              <ng-container matColumnDef="stc">
+                                <th mat-header-cell *matHeaderCellDef> stc </th>
+                                <td mat-cell *matCellDef="let row; let i = index"> 
+                                  <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
+                                    {{row.stc}}
+                                  </span> 
+                                  <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                                    <mat-form-field appearance="outline">
+                                      <mat-label>stc</mat-label>
+                                      <mat-select formControlName="stc">
+                                        <mat-option></mat-option>
+                                        <mat-option *ngFor="let var_stc of data_stc" [value]="var_stc.value">
+                                          {{ var_stc.intitule }}
+                                        </mat-option>
+                                      </mat-select>
+                                    </mat-form-field>
+                                  </span>
+                                </td>
+                              </ng-container>
+                              <!-- New Stade Cultural Column -->
+                              <ng-container matColumnDef="new_stc">
+                                <th mat-header-cell *matHeaderCellDef>
+                                  <mat-form-field appearance="outline">
+                                    <mat-label>stc</mat-label>
+                                    <mat-select formControlName="stc">
+                                      <mat-option>none</mat-option>
+                                      <mat-option *ngFor="let var_stc of data_stc" [value]="var_stc.value">
+                                        {{ var_stc.intitule }}
+                                      </mat-option>
+                                    </mat-select>
+                                  </mat-form-field>	
+                                </th>
+                              </ng-container>                  
+                              
+                              <!-- code Etat Cultural Column -->
+                              <ng-container matColumnDef="ec">
+                                <th mat-header-cell *matHeaderCellDef> ec </th>
+                                <td mat-cell *matCellDef="let row; let i = index"> 
+                                  <span *ngIf="!isEditableSuivi || indexRowSuivi != i">{{row.ec}}</span>
+                                  <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                                    <mat-form-field appearance="outline">
+                                      <mat-label>ec</mat-label>
+                                      <mat-select formControlName="ec" [compareWith]="compareObjectsEc">
+                                        <mat-option>none</mat-option>
+                                        <mat-option *ngFor="let var_ec of data_ec" [value]="var_ec">
+                                          {{ var_ec.intitule }}
+                                        </mat-option>
+                                      </mat-select>
+                                    </mat-form-field>	
+                                  </span>
+                                  </td>
+                              </ng-container>
+                              <!-- New Etat Cultural Column -->
+                              <ng-container matColumnDef="new_ec">
+                                <th mat-header-cell *matHeaderCellDef>
+                                  <mat-form-field appearance="outline">
+                                    <mat-label>ec</mat-label>
+                                    <mat-select formControlName="ec">
+                                      <mat-option>none</mat-option>
+                                      <mat-option *ngFor="let var_ec of data_ec" [value]="var_ec">
+                                        {{ var_ec.intitule }}
+                                      </mat-option>
+                                    </mat-select>
+                                  </mat-form-field>	
+                                </th>
+                              </ng-container>                  
+                            
+                              <!-- pb Column -->
+                              <ng-container matColumnDef="pb">
+                                <th mat-header-cell *matHeaderCellDef> pb </th>
+                                <td mat-cell *matCellDef="let row; let i = index"> 
+                                  <span *ngIf="!isEditableSuivi || indexRowSuivi != i">{{row.pb}}</span>
+                                  <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                                    <mat-form-field>
+                                      <input matInput placeholder="Enter pb" formControlName="pb">
+                                    </mat-form-field>
+                                  </span>
+                                </td>
+                              </ng-container>
+                              <!-- new pb Column -->
+                              <ng-container matColumnDef="new_pb">
+                                <th mat-header-cell *matHeaderCellDef> 
+                                  <mat-form-field>
+                                    <input matInput placeholder="Enter pb" formControlName="pb">
+                                  </mat-form-field>
+                                </th>
+                              </ng-container>                  
+                    
+                              <!-- Estimation de production Column -->
+                              <ng-container matColumnDef="ex">
+                                <th mat-header-cell *matHeaderCellDef> ex </th>
+                                <td mat-cell *matCellDef="let row; let i = index">
+                                  <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
+                                    {{row.ex}} 
+                                  </span> 
+                                  <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                                    <mat-form-field>
+                                      <input matInput placeholder="Enter pb" formControlName="ex">
+                                    </mat-form-field>
+                                  </span>
+                                </td>
+                              </ng-container>
+                              <!-- New Estimation de production Column -->
+                              <ng-container matColumnDef="new_ex">
+                                <th mat-header-cell *matHeaderCellDef> 
+                                  <mat-form-field>
+                                    <input matInput placeholder="Enter pb" formControlName="ex">
+                                  </mat-form-field>
+                                </th>
+                              </ng-container>                  
+                    
+                              <!-- img_fact Column -->
+                              <ng-container matColumnDef="img_cult">
+                                <th mat-header-cell *matHeaderCellDef> img_culture </th>
+                                <td mat-cell *matCellDef="let row; let i = index">
+                                  <ion-thumbnail slot="start">
+                                    <ion-img [src]="row.img_cult" *ngIf="!isEditableSuivi || indexRowSuivi != i"></ion-img>
+                                    <ion-img [src]="fileLastImage.data" *ngIf="indexRowSuivi == i  && isEditableSuivi && fileLastImage.data !== null"></ion-img>
+                                    <ion-img [src]="row.img_cult" *ngIf="indexRowSuivi == i  && isEditableSuivi && fileLastImage.data === null"></ion-img>
+                                  </ion-thumbnail>
+                                  <ion-button fill="clear" color="blue" (click)="selectImage()" *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                                    <ion-icon slot="start" name="camera"></ion-icon>
+                                  </ion-button>
+                                </td>
+                              </ng-container>
+                              <!-- NEW new_img_fact Column -->
+                              <ng-container matColumnDef="new_img_cult">
+                                <th mat-header-cell *matHeaderCellDef> 
+                                  <ion-thumbnail slot="start">
+                                    <ion-img [src]="fileLastImage.data"></ion-img>
+                                  </ion-thumbnail>
+                                  <ion-button fill="clear" expand="full" color="blue" (click)="selectImage()">
+                                    <ion-icon slot="start" name="camera"></ion-icon>
+                                    Select Image
+                                  </ion-button>
+                                </th>
+                              </ng-container>                  
+                    
+                              <!-- controle Column -->
+                              <ng-container matColumnDef="controle">
+                                <th mat-header-cell *matHeaderCellDef> controle </th>
+                                <td mat-cell *matCellDef="let row; let i = index"> 
+                                  <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
+                                    {{row.controle}} 
+                                  </span>
+                                  <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                                    <mat-form-field>
+                                      <input matInput placeholder="Enter controle" formControlName="controle">
+                                    </mat-form-field>
+                                  </span>
+                                </td>
+                              </ng-container>
+                              <!-- New new_controle Column -->
+                              <ng-container matColumnDef="new_controle">
+                                <th mat-header-cell *matHeaderCellDef>
+                                  <mat-form-field>
+                                    <input matInput placeholder="Enter controle" formControlName="controle">
+                                  </mat-form-field>
+                                </th>
+                              </ng-container>                                                                                
+            
+                              <!-- New action Responsable Column -->
+                              <ng-container matColumnDef="new_action">
+                                <th mat-header-cell *matHeaderCellDef>
+                                  <a (click)="onSaveAddSuivi()">Done</a> |
+                                  <a (click)="onCancelAddSuivi()">Cancel</a>
+                                </th>
+                              </ng-container>                                         
+            
+                              <!-- Action Column -->
+                              <ng-container matColumnDef="action">
+                                <th mat-header-cell *matHeaderCellDef> Action </th>
+                                <td mat-cell *matCellDef="let row; let i = index" class="action-link">
+                                  <span *ngIf="!isEditableSuivi && !isNewItemsSuivi">
+                                    <a (click)="onEditElemSuivi(i, row)">Editer</a>
+                                  </span>
+                                  <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                                    <a (click)="onSaveEditSuivi(row)">Done</a> |
+                                    <a (click)="onCancelEditSuivi()">cancel</a>
+                                  </span>
+                                </td>
+                              </ng-container>
+                  
+                              <tr mat-header-row *matHeaderRowDef="displayedColumnsSuivi; sticky: true"></tr>
+                              <tr [hidden]="!isNewItemsSuivi" mat-header-row *matHeaderRowDef="displayedNewColumnsSuivi" class="second-header-row"></tr>
+                              <tr mat-row *matRowDef="let row; columns: displayedColumnsSuivi;"></tr>
+                          
+                              <!-- Row shown when there is no matching data. -->
+                              <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell" colspan="4">Aucun enregistrement"</td>
+                              </tr>
+                            </table>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
           </div>
         </div>
       </div>
@@ -640,7 +689,7 @@
                 <div class="child-flex-Filtre1" fxLayoutAlign="center center">
                   <mat-form-field floatLabel="never">
                     <!--<mat-label>Filtre par association</mat-label>-->
-                    <mat-select [(ngModel)]="selectedAssoc" (ngModelChange)="applyFilterSelect($event, 'assoc_suivi')"
+                    <mat-select [(ngModel)]="selectedAssocSv" (ngModelChange)="applyFilterSelect($event, 'assoc_suivi')"
                       placeholder="Filtre par association">
                       <mat-option (click)="applyFilterTout('assoc_suivi')">tout</mat-option>
                       <mat-option *ngFor="let assoc of filterDataAssoc" [value]="assoc">
@@ -652,7 +701,7 @@
                 <div class="child-flex-Filtre2" fxLayoutAlign="center center">
                   <mat-form-field floatLabel="never">
                     <!--<mat-label>Filtre par beneficaire</mat-label>-->
-                    <mat-select [(ngModel)]="selectedBeneficiare" (ngModelChange)="applyFilterSelect($event, 'pms_suivi')" placeholder="Filtre par beneficaire">
+                    <mat-select [(ngModel)]="selectedBeneficiaresSv" (ngModelChange)="applyFilterSelect($event, 'pms_suivi')" placeholder="Filtre par beneficaire">
                       <mat-option>Aucun</mat-option>
                       <mat-option *ngFor="let benef of filterDataBenef" [value]="benef">
                         {{ benef.nom_benef }}

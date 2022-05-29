@@ -17,4 +17,16 @@
       Sync
     </button>
   </p>
+  <p>
+    MEP : {{data_mep_bloc.length}}
+    <button mat-raised-button (click)="onSyncMepBl()" class="demo-button" [disabled] = "data_mep_bloc.length === 0">
+      Sync
+    </button>
+  </p>
+  <p>
+    Suivi : {{data_suivi_bloc.length}}
+    <button mat-raised-button (click)="onSyncSuiviBl()" class="demo-button" [disabled] = "data_suivi_bloc.length === 0">
+      Sync
+    </button>
+  </p>
 </ion-content>

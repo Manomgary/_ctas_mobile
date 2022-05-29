@@ -9,6 +9,7 @@ import { LoadDataService } from '../../services/local/load-data.service';
 
 import * as _moment from 'moment';
 import { Moment } from 'moment';
+import { SC } from 'src/app/utils/global-variables';
 
 const moment = _moment;
 //import 'moment/locale/ja';
@@ -47,12 +48,8 @@ export class ModalPage implements OnInit {
   data_variette: Loc_variette[] = [];
   data_variette_filter: Loc_variette[] = [];
   data_variette_filter_ea: Loc_variette[] = [];
-  data_sc: any[] = [
-    {value: 'C.Pure', description: 'Culture Pure'}, 
-    {value: 'C.associé', description: 'Culture associé'}, 
-    {value: 'C.bande', description: 'Culture bande'}
-  ];
-  data_ea: any[] = ['Niébé'];
+  data_sc: any[] = SC;
+  //data_ea: any[] = ['Niébé'];
 
   data_users: any[] = [];
   checkedProject: any[] = [];
@@ -208,7 +205,7 @@ export class ModalPage implements OnInit {
           }
         });
         this.onSeletSc();
-        if (this.data_suivi_edit.ea_id_variette !== "null") {
+        if (this.data_suivi_edit.ea_id_variette !== null) {
           this.data_espece.filter(item => {
             if (item.code_espece === this.data_suivi_edit.ea_id_espece) {
               this.selected_espece_ea = item;
@@ -220,7 +217,7 @@ export class ModalPage implements OnInit {
               this.selected_variette_ea = item;
             }
           });
-        } else if (this.data_suivi_edit.ea_autres !== "null") {
+        } else if (this.data_suivi_edit.ea_autres !== null) {
           this.onSelectEspeceAutre('autre');
           this.autreCultureEa = this.data_suivi_edit.ea_autres;
         }

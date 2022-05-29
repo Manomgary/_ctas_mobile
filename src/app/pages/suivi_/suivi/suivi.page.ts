@@ -22,6 +22,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { IMAGE_DIR } from 'src/app/utils/global-variables';
+import { SuiviPageRoutingModule } from './suivi-routing.module';
 
 const moment = _moment;
 
@@ -42,30 +43,49 @@ interface newCulture {
   ea_id_variette: string,
   ea: string,
   annee_du: string,
-  dateSemis: Moment,
+  dateSemis: any,
   sfce: number,
   Objectif: number,
   qsa: number,
-  ddp: Moment
+  ddp: any
 }
 // Interface Export Mep 
 interface Mep_export {
-  Saison: string,
   Annee_du: string,
+  Saison: string,
   Association: string,
   Code_pms: string,
   Nom: string,
   Prenom: string,
   Code_parce: string,
   Sfce_reel: number,
-  Ddp: string,
+  DDP: string,
   variette: string,
-  qsa: number,
-  Dds: string,
+  QSA: number,
+  DDS: string,
   sfce_emblavee: number,
   Objectif: number,
-  Sc: string,
-  ea :string
+  SC: string,
+  EA :string
+}
+interface Suivi_export {
+  Saison: string,
+  Annee: string,
+  Association: string,
+  Code_pms: string,
+  Nom: string,
+  Prenom: string,
+  Code_parce: string,
+  variette: string,
+  QSA: number,
+  DDS: string,
+  Sfce_emblavee: number,
+  DDP: string,
+  STC: string,
+  EC: string,
+  PB: string,
+  EX: string,
+  Controle: string
 }
 
 interface LocalFile {
@@ -123,6 +143,8 @@ export class SuiviPage implements OnInit {
   /**Filtre */
   private selectedAssoc: any;
   private selectedBeneficiare: any;
+  private selectedAssocSv: any;// suivi
+  private selectedBeneficiareSv: any; // Suivi
   private selectedParcelle: any;
   private filterDataAssoc: any[] = [];
   private filterDataBenef: any[] = [];
@@ -182,7 +204,7 @@ export class SuiviPage implements OnInit {
   private displayedColumnsNew: string[] = ['new_saison', 'new_association', 'new_code_pms', 'new_nom_pms', 'new_code_parce', 'new_variette', 'new_qsa', 'new_img_fact', 'new_dds', 'new_sfce', 'new_objectif', 'new_sc', 'new_ea', 'new_action'];
   private displayedColumnsSuivi: string[] = ['ddp', 'stc', 'ec', 'pb', 'ex', 'img_cult', 'controle', 'action'];
   private displayedNewColumnsSuivi: string[] = ['new_ddp', 'new_stc', 'new_ec', 'new_pb', 'new_ex', 'new_img_cult', 'new_controle', 'new_action'];
-  private displayedColmnSv: string[] = ['saison', 'annee', 'association', 'code_pms', 'nom_pms', 'code_parce', 'variette', 'qsa', 'dds', 'ddp', 'stc', 'ec', 'img_cult', 'pb', 'ex', 'ctrl']
+  private displayedColmnSv: string[] = ['annee', 'saison', 'association', 'code_pms', 'nom_pms', 'code_parce', 'variette', 'qsa', 'dds', 'ddp', 'stc', 'ec', 'img_cult', 'pb', 'ex', 'ctrl']
 
   private dataSource = new MatTableDataSource<Loc_culture_Pms>();
   private dataSourceSingleSuivi = new MatTableDataSource<any>();
@@ -190,6 +212,8 @@ export class SuiviPage implements OnInit {
   private data_suivi_mep: Loc_suivi_mep[] = [];
   private data_all_suivi_mep: Loc_all_suivi_mep[] = [];
   private mepToExport: Mep_export[] = [];
+  private suiviToExport: Suivi_export[] = [];
+  private info_mep_select: Loc_culture_Pms;
 
   constructor(private plt: Platform,
               private router: Router, 
@@ -215,32 +239,22 @@ export class SuiviPage implements OnInit {
       this.district = zone.data.district;
       this.commune = zone.data.commune;
 
-      this.isRouterActive.next(true);
-    } else console.log("Router Suivi is not current");
+      this.loadFktAssociation();
+      this.loadSaison();
+      this.loadEspece();
+      this.loadVariette();
+      this.loadExportMep(this.data_culture);
 
-    this.isRouterActive.subscribe(isActive => {
-      if (isActive) {
-        console.log("Constructeur Beneficiaire Active router");
-        this.loadFktAssociation();
-        this.loadSaison();
-        this.loadEspece();
-        this.loadVariette();
-        this.dataSource.data = this.data_culture;
-        this.isRouterActive.next(false);
-      }
-    });
+    } else console.log("Router Suivi is not current");
   }
 
   ngOnInit() {
-
-    for(var i=0;i<30;i++) {
-      var obj = {
-        id: "id" + i.toString(),
-        name: "name" + i.toString(),
-        email: "email" + i.toString()
-      };
-      this.arr.push(obj);
-    }
+    setTimeout(async () => {
+      const loading = await this.loadingCtrl.create();
+      await loading.present();
+      this.dataSource.data = this.data_culture;
+      this.loadingCtrl.dismiss();
+    }, 1000);
     this.suiviForm = this.formBuilder.group({
       ddp: [null, Validators.required],
       stc: ['', Validators.required],
@@ -249,56 +263,52 @@ export class SuiviPage implements OnInit {
       ex: '',
       controle: '',
     });
-    //this.loadFiles();
-    this.dataSource.data = this.data_culture;
   }
 
   // filtre
   applyFilterSelect(value, source: string) {
     console.log("function applyFiltre::: ",value);
-    let filterMep: Loc_culture_Pms[] = [];
     if (source === 'association') {
-      const filterVal = value.code_assoc;
-      this.dataSource.filter = filterVal.trim();
-      filterMep = this.data_culture.filter(item => {
-        return item.code_ass === filterVal.trim();
-      });
-      this.filterDataBenef = this.pmsToFilter.filter(item => {
-        return item.id_association === filterVal;
-      });
-      this.loadExportMep(filterMep);
+      if (value != undefined) {
+        const filterVal = value.code_assoc;
+        this.dataSource.filter = filterVal.trim();
+  
+        this.filterDataBenef = this.pmsToFilter.filter(item => {
+          return item.id_association === filterVal;
+        });
+        this.loadFilterExportAssoc(filterVal);
+      }
     } else if (source === 'pms') {
       if (value != undefined) {
         const filterVal = value.code_benef_pms;
         this.dataSource.filter = filterVal.trim();
-        filterMep = this.data_culture.filter(item => {
-          return item.code_benef_pms === filterVal.trim();
-        });
-        this.loadExportMep(filterMep);
+        this.loadFilterExportPms(filterVal);
       } else {
         console.log("Selectionner Aucun!!", value);
         const filterVal = this.selectedAssoc.code_assoc;
         this.dataSource.filter = filterVal.trim();
-        filterMep = this.data_culture.filter(item => {
-          return item.code_ass === filterVal.trim();
-        });
-        this.loadExportMep(filterMep);
+        this.loadFilterExportAssoc(filterVal);
       }
     } else if (source === 'assoc_suivi') {
       // filter suivi
-      const filterVal = value.code_assoc;
-      this.dataSourceSuivi.filter = filterVal.trim();
-      this.filterDataBenef = this.pmsToFilter.filter(item => {
-        return item.id_association === filterVal;
-      });
+      if (value != undefined) {
+        const filterVal = value.code_assoc;
+        this.dataSourceSuivi.filter = filterVal.trim();
+        this.filterDataBenef = this.pmsToFilter.filter(item => {
+          return item.id_association === filterVal;
+        });
+        this.loadFilterExportAssoc(filterVal);
+      }
     } else if (source === 'pms_suivi') {
       // filter suivi
       if (value != undefined) {
         const filterVal = value.code_benef_pms;
         this.dataSourceSuivi.filter = filterVal.trim();
+        this.loadFilterExportPms(filterVal);
       } else {
-        const filterVal = this.selectedAssoc.code_assoc;
+        const filterVal = this.selectedAssocSv.code_assoc;
         this.dataSourceSuivi.filter = filterVal.trim();
+        this.loadFilterExportAssoc(filterVal);
       }
     }
   }
@@ -308,16 +318,46 @@ export class SuiviPage implements OnInit {
       this.dataSource.data = this.data_culture;
       this.filterDataBenef = [];
       this.loadExportMep(this.data_culture);
+      this.loadExportSuivi(this.data_all_suivi_mep);
     } else if(source === 'assoc_suivi') {
       this.dataSourceSuivi.filter = '';
       this.dataSourceSuivi.data = this.data_all_suivi_mep;
       this.filterDataBenef = [];
+      this.loadExportMep(this.data_culture);
+      this.loadExportSuivi(this.data_all_suivi_mep);
     }
+  }
+  loadFilterExportAssoc(filtervalue: string) {
+    let filterMep: Loc_culture_Pms[] = [];
+    let filterSuivi: Loc_all_suivi_mep[] = [];
+    // filter value to export
+    filterMep = this.data_culture.filter(item => {
+      return item.code_ass === filtervalue.trim();
+    });
+    filterSuivi = this.data_all_suivi_mep.filter(item => {
+      return item.code_ass === filtervalue.trim();
+    });
+    // load data to Export
+    this.loadExportMep(filterMep);
+    this.loadExportSuivi(filterSuivi);
+  }
+  loadFilterExportPms(filterV: string) {
+    let filterMep: Loc_culture_Pms[] = [];
+    let filterSuivi: Loc_all_suivi_mep[] = [];
+
+    filterMep = this.data_culture.filter(item => {
+      return item.code_benef_pms === filterV.trim();
+    });
+    filterSuivi = this.data_all_suivi_mep.filter(item => {
+      return item.code_pms === filterV.trim();
+    });
+    this.loadExportSuivi(filterSuivi);
+    this.loadExportMep(filterMep);
   }
 
   async loadFktAssociation() {
-    const loading = await this.loadingCtrl.create();
-    await loading.present();
+    /**const loading = await this.loadingCtrl.create();
+    await loading.present();*/
 
     const code_com = this.commune.code_com;
     let code_equipe: number;
@@ -346,6 +386,7 @@ export class SuiviPage implements OnInit {
                 }
                 console.log(elem_ass);
                 this.data_association.push(elem_ass);
+                
                 this.filterDataAssoc.push({
                   code_assoc: elem_ass.code_ass,
                   nom_assoc : elem_ass.nom_ass
@@ -366,46 +407,58 @@ export class SuiviPage implements OnInit {
                     });
                   }
                 });
-                // load All suivi mep Association
-                this.loadData.loadAllSuiviCulture(elem_ass.code_ass).then(res_suivi => {
-                  console.log("Response load All Suivi::: ",res_suivi.values);
-                  if (res_suivi.values.length > 0) {
-                    res_suivi.values.forEach((elem, i) => {
-                      this.data_all_suivi_mep.push(elem);
-                    });
-                  }
-                });
                 this.loadCulture(elem_ass.code_ass);
               });
             }
-            this.dataSource.data = this.data_culture;
-            this.dataSourceSuivi.data = this.data_all_suivi_mep;
             console.log(this.dataSource.data);
           });
 
           // Fin du boucle
-          if ((res_fkt.values.length - 1) === index) {
-            this.dataSource.data = this.dataSource.data;
-            this.selectMatTab(0);
-            this.loadingCtrl.dismiss();
+          if ((res_fkt.values.length - 1) === index) {            
+
           }
         });
       }
     });
   }
   // refresh datasource table culture
-  refreshTbCulture() {
-    this.data_culture = [];
-    this.data_association.forEach((elem_ass, i) => {
-      this.loadCulture(elem_ass.code_ass);
-      if ((this.data_association.length - 1) === i) {
+  async refreshTbCulture() {
+    const loading = await this.loadingCtrl.create();
+    await loading.present();
+    if (this.data_association.length > 0) {
+      this.data_culture = [];
+      
+      this.data_association.forEach((elem_ass, i) => {
+        this.loadCulture(elem_ass.code_ass);
+      });
+      setTimeout(() => {
         this.dataSource.data = this.data_culture;
-      }
-    });
-    this.dataSource.data = this.data_culture;;
-    console.log("refresh**********");
-    console.log(this.data_culture);
-    console.log(this.dataSource.data);
+        this.loadingCtrl.dismiss();
+      }, 500);
+    } else this.loadingCtrl.dismiss();
+  }
+// Load All Suivi Culture
+  async refreshTbSuivi() {
+    const loading = await this.loadingCtrl.create();
+    await loading.present();
+    if (this.data_association.length > 0) {
+      this.data_all_suivi_mep = [];
+      this.data_association.forEach((elem_ass, i) => {
+        this.loadData.loadAllSuiviCulture(elem_ass.code_ass).then(res_suivi => {
+          console.log("Response load All Suivi::: ",res_suivi.values);
+          if (res_suivi.values.length > 0) {
+            res_suivi.values.forEach((elem, i) => {
+              this.data_all_suivi_mep.push(elem);
+            });
+          }
+        });
+      });
+      setTimeout(() => {
+        this.dataSourceSuivi.data = this.data_all_suivi_mep;
+        this.loadExportSuivi(this.data_all_suivi_mep);
+        this.loadingCtrl.dismiss();
+      }, 500);
+    } else this.loadingCtrl.dismiss();
   }
 
   // load Culture Pms
@@ -418,14 +471,12 @@ export class SuiviPage implements OnInit {
       if (res_cult.values.length > 0) {
         res_cult.values.forEach((elem_cult, i) => {
           this.data_culture.push(elem_cult);
-          if ((res_cult.values.length - 1) === i) {
-            this.loadExportMep(this.data_culture);
-          }
         });
       }
       console.log(this.data_culture);
     });
   }
+
   // load Export Mep
   loadExportMep(mep_pms: Loc_culture_Pms[]) {
     console.log("Data Mep to Export ::", mep_pms)
@@ -440,14 +491,40 @@ export class SuiviPage implements OnInit {
         Prenom: item.prenom,
         Code_parce: item.id_parce,
         Sfce_reel: item.superficie,
-        Ddp: item.ddp,
+        DDP: item.ddp,
         variette: item.nom_var,
-        qsa: item.qsa,
-        Dds: item.dds,
+        QSA: item.qsa,
+        DDS: item.dds,
         sfce_emblavee: item.sfce,
         Objectif: item.objectif,
-        Sc: item.sc,
-        ea :item.ea
+        SC: item.sc,
+        EA:item.ea
+      });
+    });
+  }
+
+  loadExportSuivi(dataToExport: Loc_all_suivi_mep[]) {
+    console.log("Data suivi to Exporte ", dataToExport);
+    this.suiviToExport = [];
+    dataToExport.forEach(elem => {
+      this.suiviToExport.push({
+        Annee: elem.annee_du,
+        Saison: elem.saison,
+        Association: elem.association,
+        Code_pms: elem.code_pms,
+        Nom: elem.nom,
+        Prenom: elem.prenom,
+        Code_parce: elem.id_parce,
+        variette: elem.nom_var,
+        QSA: elem.qsa,
+        DDS: elem.dds,
+        Sfce_emblavee: elem.sfce,
+        DDP: elem.ddp,
+        STC: elem.stc,
+        EC: elem.ec,
+        PB: elem.pb,
+        EX: elem.ex,
+        Controle: elem.controle
       });
     });
   }
@@ -490,9 +567,8 @@ export class SuiviPage implements OnInit {
 
   // export excelle
   createExcel() {
-    console.log(this.arr);
     var ws = XLSX.utils.json_to_sheet(this.mepToExport);
-    var ws2 = XLSX.utils.json_to_sheet(this.data_all_suivi_mep);
+    var ws2 = XLSX.utils.json_to_sheet( this.suiviToExport);
     /**var wb = {
       Sheets: {
         'data_sheet': ws
@@ -533,11 +609,10 @@ export class SuiviPage implements OnInit {
     }
     this.presentModal(data);
   }
-  onCancelSauvegarde() {
+  onFinish() {
     this.initDataTable();
-  }
-  onSauvegarde() {
-    
+    this.suiviForm.reset();
+    this.initFiltre();
   }
   onClickModifElement(index, row) {
     console.log('index ' + index);
@@ -554,8 +629,9 @@ export class SuiviPage implements OnInit {
   onClickSuiviElementMep(i: number, elem: any) {
     console.log(i);
     console.log(elem);
+    this.info_mep_select = elem;
     this.code_cult_selected = elem.code_culture;
-    this.loadSuiviMep(this.code_cult_selected)
+    this.loadSuiviMep(this.code_cult_selected);
     this.isClickedElemCultToSuivi = true;
   }
   openDialog(row) {
@@ -575,12 +651,12 @@ export class SuiviPage implements OnInit {
         id_var: this.new_culte.code_variette,
         id_saison: this.new_culte.code_saison,
         annee_du: this.new_culte.annee_du,
-        ddp: this.new_culte.ddp.format("YYYY-MM-DD"),
+        ddp: this.new_culte.ddp,
         dt_creation: row.dt_creation,
         dt_modification: moment().format("YYYY-MM-DD"),
         qsa: this.new_culte.qsa,
         img_fact: null,
-        dds: this.new_culte.dateSemis.format("YYYY-MM-DD"),
+        dds: this.new_culte.dateSemis,
         sfce: this.new_culte.sfce,
         objectif: this.new_culte.Objectif,
         sc: this.new_culte.sc,
@@ -591,6 +667,7 @@ export class SuiviPage implements OnInit {
       }
       this.crudDb.UpdatedCulture(editCulte).then(res => {
         console.log(res.changes);
+        this.refreshTbCulture();
       });
       this.isEditableCulte = false;
     }
@@ -613,7 +690,8 @@ export class SuiviPage implements OnInit {
     let order: number = 1;
 
     const id_ass = {
-      code_ass: this.new_culte.code_ass
+      code_ass: this.new_culte.code_ass,
+      annee_du: this.new_culte.annee_du
     }
     this.loadData.loadCulturesPms(id_ass).then(res_cult => {
       console.log(res_cult);
@@ -708,12 +786,12 @@ export class SuiviPage implements OnInit {
         id_var: this.new_culte.code_variette,
         id_saison: this.new_culte.code_saison,
         annee_du: this.new_culte.annee_du,
-        ddp: this.new_culte.ddp.format("YYYY-MM-DD"),
+        ddp: this.new_culte.ddp,
         dt_creation: moment().format("YYYY-MM-DD"),
         dt_modification: moment().format("YYYY-MM-DD"),
         qsa: this.new_culte.qsa,
         img_fact: null,
-        dds: this.new_culte.dateSemis.format("YYYY-MM-DD"),
+        dds: this.new_culte.dateSemis,
         sfce: this.new_culte.sfce,
         objectif: this.new_culte.Objectif,
         sc: this.new_culte.sc,
@@ -848,6 +926,7 @@ export class SuiviPage implements OnInit {
       ddp: ddp.format("YYYY-MM-DD"),
       stc: val.stc,
       ec: val.ec.value,
+      pb: val.pb,
       ex: val.ex,
       img_cult: this.fileLastImage.data === 'null' || this.fileLastImage.data === null? elem.img_cult:this.fileLastImage.data,
       name: this.fileLastImage.name === 'null' || this.fileLastImage.name === null? elem.name:this.fileLastImage.name,
@@ -859,6 +938,8 @@ export class SuiviPage implements OnInit {
     console.log(data_);
     this.crudDb.UpdatedSuivi(data_).then(res => {
       console.log(res.changes);
+      // refresh
+      this.loadSuiviMep(this.code_cult_selected);
     });
     if  (this.fileLastImage != undefined && this.fileLastImage.data !== null) {
       this.deleteImage(this.fileLastImage);
@@ -882,6 +963,11 @@ export class SuiviPage implements OnInit {
     }
     this.isEditableSuivi = false;
     this.suiviForm.reset();
+  }
+
+  // generer code Culture
+  generateCodeCulte() {
+
   }
 
   // load suivi Mise en place culture
@@ -945,7 +1031,13 @@ export class SuiviPage implements OnInit {
       console.log(data_modal);
       if (data_modal.data != undefined) {
         let res = data_modal.data;
+        let ddp: Moment = this.new_culte.ddp;
+        let dds: Moment = this.new_culte.dateSemis;
+
         this.new_culte = res.new_cult;
+        this.new_culte.ddp = ddp.format("YYYY-MM-DD");
+        this.new_culte.dateSemis = dds.format("YYYY-MM-DD");
+
         if (data_.intitule == 'add_suivi') {
           console.log("**Add suivi dismissed");
           this.isNewCultureClicked = true;
@@ -960,12 +1052,13 @@ export class SuiviPage implements OnInit {
   // Event selected mattable groupe
   selectMatTab(index: number) {
     console.log("index Mat-Tab Selected : " + index);
-    this.initDataTable();
-    this.suiviForm.reset();
+    /**this.initDataTable();
+    this.suiviForm.reset();*/
+    this.onFinish();
     if (index == 0) {
-      this.initFiltre();
+      //this.initFiltre();
     } else if (index == 1) {
-      this.initFiltre();
+      this.refreshTbSuivi();
       console.log("selected index 1*******");   
     } 
   }
@@ -979,6 +1072,8 @@ export class SuiviPage implements OnInit {
     this.dataSourceSuivi.data = this.data_all_suivi_mep;
     this.selectedAssoc = null;
     this.selectedBeneficiare = null;
+    this.selectedAssocSv = null;
+    this.selectedBeneficiareSv = null;
     this.loadExportMep(this.data_culture);
   }
 
@@ -989,6 +1084,7 @@ export class SuiviPage implements OnInit {
       this.isNewCultureClicked = false;
       this.indexRowEdit = null;
       this.isUpdated = false;
+      this.refreshTbCulture();
     }
     if (this.isSuiviClicked) {
       this.isSuiviClicked = false;
@@ -1090,6 +1186,7 @@ export class SuiviPage implements OnInit {
       async (err) => {
         // Folder does not yet exists!
         console.log("Folder doen't existe:: ", IMAGE_DIR);
+        this.deleteLocalImage(photo);
       }
     ).then(_ => {
       //loading.dismiss();

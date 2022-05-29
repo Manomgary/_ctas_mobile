@@ -98,10 +98,10 @@
                     </div>
                     <div class="child-row-flex">
                       <mat-form-field appearance="fill">
-                        <mat-label>dds</mat-label>
-                        <input matInput [matDatepicker]="ds" [(ngModel)]="dateSemis">
-                        <mat-datepicker-toggle matSuffix [for]="ds"></mat-datepicker-toggle>
-                        <mat-datepicker #ds></mat-datepicker>
+                        <mat-label>ddp</mat-label>
+                        <input matInput [matDatepicker]="dp" [(ngModel)]="ddp" disabled>
+                        <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                        <mat-datepicker #dp disabled="false"></mat-datepicker>
                       </mat-form-field>	
                     </div>
                   </div>
@@ -167,10 +167,10 @@
                     </div>
                     <div class="child-row-flex">
                       <mat-form-field appearance="fill">
-                        <mat-label>ddp</mat-label>
-                        <input matInput [matDatepicker]="dp" [(ngModel)]="ddp" disabled>
-                        <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
-                        <mat-datepicker #dp disabled="false"></mat-datepicker>
+                        <mat-label>dds</mat-label>
+                        <input matInput [matDatepicker]="ds" [(ngModel)]="dateSemis">
+                        <mat-datepicker-toggle matSuffix [for]="ds"></mat-datepicker-toggle>
+                        <mat-datepicker #ds></mat-datepicker>
                       </mat-form-field>	
                     </div>
                   </div>

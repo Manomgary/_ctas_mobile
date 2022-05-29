@@ -34,7 +34,12 @@ const routes: Routes = [
   {
     path: 'synchro',
     loadChildren: () => import('./pages/synchro/synchro-routing.module').then( m => m.SynchroPageRoutingModule)
+  },
+  {
+    path: 'modal-bloc',
+    loadChildren: () => import('./pages/modals/modal-bloc/modal-bloc.module').then( m => m.ModalBlocPageModule)
   }
+
 ];
 
 @NgModule({

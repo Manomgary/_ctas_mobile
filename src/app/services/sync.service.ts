@@ -28,4 +28,14 @@ export class SyncService {
   syncSuivi(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'culture/update_suivi', data, this.httpOptions);
   }
+
+  // sync Mep bloc
+  syncMepBloc(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'culture/update_mep_bloc', data, this.httpOptions);
+  }
+
+  // Sync Suivi Bloc
+  syncSuiviBloc(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'culture/update_suivi_bloc', data, this.httpOptions);
+  }
 }

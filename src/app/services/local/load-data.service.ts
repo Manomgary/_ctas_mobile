@@ -633,15 +633,11 @@ export class LoadDataService {
  ***************************************/
   async loadCulturesPms(data: any) {
     let state = `SELECT CLT.code_culture, CLT.id_parce, AS_PRC.superficie, BPMS.code_benef_pms, B.nom, B.prenom, ESP.code_espece, ESP.nom_espece, CLT.id_var, VAR.nom_var, CLT.id_saison, S.intitule as saison, ASS.code_ass, ASS.nom AS association, CLT.annee_du, CLT.ddp, CLT.qsa, CLT.img_fact, CLT.dds, CLT.sfce, CLT.objectif, CLT.sc, CLT.ea_id_variette, CLT.ea_autres, CASE 
-                  WHEN CLT.ea_id_variette != "null" 
-                    THEN (SELECT V.nom_var FROM variette V WHERE V.code_var = CLT.ea_id_variette)
-                  WHEN CLT.ea_autres != "null" THEN CLT.ea_autres
-                  ELSE ''
-                  END AS ea, 
-                  CASE WHEN CLT.ea_id_variette != "null" 
-                  THEN (SELECT V.id_espece FROM variette V WHERE V.code_var = CLT.ea_id_variette)
-                  ELSE '' 
-                  END AS ea_id_espece,
+                  WHEN CLT.ea_id_variette IS NOT NULL THEN (SELECT V.nom_var FROM variette V WHERE V.code_var = CLT.ea_id_variette)
+                  WHEN CLT.ea_autres IS NOT NULL THEN CLT.ea_autres
+                  ELSE '' END AS ea, 
+                  CASE WHEN CLT.ea_id_variette IS NOT NULL THEN (SELECT V.id_espece FROM variette V WHERE V.code_var = CLT.ea_id_variette)
+                  ELSE '' END AS ea_id_espece,
                   CLT.dt_creation, CLT.dt_modification, CLT.statuts, CLT.Etat 
                   FROM cultures_pms CLT
                   INNER JOIN saison S ON S.code_saison = CLT.id_saison
@@ -653,8 +649,13 @@ export class LoadDataService {
                   INNER JOIN espece ESP ON ESP.code_espece = VAR.id_espece`;
     if (!(Object.keys(data).length === 0)) {
       if (data.code_ass != undefined) {
-        state += ` WHERE B.statut = "active" AND BPMS.status = "active" AND AS_PRC.status = "active" AND CLT.statuts = "EC" AND ASS.code_ass = "${data.code_ass}"
+        if (data.annee_du != undefined) {
+          state += ` WHERE B.statut = "active" AND BPMS.status = "active" AND AS_PRC.status = "active" AND CLT.statuts = "EC" AND ASS.code_ass = "${data.code_ass}" AND CLT.annee_du = "${data.annee_du}"
                   ORDER BY ASS.nom, CLT.code_culture`;
+        } else {
+          state += ` WHERE B.statut = "active" AND BPMS.status = "active" AND AS_PRC.status = "active" AND CLT.statuts = "EC" AND ASS.code_ass = "${data.code_ass}"
+                  ORDER BY ASS.nom, CLT.code_culture`;
+        }
       } else if (data.code_cult != undefined) {
         state += ` WHERE B.statut = "active" AND BPMS.status = "active" AND AS_PRC.status = "active" AND CLT.statuts = "EC" AND CLT.code_culture = "${data.code_cult}"`;
       }
@@ -673,7 +674,7 @@ export class LoadDataService {
   async loadAllSuiviCulture(code_ass: string) {
     const state = `SELECT SPMS.id, SPMS.id_culture, ASS.code_ass, ASS.nom AS association, 
     BPMS.code_benef_pms AS code_pms, BNF.nom, BNF.prenom, CPMS.id_parce, ASS_PRC.superficie AS superficie_reel, 
-    CPMS.id_var, ESP.nom_espece || " " || VAR.nom_var as VAR.nom_var, CPMS.id_saison, SS.intitule AS saison, 
+    CPMS.id_var, VAR.nom_var, CPMS.id_saison, SS.intitule AS saison, 
     SS.description AS desc_saison, CPMS.annee_du, CPMS.qsa, CPMS.dds, CPMS.sfce, CPMS.objectif, CPMS.sc, SPMS.ddp, 
     SPMS.stc, SPMS.ec, SPMS.pb, SPMS.ex, SPMS.img_cult, SPMS.name, SPMS.controle 
     FROM suivi_pms  SPMS
@@ -685,7 +686,9 @@ export class LoadDataService {
     INNER JOIN Beneficiaire BNF ON BNF.code_benef = ASS_PRC.id_benef
     INNER JOIN benef_activ_pms BPMS ON BPMS.id_benef = BNF.code_benef
     INNER JOIN association ASS ON ASS.code_ass = ASS_PRC.id_assoc
-    WHERE ASS.code_ass = "${code_ass}";`; // CPMS.statuts = "EC" AND ASS_PRC.status = "active" AND BPMS.status = "active" AND 
+    WHERE ASS_PRC.status = "active" AND BPMS.status = "active" AND ASS.code_ass = "${code_ass}";`; 
+    // ESP.nom_espece || " " || VAR.nom_var as 
+    // CPMS.statuts = "EC" AND 
     return await this.db.query(state);
   }
 
@@ -758,6 +761,66 @@ export class LoadDataService {
       }
     }
     return await this.db.query(state);
+  }
+
+  async loadMepBloc(data: any) {
+    const state = `SELECT CBL.code_culture, BL.code_bloc, BL.nom AS nom_bl, BBL.code_benef_bl, BNF.nom, BNF.prenom, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, SS.intitule, CBL.annee_du, CBL.ddp, CBL.qso, CBL.dds, CBL.sfce, CBL.sc, CBL.ea_autres, CBL.ea_id_variette, CBL.dt_creation, CBL.dt_modification, CBL.status, CBL.etat, CBL.id_equipe, CBL.type, 
+                CASE 
+                WHEN CBL.id_var IS NOT NULL THEN 
+                (SELECT E.code_espece FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.id_var)
+                ELSE '' END AS code_espece,
+                CASE WHEN CBL.id_var IS NOT NULL THEN 
+                (SELECT V.nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.id_var)
+                ELSE '' END AS nom_var, 
+                CASE WHEN CBL.ea_id_variette IS NOT NULL THEN (SELECT E.code_espece FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.ea_id_variette)
+                ELSE '' END AS code_espece_ea,
+                CASE WHEN CBL.id_espece IS NOT NULL THEN (SELECT nom_espece FROM espece WHERE code_espece = CBL.id_espece) ELSE '' END AS nom_espece, CASE 
+                WHEN CBL.ea_id_variette IS NOT NULL THEN (SELECT (E.nom_espece || ' ' || V.nom_var) AS nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.ea_id_variette)
+                WHEN CBL.ea_autres IS NOT NULL THEN CBL.ea_autres 
+                ELSE '' END AS ea
+                FROM culture_bl CBL
+                INNER JOIN saison SS ON SS.code_saison = CBL.id_saison
+                INNER JOIN bloc_parce BPRC ON BPRC.code_parce = CBL.id_parce
+                INNER JOIN benef_activ_bl BBL ON BBL.id_benef = BPRC.id_benef 
+                INNER JOIN beneficiaire BNF ON BNF.code_benef = BPRC.id_benef
+                INNER JOIN bloc BL ON BL.code_bloc = BBL.id_bloc
+                WHERE BPRC.status = "active" AND BBL.status = "active" AND BNF.statut = "active" `;
+    if (data.type != undefined && data.id_bloc != undefined && data.id_saison != undefined && data.annee_du != undefined) {
+      let req = state + `AND CBL.type = "${data.type}" AND BL.code_bloc  = "${data.id_bloc}" AND CBL.id_saison = "${data.id_saison}" AND CBL.annee_du = "${data.annee_du}";`;
+      return await this.db.query(req);
+    } else {
+      let req = state + `AND BL.code_bloc  = "${data.id_bloc}";`;
+      return await this.db.query(req);
+    }
+  }
+  /**
+   * Load Single Suivi Mep Bloc
+   */
+  async loadSuiviBloc(code_mep: string) {
+    const req = `SELECT SVBL.code_sv, SVBL.id_culture, SVBL.ddp, SVBL.stc, SVBL.ql, SVBL.qr, SVBL.long_ligne, SVBL.nbre_ligne, SVBL.nbre_pied, SVBL.img_cult, SVBL.ex, SVBL.etat 
+                FROM suivi_bl SVBL
+                INNER JOIN culture_bl CBL ON CBL.code_culture = SVBL.id_culture
+                WHERE SVBL.id_culture = "${code_mep}"`;
+    return await this.db.query(req);
+  }
+  /**
+   * Load All Suivi Mep Bloc
+   */
+  async loadAllSuiviBloc(data: any) {
+    const req = `SELECT SBL.code_sv, BL.nom AS bloc, BABL.code_benef_bl, BNF.nom, BNF.prenom, SBL.id_culture, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, Ss.intitule AS saison, CBL.annee_du, CBL.qso, CBL.dds, CBL.sfce, CBL.sc AS mep_sc, CBL.ea_autres, CBL.ea_id_variette, SBL.ddp, SBL.stc, SBL.ql, SBL.qr, SBL.long_ligne, SBL.nbre_ligne, SBL.nbre_pied, SBL.img_cult, SBL.ex, SBL.etat, CBL.type,
+                CASE WHEN CBL.id_espece IS NOT NULL THEN (SELECT nom_espece FROM espece WHERE code_espece = CBL.id_espece)
+                ELSE '' END AS espece,
+                CASE WHEN CBL.id_var IS NOT NULL THEN (SELECT E.nom_espece || ' ' || V.nom_var AS nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE code_var = CBL.id_var)
+                ELSE '' END AS variette
+                FROM suivi_bl SBL
+                INNER JOIN culture_bl CBL ON CBL.code_culture = SBL.id_culture
+                INNER JOIN bloc_parce BPRC ON BPRC.code_parce = CBL.id_parce
+                INNER JOIN bloc BL ON BL.code_bloc = BPRC.id_bloc
+                INNER JOIN saison Ss ON Ss.code_saison = CBL.id_saison
+                INNER JOIN beneficiaire BNF ON BNF.code_benef = BPRC.id_benef
+                INNER JOIN benef_activ_bl BABL ON BABL.id_benef = BNF.code_benef
+                WHERE BNF.statut = "active" AND BPRC.status = "active" AND BABL.status = "active" AND BL.code_bloc = "${data.id_bloc}"`;
+    return await this.db.query(req);
   }
 
   getStateQuer() {

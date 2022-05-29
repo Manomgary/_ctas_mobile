@@ -169,4 +169,14 @@ export class ApiService {
   getSuiPms(data: any): Observable<any[]> {
     return this.http.post<any[]>(this.base_path + 'culture/find_suivipms', data, this.httpOptions);
   }
+
+  // load MEP Bloc
+  getMepBloc(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'culture/find_mep_bloc', data, this.httpOptions);
+  }
+
+  // load Suivi Bloc
+  getSuiviBloc(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'culture/find_suivi_bloc', data, this.httpOptions);
+  }
 }

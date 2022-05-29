@@ -35,6 +35,7 @@ import { SuiviBlocPage } from './pages/suivi_/suivi-bloc/suivi-bloc.page';
 import { TabsPage } from './pages/tabs/tabs.page';
 import { LoginPage } from './login/login.page';
 import { ModalPage } from './pages/modal/modal.page';
+import { ModalBlocPage } from './pages/modals/modal-bloc/modal-bloc.page';
 import { ApiService } from './services/api.service';
 import { ImportDataService } from './services/import-data.service';
 import { LoadDataService } from './services/local/load-data.service';
@@ -62,6 +63,7 @@ import { MY_DATE_FORMATS } from 'src/app/utils/my-date-formats';
     TabsPage,
     LoginPage,
     ModalPage,
+    ModalBlocPage,
     SynchroPage
   ],
   entryComponents: [],

@@ -299,6 +299,41 @@ CREATE TABLE IF NOT EXISTS suivi_pms (
     etat TEXT NOT NULL,
     FOREIGN KEY (id_culture) REFERENCES cultures_pms(code_culture) ON DELETE SET DEFAULT
 );
+CREATE TABLE IF NOT EXISTS culture_bl(
+    code_culture TEXT PRIMARY KEY, 
+    id_parce TEXT NOT NULL, 
+    id_espece TEXT, 
+    id_var TEXT, 
+    id_saison TEXT NOT NULL, 
+    annee_du TEXT NOT NULL, 
+    ddp TEXT NOT NULL, 
+    qso INTEGER, 
+    dds TEXT, 
+    sfce INTEGER NOT NULL, 
+    sc TEXT, 
+    ea_autres TEXT, 
+    ea_id_variette TEXT, 
+    dt_creation TEXT NOT NULL, 
+    dt_modification TEXT NOT NULL, 
+    status TEXT NOT NULL, 
+    etat TEXT NOT NULL, 
+    id_equipe INTEGER NOT NULL,
+    type TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS suivi_bl(
+    code_sv TEXT PRIMARY KEY, 
+    id_culture TEXT NOT NULL, 
+    ddp TEXT NOT NULL,
+    stc TEXT, 
+    ql INTEGER, 
+    qr INTEGER, 
+    long_ligne INTEGER, 
+    nbre_ligne INTEGER, 
+    nbre_pied INTEGER, 
+    img_cult TEXT, 
+    ex INTEGER,
+    etat TEXT NOT NULL
+);
 PRAGMA ctas_version = 1;
 `;
 

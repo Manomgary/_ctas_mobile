@@ -112,10 +112,10 @@ export class BeneficiaireBlocPage implements OnInit {
     this.dataSourceParcelle.sort = this.parcelleSort;
   }
 
-  async loadCommuneBloc(){  
+  loadCommuneBloc(){  
     // zone bloc
-    const loading = await this.loadingCtrl.create();
-    await loading.present();
+    /**const loading = await this.loadingCtrl.create();
+    await loading.present();*/
     let commune: Loc_Commune[] = [];
     let code_equipe: number;
     this.data_bloc = [];
@@ -182,10 +182,10 @@ export class BeneficiaireBlocPage implements OnInit {
           // Fin du boucle
           if ((commune.length - 1) === i) {
             console.log("Fin du bloc");
-            this.loadingCtrl.dismiss();
+            //this.loadingCtrl.dismiss();
           }
         });
-      } else this.loadingCtrl.dismiss();
+      } //else //this.loadingCtrl.dismiss();
     });
   }
 
@@ -253,6 +253,16 @@ export class BeneficiaireBlocPage implements OnInit {
         this.dataSourceParceBenef.data = data_bloc_parce_benef;
       } else this.dataSourceParceBenef.data = data_bloc_parce_benef;
     });
+  }
+
+  onClose() {
+    if (this.isClickedBloc) {
+      this.isClickedBloc = false;
+    }
+
+    if (this.isClickedBenef) {
+      this.isClickedBenef = false;
+    }
   }
 
   selectMatTab(index: number) {

@@ -66,3 +66,36 @@
 .item-matcard-flex {
     height:30px;
 }
+
+/**************************************
+*TABLE 
+***************************************/
+table {
+    width: 100%;
+}
+.table-container {
+    position: relative;
+    min-height: 250px;
+    max-height: 400px;
+    overflow: auto;
+}
+tr.mat-header-row {
+    height: 30px;
+    background-color: rgb(116 177 198);
+}
+::ng-deep .second-header-row {
+    background-color: rgb(173, 194, 100) !important;
+}
+th.mat-header-cell:first-of-type, td.mat-cell:first-of-type, td.mat-footer-cell:first-of-type {
+    padding-left: 2px;
+}
+th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:last-of-type {
+    padding-right: 0px;
+}
+tr.mat-row, tr.mat-footer-row {
+    height: 15px;
+}
+th.mat-header-cell, td.mat-cell, td.mat-footer-cell {
+    border-right-width: 0.4px;
+    border-right-style: inset;
+}

@@ -2,36 +2,24 @@
     position: relative;
     width: 100%;
 } 
+.demo-button {
+    background-color: rgb(6, 85, 81);
+    color: aliceblue;
+}
+.button-Finish {
+    background-color: rgb(19, 119, 10);
+}
 
-.table-container {
-    position: relative;
-    min-height: 250px;
-    max-height: 400px;
-    overflow: auto;
+ion-accordion.my-accordion ion-item.level1 {
+    background-color: rgb(26, 101, 145);
+    color: rgb(0, 0, 0);
 }
-table {
-    width: 100%;
+ion-accordion.accordion-expanding ion-item.level1,
+ion-accordion.accordion-expanded ion-item.level1 {
+  background-color: rgb(35, 174, 255);
+  --color: rgb(143, 0, 0);
 }
-tr.mat-header-row {
-    height: 30px;
-    background-color: rgb(116 177 198);;
-}
-::ng-deep .second-header-row {
-    background-color: rgb(223 235 228) !important;
-}
-th.mat-header-cell:first-of-type, td.mat-cell:first-of-type, td.mat-footer-cell:first-of-type {
-    padding-left: 2px;
-}
-th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:last-of-type {
-    padding-right: 0px;
-}
-tr.mat-row, tr.mat-footer-row {
-    height: 25px;
-}
-th.mat-header-cell, td.mat-cell, td.mat-footer-cell {
-    border-right-width: 0.4px;
-    border-right-style: inset;
-}
+/** Table */
 .content-column-child-4 {
     .mat-column-saison {
         width: 40px;

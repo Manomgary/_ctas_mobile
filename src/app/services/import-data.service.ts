@@ -6,9 +6,10 @@ import { DB_NAME } from '../utils/global-variables';
 import { DatabaseService } from './database.service';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { ApiService } from './api.service';
-import { Activite, bloc_Parcelle, Catego_espece, Collaborateur, Collaborateur_activ, Commune, Culture_pms, District, Equipe, Espece, Fonkotany, Parcelle, Parcelle_Association, Parcelle_bl, 
-        Participe_proj_activ, Projet, ProjetEquipe, Region, Saison, Suivi_pms, Utilisateurs, Variette, Volet } from '../utils/interface-bd';
+import { Activite, bloc_Parcelle, Catego_espece, Collaborateur, Collaborateur_activ, Commune, Culture_pms, District, Equipe, Espece, Fonkotany, Mep_bloc, Parcelle, Parcelle_Association, Parcelle_bl, 
+        Participe_proj_activ, Projet, ProjetEquipe, Region, Saison, Suivi_bloc, Suivi_pms, Utilisateurs, Variette, Volet } from '../utils/interface-bd';
 import { BehaviorSubject } from 'rxjs';
+import { Console } from 'console';
 
 @Injectable({
   providedIn: 'root'
@@ -672,7 +673,8 @@ export class ImportDataService implements OnInit, OnDestroy {
       if (data_benef.length > 0) {
         data_benef.forEach((elem, i) => {
           const insert = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, dt_Insert, statut) 
-                          VALUES ("${elem.code_benef}", "${elem.img_benef}","${elem.nom}", "${elem.prenom}", "${elem.sexe}", "${elem.dt_nais}","${elem.surnom}", ${elem.cin}, "${elem.dt_delivrance}", "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.contact}", "${elem.id_fkt}", "${elem.dt_Insert}", "${elem.statut}");`;
+                          VALUES ("${elem.code_benef}", "${elem.img_benef}","${elem.nom}", ${elem.prenom != null? `"${elem.prenom}"`:null}, "${elem.sexe}", "${elem.dt_nais}","${elem.surnom}", ${elem.cin}, "${elem.dt_delivrance}", 
+                          "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.contact}", "${elem.id_fkt}", "${elem.dt_Insert}", "${elem.statut}");`;
           console.log(elem);
           this.insertData(insert);
           if (i == (data_benef.length - 1)) {
@@ -711,7 +713,7 @@ export class ImportDataService implements OnInit, OnDestroy {
           if (data_benef.length > 0) {
             data_benef.forEach((elem, i) => {
               const insert = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, dt_Insert, statut) 
-                              VALUES ("${elem.code_benef}", "${elem.img_benef}","${elem.nom}", "${elem.prenom}", "${elem.sexe}", "${elem.dt_nais}","${elem.surnom}", ${elem.cin}, "${elem.dt_delivrance}", "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.contact}", "${elem.id_fkt}", "${elem.dt_Insert}", "${elem.status_benef}");`;
+                              VALUES ("${elem.code_benef}", "${elem.img_benef}","${elem.nom}", ${elem.prenom != null? `"${elem.prenom}"`:null}, "${elem.sexe}", "${elem.dt_nais}","${elem.surnom}", ${elem.cin}, "${elem.dt_delivrance}", "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.contact}", "${elem.id_fkt}", "${elem.dt_Insert}", "${elem.status_benef}");`;
               console.log(elem);
               this.insertData(insert);
               if (i == (data_benef.length - 1)) {
@@ -800,7 +802,7 @@ export class ImportDataService implements OnInit, OnDestroy {
       if (data_culture.length > 0) {
         data_culture.forEach((elem, i) => {
           const insert = `INSERT OR IGNORE INTO cultures_pms(code_culture, id_parce, id_var, id_saison, annee_du, ddp, qsa, img_fact, dds, sfce, objectif, sc, ea_id_variette, ea_autres, dt_creation, dt_modification, statuts, Etat)
-                          VALUES ("${elem.code_culture}", "${elem.id_parce}", "${elem.id_var}", "${elem.id_saison}", "${elem.annee_du}", "${elem.ddp}", ${elem.qsa}, "${elem.img_fact}", "${elem.dds}", ${elem.sfce}, ${elem.objectif}, "${elem.sc}", "${elem.ea_id_variette}", "${elem.ea_autres}", "${elem.dt_creation}", "${elem.dt_modification}", "${elem.statuts}", "${elem.Etat}");`;
+                          VALUES ("${elem.code_culture}", "${elem.id_parce}", "${elem.id_var}", "${elem.id_saison}", "${elem.annee_du}", "${elem.ddp}", ${elem.qsa}, ${elem.img_fact != null? `"${elem.img_fact}"`: null}, "${elem.dds}", ${elem.sfce}, ${elem.objectif}, "${elem.sc}", ${elem.ea_id_variette != null? `"${elem.ea_id_variette}"`:null}, ${elem.ea_autres != null?`"${elem.ea_autres}"`: null}, "${elem.dt_creation}", "${elem.dt_modification}", "${elem.statuts}", "${elem.Etat}");`;
           this.insertData(insert);
           code_culture.push({
             code_culture: elem.code_culture
@@ -826,8 +828,9 @@ export class ImportDataService implements OnInit, OnDestroy {
           data_suivi = item_suivi;
           console.log("elem_suivi_pms:::::", item_suivi);
           item_suivi.forEach(elem_suivi => {
-            const insert = `INSERT INTO suivi_pms(id, id_culture, ddp, stc, ec, pb, ex, img_cult, name, path, controle, etat)
-                            VALUES ("${elem_suivi.id}", "${elem_suivi.id_culture}", "${elem_suivi.ddp}", "${elem_suivi.stc}", "${elem_suivi.ec}", "${elem_suivi.pb}", "${elem_suivi.ex}", "${elem_suivi.img_cult}", "${elem_suivi.name}", '', "${elem_suivi.controle}", "${elem_suivi.etat}");`;
+            const insert = `INSERT INTO suivi_pms(id, id_culture, ddp, stc, ec, pb, ex, img_cult, name, controle, etat)
+                            VALUES ("${elem_suivi.id}", "${elem_suivi.id_culture}", "${elem_suivi.ddp}", "${elem_suivi.stc}", "${elem_suivi.ec}", 
+                            ${elem_suivi.pb != null? `"${elem_suivi.pb}"`:null}, ${elem_suivi.ex != null?`"${elem_suivi.ex}"`:null}, ${elem_suivi.img_cult != null? `"${elem_suivi.img_cult}"`:null}, "${elem_suivi.name}", ${elem_suivi.controle != null? `"${elem_suivi.controle}"`:null}, "${elem_suivi.etat}");`;
             this.insertData(insert).then(res => {
               console.log("res inser elem_suivi_pms:::::", res);
               console.log(elem_suivi);
@@ -928,7 +931,48 @@ export class ImportDataService implements OnInit, OnDestroy {
           if (i == (data_bloc_parce.length - 1)) {
             console.log("==Fin du boucle assoc_parce==");
             this.select("bloc_parce", data_bloc_parce);
+
+            // load Mep Bloc
+            this.loadMepBloc(data);
           }
+        });
+      }
+    });
+  }
+
+  loadMepBloc(data: any) {
+    let _data_mep_bloc: Mep_bloc[] = [];
+
+    this.api.getMepBloc(data).subscribe(res_mep => {
+      console.log(":::Reponse MEP BLOC::::", res_mep);
+      _data_mep_bloc = res_mep;
+      if (_data_mep_bloc.length > 0) {
+        _data_mep_bloc.forEach((elem_mep, i) => {
+          const state = `INSERT OR IGNORE INTO culture_bl(code_culture, id_parce, id_espece, id_var, id_saison, annee_du, ddp, qso, dds, sfce, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type) 
+                          VALUES ("${elem_mep.code_culture}", "${elem_mep.id_parce}", ${elem_mep.id_espece != null?`"${elem_mep.id_espece}"`:null}, ${elem_mep.id_var != null?`"${elem_mep.id_var}"`:null}, "${elem_mep.id_saison}", "${elem_mep.annee_du}", "${elem_mep.ddp}", ${elem_mep.qso},
+                          ${elem_mep.dds != null?`"${elem_mep.dds}"`:null}, ${elem_mep.sfce}, ${elem_mep.sc != null?`"${elem_mep.sc}"`:null}, ${elem_mep.ea_autres != null?`"${elem_mep.ea_autres}"`:null}, ${elem_mep.ea_id_variette != null?`"${elem_mep.ea_id_variette}"`:null}, 
+                          "${elem_mep.dt_creation}", "${elem_mep.dt_modification}", "${elem_mep.status}", "${elem_mep.etat}", ${elem_mep.id_equipe}, "${elem_mep.type}");`;
+          this.insertData(state);
+          if ((_data_mep_bloc.length - 1) === i) {
+            console.log("====Fin du boucle MEP Bloc====");
+            // load Suivi Mep
+            this.loadSuiviMepBloc(data);
+          }
+        });
+      }
+    });
+  }
+  loadSuiviMepBloc(data: any) {
+    let data_suivi_bl: Suivi_bloc[] = [];
+
+    this.api.getSuiviBloc(data).subscribe(res_sv => {
+      data_suivi_bl = res_sv;
+      if (data_suivi_bl.length > 0) {
+        data_suivi_bl.forEach((elem_suivi, ind) => {
+          const state = `INSERT OR IGNORE INTO suivi_bl(code_sv, id_culture, ddp, stc, ql, qr, long_ligne, nbre_ligne, nbre_pied, img_cult, ex, etat) 
+                        VALUES ("${elem_suivi.code_sv}", "${elem_suivi.id_culture}", "${elem_suivi.ddp}", ${elem_suivi.stc != null?`"${elem_suivi.stc}"`:null}, ${elem_suivi.ql}, ${elem_suivi.qr}, 
+                        ${elem_suivi.long_ligne}, ${elem_suivi.nbre_ligne}, ${elem_suivi.nbre_pied}, ${elem_suivi.img_cult != null?`"${elem_suivi.img_cult}"`:null}, ${elem_suivi.ex}, "${elem_suivi.etat}");`;
+          this.insertData(state);
         });
       }
     });
