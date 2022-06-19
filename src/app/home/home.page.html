@@ -10,8 +10,8 @@
       <div class="ion-text-center ion-text-wrap">
         <mat-form-field>
           <mat-label>Selectionner projet</mat-label>
-          <mat-select [(ngModel)]="selectedProjet" (ngModelChange)="projetChange($event)">
-            <mat-option *ngFor="let p of projets" [value]="p">
+          <mat-select [(ngModel)]="selectedProjet">
+            <mat-option (click)="onSelectProjet()" *ngFor="let p of projets" [value]="p">
               {{ p.nom }}
             </mat-option>
           </mat-select>
@@ -25,12 +25,12 @@
   <div *ngIf="Activite_Projet == null">
       <p>Aucune Activité trouver pour le projet "{{ nomPrjt }}" !!!</p> 
   </div> 
-  <div *ngIf="Activite_Projet != null">
+  <div *ngIf="Activite_Projet.length > 0">
     <mat-action-list class="list-btn" *ngFor="let activite of Activite_Projet">
-      <button mat-list-item class="btn" (click)="doMenu(activite.intitule)"> {{ activite.description }} </button>
+      <button mat-list-item class="btn" (click)="doMenu(activite)"> {{ activite.description }} </button>
     </mat-action-list>   
   </div> 
-  <mat-action-list class="list-btn">
+  <mat-action-list class="list-btn" *ngIf="Activite_Projet.length > 0">
     <button mat-list-item class="btn" (click)="goToRoot()">Synchronisation</button>
   </mat-action-list>   
   <!--<ion-button expand="full" (click)="doMenu()">PRODUCTION DE SEMENCE</ion-button>

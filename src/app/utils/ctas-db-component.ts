@@ -85,7 +85,8 @@ CREATE TABLE IF NOT EXISTS bloc (
 CREATE TABLE IF NOT EXISTS collaborateur (
     code_col TEXT PRIMARY KEY NOT NULL, 
     nom TEXT NOT NULL, 
-    description TEXT
+    description TEXT,
+    ancronyme TEXT
 );
 
 CREATE TABLE IF NOT EXISTS utilisateurs (

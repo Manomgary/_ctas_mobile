@@ -532,8 +532,8 @@ export class ImportDataService implements OnInit, OnDestroy {
       data_coll = data;
 
       data_coll.forEach((elem, i) => {
-        const insert = `INSERT INTO collaborateur(code_col, nom, description) 
-                        VALUES ("${elem.code_col}", "${elem.nom}", "${elem.description}");`;
+        const insert = `INSERT INTO collaborateur(code_col, nom, description, ancronyme) 
+                        VALUES("${elem.code_col}", "${elem.nom}", ${elem.description != null?`"${elem.description}"`:null}, ${elem.ancronyme != null?`"${elem.ancronyme}"`:null});`;
         console.log(elem);
         this.insertData(insert);
 

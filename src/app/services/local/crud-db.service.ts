@@ -125,7 +125,7 @@ export class CrudDbService {
     if (this.db_ready.dbReady.value) {
       const state = `INSERT INTO benef_activ_pr(code_pr, id_proj, id_activ, id_benef, id_bloc, code_achat, id_collaborateur, id_tech, etat, status) 
                     VALUES ("${data.code_pr}", "${data.id_proj}", ${data.id_activ}, "${data.id_benef}", "${data.id_bloc}", ${data.code_achat != null? `"${data.code_achat}"`:null},
-                    ${data.id_collaborateur}, ${data.id_tech}, "${data.etat}", "${data.status}")`;
+                    "${data.id_collaborateur}", ${data.id_tech}, "${data.etat}", "${data.status}")`;
       return this.db.execute(state);
     }
   }

@@ -129,7 +129,8 @@ export interface Fonkotany {
 export interface Collaborateur {
     code_col: string, 
     nom: string, 
-    description: string
+    description: string,
+    ancronyme: string
 }
 export interface Collaborateur_activ {
     code: number, 

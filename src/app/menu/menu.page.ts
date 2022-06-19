@@ -3,7 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { NavigationExtras, Router, RouterEvent } from '@angular/router';
 import { ModalController, NavController } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
-import { Loc_projet } from '../interfaces/interfaces-local';
+import { Loc_activ_projet, Loc_projet } from '../interfaces/interfaces-local';
 import { SharedService } from '../services/shared.service';
 import { Utilisateurs } from '../utils/interface-bd';
 
@@ -23,7 +23,17 @@ export interface PageInterface {
 export class MenuPage implements OnInit {
     // Basic root for our content view
     //rootPage = 'TabsPage';
-    activite: string = '';
+    activite: Loc_activ_projet = {
+      code: null,
+      id_proj: null,
+      nom: null,
+      id_equipe: null,
+      id_volet: null,
+      id_activ: null,
+      intitule: null,
+      description: null,
+      statuts: null
+    };
     projet: Loc_projet = {
       numero: null,
       code_proj: null,
@@ -110,7 +120,7 @@ export class MenuPage implements OnInit {
     this.selectedPath = data.url;
     if (this.sharedService.getData() != null) {
       data.data = this.sharedService.getData();
-      switch(this.activite.trim().toUpperCase()) {
+      switch(this.activite.intitule.trim().toUpperCase()) {
         case 'BLOC':
           this.pages_bloc.forEach(elements => {
             elements.data = this.sharedService.getData();
@@ -124,7 +134,7 @@ export class MenuPage implements OnInit {
       }
     }
     let navigationExtras: NavigationExtras;
-    switch(this.activite.trim().toUpperCase()) {
+    switch(this.activite.intitule.trim().toUpperCase()) {
       case 'PR' || 'BI':
         navigationExtras = {
           state : {
@@ -156,7 +166,7 @@ export class MenuPage implements OnInit {
 
   goToRoot() {
     let navigationExtras: NavigationExtras;
-    switch(this.activite.trim().toUpperCase()) {
+    switch(this.activite.intitule.trim().toUpperCase()) {
       case 'PR' || 'BI':
         navigationExtras = {
           state : {
@@ -193,7 +203,7 @@ export class MenuPage implements OnInit {
   }
 
   navigateRouter() {
-    if (this.activite.trim().toUpperCase() === 'BLOC') {
+    if (this.activite.intitule.trim().toUpperCase() === 'BLOC') {
       this.pages_bloc.forEach(elements => {
         elements.data = this.zoneInter;
         elements.projet = this.projet;
@@ -203,7 +213,7 @@ export class MenuPage implements OnInit {
       this.benefRoute = 'beneficiaire_bloc';
       this.isBloc.next(true);
       this.goToRoot();
-    } else if (this.activite.trim().toUpperCase() === 'RP') {
+    } else if (this.activite.intitule.trim().toUpperCase() === 'RP') {
       this.pages_pms.forEach(elements => {
         elements.data = this.zoneInter;
         elements.projet = this.projet;
@@ -213,7 +223,7 @@ export class MenuPage implements OnInit {
       this.benefRoute = 'beneficiaire_rp';
       this.isPms.next(true);
       this.goToRoot();
-    } else if (this.activite.trim().toUpperCase() === 'PR') {
+    } else if (this.activite.intitule.trim().toUpperCase() === 'PR') {
       this.pages_pr.forEach(elements => {
         elements.projet = this.projet;
         elements.activite = this.activite;
@@ -222,7 +232,7 @@ export class MenuPage implements OnInit {
       this.benefRoute = 'beneficiare-pr';
       this.isPr.next(true);
       this.goToRoot();
-    } else if (this.activite.trim().toUpperCase() === 'BI') {
+    } else if (this.activite.intitule.trim().toUpperCase() === 'BI') {
       this.pages_pr.forEach(elements => {
         elements.projet = this.projet;
         elements.activite = this.activite;

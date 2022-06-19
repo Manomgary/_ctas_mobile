@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { LoadingController, ModalController, NavParams } from '@ionic/angular';
-import { Benef_activ_pms, Local_Parcelle, Loc_association, Loc_Commune, Loc_culture_Pms, Loc_Espece, Loc_saison, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { Benef_activ_pms, Local_Parcelle, Loc_activ_projet, Loc_association, Loc_Commune, Loc_culture_Pms, Loc_Espece, Loc_saison, Loc_variette } from 'src/app/interfaces/interfaces-local';
 import { ApiService } from 'src/app/services/api.service';
 import { ImportDataService } from 'src/app/services/import-data.service';
 import { Projet } from 'src/app/utils/interface-bd';
@@ -89,7 +89,7 @@ export class ModalPage implements OnInit {
 
   allComplete: boolean = false;
   Activite_Projet: any[];
-  selectedActivite: string;
+  selectedActivite: Loc_activ_projet;
   isBloc: boolean = false;
   data_suivi_edit: Loc_culture_Pms;
 
@@ -135,7 +135,7 @@ export class ModalPage implements OnInit {
       }
       console.log("selected activiter ===> ", this.selectedActivite);
 
-      if (this.selectedActivite.toUpperCase() === 'BLOC') {
+      if (this.selectedActivite.intitule.toUpperCase() === 'BLOC') {
         this.isBloc = true;
       }
 

@@ -144,11 +144,6 @@ export class LoadDataService {
       if (isReady) {
         let act_pr: any[]  = [];
         console.log(this.dbService.dbReady.value);
-        /**const statement = `SELECT  AP.code, AP.id_proj, P.nom, AP.id_activ, A.intitule, A.description,  AP.statuts 
-                            FROM  participe_proj_activ AP 
-                            INNER JOIN activite A ON A.code_act = AP.id_activ
-                            INNER JOIN projet P ON P.code_proj = AP.id_proj
-                            WHERE AP.id_proj = "${ id_projet }";`;*/
         const statement = `SELECT PEV.code, PEV.id_projet AS id_proj, PRJ.nom, PEV.id_equipe, PEV.id_volet, PEV.status_pev AS statuts, A.code_act AS id_activ, A.intitule, A.description
                           FROM projet_equipe_volet PEV
                           INNER JOIN activite A ON A.id_volet = PEV.id_volet
@@ -322,7 +317,8 @@ export class LoadDataService {
               collab.push({
                 code_col: elem.code_col, 
                 nom: elem.nom, 
-                description: elem.description
+                description: elem.description,
+                ancronyme: elem.ancronyme
               });
             });
             this.collaborateur.next(collab);

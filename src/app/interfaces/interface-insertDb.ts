@@ -107,7 +107,7 @@ export interface UpdateBenefActivPr {
     id_benef: string, 
     id_bloc: string, 
     code_achat: string, 
-    id_collaborateur: number, 
+    id_collaborateur: string, 
     id_tech: number, 
     etat: string,
     status: string

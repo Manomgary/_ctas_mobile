@@ -4,7 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { UpdateBenef, UpdateBenefActivPr } from 'src/app/interfaces/interface-insertDb';
-import { LocalFile, Loc_cep_PR, Loc_Commune, Loc_district, Loc_Fokontany, Loc_PR, Loc_projet, Loc_region } from 'src/app/interfaces/interfaces-local';
+import { LocalFile, Loc_activ_projet, Loc_cep_PR, Loc_collaborateur, Loc_Commune, Loc_district, Loc_Fokontany, Loc_PR, Loc_projet, Loc_region } from 'src/app/interfaces/interfaces-local';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
@@ -74,7 +74,7 @@ export class BeneficiairePage implements OnInit {
 
   private projet: Loc_projet;
   private user: Utilisateurs[];
-  private activite: string;
+  private activite: Loc_activ_projet;
 
   private data_pr: Loc_PR[] = [];
   private data_parce: Loc_cep_PR[] = [];
@@ -86,6 +86,8 @@ export class BeneficiairePage implements OnInit {
   // data source Mep
   dataSourcePR = new MatTableDataSource<Loc_PR>();
   dataSourceParce = new MatTableDataSource<Loc_cep_PR>();
+
+  data_collaborateur: Loc_collaborateur[] = [];
 
   isTablePRExpanded = false;
   isAddPr: boolean = false;
@@ -112,6 +114,7 @@ export class BeneficiairePage implements OnInit {
      }
 
   ngOnInit() {
+    this.loadCollabo();
     this.loadPRBloc();
     let data_  = {
       code_projet: this.projet.code_proj,
@@ -124,6 +127,13 @@ export class BeneficiairePage implements OnInit {
 
   ionViewDidEnter() {
     console.log(":::::LifeCycle Suivi function:::: ionViewDidEnter:::");
+  }
+
+  // loadCollaborateur
+  loadCollabo() {
+    this.loadService.loadCollaborateurs().subscribe(data => {
+      this.data_collaborateur = data;
+    });
   }
 
   // load Parcelle
@@ -155,9 +165,8 @@ export class BeneficiairePage implements OnInit {
 
   onSaveAddPr() {
     console.log(this.update_benef);
-    console.log("::::Image Cin::::::", this.update_benef.img_cin_1);
-    console.log("::::Image Data:::::", moment().toNow());
-    let code_benef: string = 'PR' + this.user[this.user.length - 1].id_equipe + '-' + Date.now().toString();
+    let collaborateur: Loc_collaborateur = null;
+    let code_benef: string = 'B' + '-' + this.user[this.user.length - 1].id_equipe + '-' + moment().format('YYYYMMDD-HHmmss');
     let img_cin: any = {
       img_1: this.update_benef.img_cin_1.data,
       img_2: this.update_benef.img_cin_2.data
@@ -175,7 +184,7 @@ export class BeneficiairePage implements OnInit {
       cin: this.update_benef.cin,
       dt_delivrance: this.update_benef.dt_delivrance,
       lieu_delivrance: this.update_benef.lieu_delivrance,
-      img_cin:  JSON.stringify(img_cin),
+      img_cin:  this.update_benef.img_cin_1 != null?this.update_benef.img_cin_1.data: null,
       contact: this.update_benef.contact,
       id_fkt: this.update_benef.fokontany != null?this.update_benef.fokontany.code_fkt:null,
       id_commune: this.update_benef.commune != null?this.update_benef.commune.code_com: null,
@@ -184,24 +193,32 @@ export class BeneficiairePage implements OnInit {
       etat: SYNC,
       statut: ACTIVE
     };
-    console.log(":::::ToAdd Data:::", data_to_add);
+
+    this.data_collaborateur.forEach(elem => {
+      if (elem.nom.trim().toUpperCase() === 'PR') {
+        collaborateur = elem;
+      }
+    });
+
+    console.log(":::::Benef ToAdd Data:::", data_to_add);
     this.crudService.AddBenef(data_to_add).then(res => {
+      let code_pr: string = collaborateur.ancronyme + '-' + this.user[this.user.length - 1].id_equipe + this.projet.ancronyme + '-' + moment().format('YYYYMMDD-HHmmss');
       let add_pr: UpdateBenefActivPr = {
-        code_pr: '',
-        id_proj: '',
-        id_activ: 0,
-        id_benef: '',
-        id_bloc: '',
-        code_achat: '',
-        id_collaborateur: 0,
-        id_tech: 0,
+        code_pr: code_pr,
+        id_proj: this.projet.code_proj,
+        id_activ: this.activite.id_activ,
+        id_benef: code_benef,
+        id_bloc: null,
+        code_achat: this.update_benef.code_achat,
+        id_collaborateur: collaborateur != null?collaborateur.code_col:null,
+        id_tech: this.user[this.user.length - 1].id_equipe,
         etat: SYNC,
-        status: ''
+        status: ACTIVE
       }
-      let data_ = {
-        code_projet: this.projet.code_proj,
-        code_equipe: this.user[this.user.length - 1].id_equipe
-      }
+      console.log(":::::Benef PR ToAdd Data:::", add_pr);
+      this.crudService.AddPrBenef(add_pr).then(res => {
+        this.loadPRBloc();
+      });
 
     });
     this.isAddPr = false;
@@ -246,7 +263,8 @@ export class BeneficiairePage implements OnInit {
   }
 
   onRefresh() {
-    console.log("::::Date now::::::", Date.now().toString());
+    console.log("::::Date now::::::", moment().format('YYYYMMDD') + '-' + moment().format('HHmmss'));
+    console.log("::::Date now Time::::::", moment().format('YYYYMMDD-HHmmss'));
     /**this.loadService.loadAllTable('participe_proj_volet').then(res => {
       console.log(":::::Projet Volety:::::", res);
     });

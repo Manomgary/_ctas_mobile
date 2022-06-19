@@ -22,7 +22,17 @@ export class HomePage implements OnInit {
   nomPrjt: string = '';
   usersReady: boolean = false;
   isFirstConnection: boolean = false;
-  selectedActive: string = '';
+  selectedActive: Loc_activ_projet = {
+    code: null,
+    id_proj: null,
+    nom: null,
+    id_equipe: null,
+    id_volet: null,
+    id_activ: null,
+    intitule: null,
+    description: null,
+    statuts: null
+  };
   selectedProjet: Loc_projet = {
     numero: null,
     code_proj: null,
@@ -86,9 +96,9 @@ export class HomePage implements OnInit {
     });
     await modal.present();
   }
-  doMenu(data: any) {
+  doMenu(data: Loc_activ_projet) {
     this.selectedActive = data;
-    if (this.selectedActive == "PR") {
+    if (this.selectedActive.intitule == "PR") {
       const navigationExtras: NavigationExtras = {
         state : {
           projet: JSON.stringify(this.selectedProjet),
@@ -120,10 +130,18 @@ export class HomePage implements OnInit {
     });
   }
 
-  projetChange(value) {
+  /**projetChange(value) {
     console.log("==== ngModel change ====");
     console.log(value);
     console.log(this.selectedProjet);
+    let data_ = {
+      id_projet: this.selectedProjet.code_proj,
+      code_equipe: this.users[this.users.length - 1].id_equipe
+    }
+    this.loadActivitePr(data_);
+  }*/
+  onSelectProjet() {
+    console.log(":::Selected projet::::", this.selectedProjet);
     let data_ = {
       id_projet: this.selectedProjet.code_proj,
       code_equipe: this.users[this.users.length - 1].id_equipe

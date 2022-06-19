@@ -12,6 +12,12 @@ export interface Loc_projet {
     logo: string, 
     statuts: string
 }
+export interface Loc_collaborateur {
+    code_col: string, 
+    nom: string, 
+    description: string, 
+    ancronyme: string
+}
 export interface Loc_activ_projet {
     code: number, 
     id_proj: string, 
@@ -21,7 +27,7 @@ export interface Loc_activ_projet {
     id_activ: number, 
     intitule: string, 
     description: string, 
-    status_pe: string
+    statuts: string
 }
 export interface Loc_association {
     numero: number,
