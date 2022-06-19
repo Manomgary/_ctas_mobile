@@ -1,0 +1,250 @@
+<ion-header>
+  <div class="container-header-flex">
+    <div class="flex-container" fxLayout="row">
+      <div class="flex-child-1" fxLayoutAlign="center center">
+        <ion-buttons>
+          <ion-menu-button autoHide="false"></ion-menu-button>
+        </ion-buttons>
+      </div>
+
+      <div class="flex-child-2 width100" fxLayoutAlign="center center">
+        <div class="flex-container width100" fxLayout="column">
+          <div class="column-child-1" fxLayoutAlign="center center" fxLayout="row">
+            <div class="ion-text-center ion-text-wrap">
+              gestion des paysants Relais
+            </div>
+            <div>
+              <button ion-button icon-only (click)="onClick()">
+                <ion-icon name="arrow-round-back"></ion-icon>
+              </button>
+            </div>
+          </div> 
+          <div class="column-child-2">
+            <div class="flex-container" fxLayout="row" fxLayoutGap="5px" style="justify-content: space-around;">
+              <div class="child1-row-flex" fxLayout="row" fxLayoutGap="2px">
+                <div class="label-region" fxLayoutAlign="center center">Region</div>
+                <mat-card class="item-matcard-flex" fxLayoutAlign="start center"></mat-card> 
+              </div>
+              <div class="child2-row-flex" fxLayout="row" fxLayoutGap="2px">
+                <div class="label-region" fxLayoutAlign="center center">District</div>
+                <mat-card class="item-matcard-flex" fxLayoutAlign="start center"></mat-card> 
+              </div>
+              <div class="child3-row-flex" fxLayout="row" fxLayoutGap="2px">
+                <div class="label-region" fxLayoutAlign="center center">Commune</div>
+                <mat-card class="item-matcard-flex" fxLayoutAlign="start center"></mat-card>
+              </div>
+            </div>
+          </div> 
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content>
+  <mat-tab-group mat-align-tabs="start">
+    <mat-tab label="Paysants relais">  
+      <div class="container">
+        <h5>PR</h5>
+        <button mat-raised-button (click)="onToggleTableRows()" color="primary">Tout Afficher</button>
+        <button mat-raised-button (click)="onPresentModal()" color="primary">Ajouter</button>
+        <div class="table-container">
+          <table mat-table [dataSource]="dataSourcePR" class="example-table" multiTemplateDataRows>
+            <!-- Image culture Column -->
+            <ng-container matColumnDef="img_pr">
+              <th mat-header-cell *matHeaderCellDef>img</th>
+              <td mat-cell *matCellDef="let row; let i = index">  
+                <span>
+                  <ion-thumbnail slot="start">
+                    <ion-img [src]="row.img_benef"></ion-img>
+                  </ion-thumbnail>
+                </span>
+              </td>
+            </ng-container>  
+            <!-- New Image PR Column -->
+            <ng-container matColumnDef="new_img_pr">
+              <th mat-header-cell *matHeaderCellDef> 
+                <span>
+                  <ion-thumbnail slot="start">
+                    <ion-img [src]="update_benef.img_pr.data" *ngIf="update_benef.img_pr != null"></ion-img>
+                    <ion-img [src]="update_benef.img_pr" *ngIf="update_benef.img_pr == null"></ion-img>
+                  </ion-thumbnail>
+                </span>
+              </th>
+            </ng-container> 
+
+            <!--Column code_pr-->
+            <ng-container matColumnDef="code_pr">
+              <th mat-header-cell *matHeaderCellDef>Code Pr</th>
+              <td mat-cell *matCellDef="let row">{{row.code_pr}}</td>
+            </ng-container>
+            <!--New Column code_pr-->
+            <ng-container matColumnDef="new_code_pr">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+
+            <!--Column code_achat-->
+            <ng-container matColumnDef="code_achat">
+              <th mat-header-cell *matHeaderCellDef>Code achat</th>
+              <td mat-cell *matCellDef="let row">{{row.code_achat}}</td>
+            </ng-container>
+            <!--Column New code_achat-->
+            <ng-container matColumnDef="new_code_achat">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+
+            <!--Column nom-->
+            <ng-container matColumnDef="nom">
+              <th mat-header-cell *matHeaderCellDef>Nom</th>
+              <td mat-cell *matCellDef="let row">{{row.nom}} {{row.prenom}}</td>
+            </ng-container>
+            <!--Column New Nom-->
+            <ng-container matColumnDef="new_nom">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+
+            <!--Column sexe-->
+            <ng-container matColumnDef="sexe">
+              <th mat-header-cell *matHeaderCellDef>Sexe</th>
+              <td mat-cell *matCellDef="let row">{{row.sexe}}</td>
+            </ng-container>
+            <!--Column New sexe-->
+            <ng-container matColumnDef="new_sexe">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+
+            <!--Column surnom-->
+            <ng-container matColumnDef="surnom">
+              <th mat-header-cell *matHeaderCellDef>Surnom</th>
+              <td mat-cell *matCellDef="let row">{{row.surnom}}</td>
+            </ng-container>
+            <!--Column New surnom-->
+            <ng-container matColumnDef="new_surnom">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+
+            <!--Column cin-->
+            <ng-container matColumnDef="cin">
+              <th mat-header-cell *matHeaderCellDef>CIN</th>
+              <td mat-cell *matCellDef="let row">{{row.cin}}</td>
+            </ng-container>
+            <!--Column new cin-->
+            <ng-container matColumnDef="new_cin">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+
+            <!--Column commune-->
+            <ng-container matColumnDef="commune">
+              <th mat-header-cell *matHeaderCellDef>Commune</th>
+              <td mat-cell *matCellDef="let row">{{row.commune}}</td>
+            </ng-container>
+            <!--Column New commune-->
+            <ng-container matColumnDef="new_commune">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+
+            <!--Column fokontany-->
+            <ng-container matColumnDef="fokontany">
+              <th mat-header-cell *matHeaderCellDef>Fokontany</th>
+              <td mat-cell *matCellDef="let row">{{row.fokontany}}</td>
+            </ng-container>
+            <!--Column New fokontany-->
+            <ng-container matColumnDef="new_fokontany">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+
+            <!--Column Action-->
+            <ng-container matColumnDef="action">
+              <th mat-header-cell *matHeaderCellDef> Action </th>
+              <td mat-cell *matCellDef="let element">
+                <span *ngIf="!isAddPr">
+                  <button mat-flat-button class="btn-info btn-dimension" (click)="element.isExpanded = !element.isExpanded">afficher</button>
+                </span>
+              </td>
+            </ng-container>
+            <!--Column New Action-->
+            <ng-container matColumnDef="new_action">
+              <th mat-header-cell *matHeaderCellDef>
+                <span *ngIf="isAddPr">
+                  <a (click)="onSaveAddPr()">Done</a> |
+                  <a (click)="onCancelAddPr()">Cancel</a>
+                </span>
+              </th>
+            </ng-container>
+
+            <!-- Template for details row -->
+            <ng-container matColumnDef="expandedDetail">
+              <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumnsPR.length">
+    
+                <div class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.cep_pr.length > 0? 'expanded' : 'collapsed'">
+                  <table mat-table [dataSource]="element.cep_pr">
+                    <!--Column code_parce-->
+                    <ng-container matColumnDef="code_parce">
+                      <th mat-header-cell *matHeaderCellDef>Code parce</th>
+                      <td mat-cell *matCellDef="let row">{{row.code_parce}}</td>
+                    </ng-container>
+                    <!--Column bloc-->
+                    <ng-container matColumnDef="bloc">
+                      <th mat-header-cell *matHeaderCellDef>Bloc</th>
+                      <td mat-cell *matCellDef="let row">{{row.bloc_cep}}</td>
+                    </ng-container>
+                    <!--Column ref_gps-->
+                    <ng-container matColumnDef="ref_gps">
+                      <th mat-header-cell *matHeaderCellDef>ref_gps</th>
+                      <td mat-cell *matCellDef="let row">{{row.ref_gps}}</td>
+                    </ng-container>
+                    <!--Column lat-->
+                    <ng-container matColumnDef="lat">
+                      <th mat-header-cell *matHeaderCellDef>Latitude</th>
+                      <td mat-cell *matCellDef="let row">{{row.lat}}</td>
+                    </ng-container>
+                    <!--Column log-->
+                    <ng-container matColumnDef="log">
+                      <th mat-header-cell *matHeaderCellDef>Log</th>
+                      <td mat-cell *matCellDef="let row">{{row.log}}</td>
+                    </ng-container>
+                    <!--Column superficie-->
+                    <ng-container matColumnDef="superficie">
+                      <th mat-header-cell *matHeaderCellDef>Superficie</th>
+                      <td mat-cell *matCellDef="let row">{{row.superficie}}</td>
+                    </ng-container>
+                    <!--Column commune-->
+                    <ng-container matColumnDef="commune">
+                      <th mat-header-cell *matHeaderCellDef>Commune</th>
+                      <td mat-cell *matCellDef="let row">{{row.commune}}</td>
+                    </ng-container>
+                    <!--Column fokontany-->
+                    <ng-container matColumnDef="fokontany">
+                      <th mat-header-cell *matHeaderCellDef>Fokontany</th>
+                      <td mat-cell *matCellDef="let row">{{row.fokontany}}</td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="displayedColumnsParce" class="hg-header-row-2"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumnsParce;" class="hg-element-row"></tr>
+                  </table>
+                </div>
+                <div class="row sv-element-detail-vide" [@detailExpand]="element.isExpanded && element.cep_pr.length == 0? 'expanded' : 'collapsed'">
+                  <div mat-line>Aucun champs Ecole Enregistrer pour PR {{element.code_pr}}</div>
+                </div>
+    
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumnsPR" class="hg-header-row-1"></tr>
+            <tr [hidden]="!isAddPr" mat-header-row *matHeaderRowDef="displayedAddColumnsPR; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumnsPR;" class="sv-element-row hg-element-row" [class.sv-expanded-row]="row.isExpanded" [class.sv-row-vide]="row.cep_pr.length == 0"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+    
+            <!-- Row shown when there is no matching data. -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell" [attr.colspan]="displayedColumnsPR.length">Aucun enregistrement</td>
+            </tr>
+          </table>
+        </div>
+        <div>
+          <button mat-raised-button (click)="onRefresh()" color="primary">Refresh</button>
+        </div>
+    </div>
+    </mat-tab>
+    <mat-tab label="Parcelle">
+    </mat-tab>
+  </mat-tab-group>
+</ion-content>

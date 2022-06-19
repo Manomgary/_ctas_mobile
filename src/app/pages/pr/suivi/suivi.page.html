@@ -1,0 +1,52 @@
+<ion-header>
+  <div class="container-header-flex">
+    <div class="flex-container" fxLayout="row">
+      <div class="flex-child-1" fxLayoutAlign="center center">
+        <ion-buttons>
+          <ion-menu-button autoHide="false"></ion-menu-button>
+        </ion-buttons>
+      </div>
+    
+      <div class="flex-child-2 width100" fxLayoutAlign="center center">
+        <div class="flex-container width100" fxLayout="column">
+          <div class="column-child-1" fxLayoutAlign="center center" fxLayout="row">
+            <div class="ion-text-center ion-text-wrap">
+              Carnet de suivi
+            </div>
+            <div>
+              <button ion-button icon-only (click)="onClick()">
+                <ion-icon name="arrow-round-back"></ion-icon>
+              </button>
+            </div>
+          </div> 
+          <div class="column-child-2">
+            <div class="flex-container" fxLayout="row" fxLayoutGap="5px" style="justify-content: space-around;">
+              <div class="child1-row-flex" fxLayout="row" fxLayoutGap="2px">
+                <div class="label-region" fxLayoutAlign="center center">Region</div>
+                <mat-card class="item-matcard-flex" fxLayoutAlign="start center"></mat-card> 
+              </div>
+              <div class="child2-row-flex" fxLayout="row" fxLayoutGap="2px">
+                <div class="label-region" fxLayoutAlign="center center">District</div>
+                <mat-card class="item-matcard-flex" fxLayoutAlign="start center"></mat-card> 
+              </div>
+              <div class="child3-row-flex" fxLayout="row" fxLayoutGap="2px">
+                <div class="label-region" fxLayoutAlign="center center">Commune</div>
+                <mat-card class="item-matcard-flex" fxLayoutAlign="start center"></mat-card>
+              </div>
+            </div>
+          </div> 
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content>
+  <mat-tab-group mat-align-tabs="start">
+    <mat-tab label="Suivi-MEP">  
+      <p>Teste </p>
+    </mat-tab>
+    <mat-tab label="suivi">
+    </mat-tab>
+  </mat-tab-group>
+</ion-content>

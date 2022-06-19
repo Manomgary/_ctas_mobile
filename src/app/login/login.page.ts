@@ -145,12 +145,6 @@ export class LoginPage implements OnInit {
                           /**
                            * pour inserer juste le données de l'utilisateurs connecter
                            */
-                          /**let dat_pr = {
-                            code_pr : {
-                              id_projet: elem_equip.id_projet
-                            },
-                            code_equipe: data
-                          }*/
                           this.importService.loadProjet(id_pr);
               
                           if (i == (data_equipe_pr.length - 1)) {
@@ -180,6 +174,9 @@ export class LoginPage implements OnInit {
                             await Storage.set({ key: FIRST_CONNECT_KEY, value:  '1'});
                           }
                         });
+                      } else {
+                        console.log(":::::::::::::::Aucun Equipe pour Projet:::::::::::", data);
+                        loading.dismiss();
                       }
                     });
                   }

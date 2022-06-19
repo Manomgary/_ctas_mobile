@@ -24,7 +24,7 @@ export class BeneficiaireBlocPage implements OnInit {
   // Displayed Column
   displayedColumns: string[] = ['code_bloc', 'nom_bloc', 'nom_com', 'nb_fkt_concerner'];
   displayedColumnsZone: string[] = ['code_bloc', 'nom_bloc', 'commune', 'fkt', 'km_responsable'];
-  displayedColumnsBenef: string[] = ['nom_bloc', 'code_benef_bl', 'nom', 'sexe', 'surnom', 'cin', 'nom_com', 'nom_fkt', 'nb_parcelle', 'sum_superficie'];
+  displayedColumnsBenef: string[] = ['nom_bloc', 'code_benef_bl', 'code_achat', 'nom', 'sexe', 'surnom', 'cin', 'nom_com', 'nom_fkt', 'nb_parcelle', 'sum_superficie'];
   displayedColumnsParcelle: string[] = ['id_parce', 'nom_bloc', 'code_benef_bl', 'nom', 'km_responsable', 'fokontany', 'lat', 'log', 'superficie', 'nb_culture'];
   displayedColumnsParceBenef: string[] = ['nom_bloc', 'code_benef', 'nom_benef', 'code_parce', 'ref_gps', 'lat', 'log', 'superficie', 'nb_culture'];
 
@@ -122,7 +122,10 @@ export class BeneficiaireBlocPage implements OnInit {
     this.data_benef = [];
 
     console.log(this.district);
-    this.loadData.loadCommune(this.district.code_dist).then(res_com => {
+    let id_dist = {
+      code_dist: this.district.code_dist
+    };
+    this.loadData.loadCommune(id_dist).then(res_com => {
       console.log(res_com);
       res_com.values.forEach(elem_val => {
         commune.push(elem_val);

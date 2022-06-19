@@ -10,7 +10,12 @@
       <!--Flex row 2 Zone-->
       <div class="flex-child-2 width100" fxLayoutAlign="center center">
         <div class="flex-container width100" fxLayout="column">
-          <div class="column-child-1" fxLayoutAlign="center center" style="padding: 1px 0;">Projet {{projet.nom}} </div> 
+          <div class="column-child-1" fxLayoutAlign="center center" style="padding: 1px 0;">
+            Projet {{projet.nom}} 
+            <button ion-button icon-only routerLink="/homes" routerDirection="root">
+              <ion-icon name="arrow-round-back"></ion-icon>
+            </button>
+          </div> 
           <div class="column-child-2">
             <div class="flex-container" fxLayout="row" fxLayoutGap="5px" style="justify-content: space-around;">
               <div class="child1-row-flex" fxLayout="row" fxLayoutGap="2px">
@@ -24,6 +29,11 @@
               <div class="child3-row-flex" fxLayout="row" fxLayoutGap="2px">
                 <div class="label-region" fxLayoutAlign="center center">Commune</div>
                 <mat-card class="item-matcard-flex" fxLayoutAlign="start center">{{commune.nom_com}}</mat-card>
+              </div>
+              <div class="child3-row-flex" fxLayout="row" fxLayoutGap="2px">
+                <button mat-raised-button (click)="presentModal()" class="demo-button">
+                  Modifier
+                </button>
               </div>
             </div>
           </div> 
@@ -182,6 +192,12 @@
               <th mat-header-cell *matHeaderCellDef mat-sort-header> code PMS </th>
               <td mat-cell *matCellDef="let row"> {{row.code_benef_pms}} </td>
             </ng-container>
+
+            <!-- Code Achat Column -->
+            <ng-container matColumnDef="code_ahat">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>code Achat</th>
+              <td mat-cell *matCellDef="let row"> {{row.code_achat}} </td>
+            </ng-container>
   
             <!-- Nom PA Column -->
             <ng-container matColumnDef="pms">
@@ -257,6 +273,12 @@
             <ng-container matColumnDef="code_pms" sticky>
               <th mat-header-cell *matHeaderCellDef> code_pms </th>
               <td mat-cell *matCellDef="let row"> {{row.code_benef_pms}} </td>
+            </ng-container>
+
+            <!-- Code Achat Column -->
+            <ng-container matColumnDef="code_ahat">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>code Achat</th>
+              <td mat-cell *matCellDef="let row"> {{row.code_achat}} </td>
             </ng-container>
   
             <!-- nom_pms Column -->
@@ -353,6 +375,12 @@
             <ng-container matColumnDef="code_pms">
               <th mat-header-cell *matHeaderCellDef> code_pms </th>
               <td mat-cell *matCellDef="let row"> {{row.code_benef_pms}} </td>
+            </ng-container>
+
+            <!-- Code Achat Column -->
+            <ng-container matColumnDef="code_ahat">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>code Achat</th>
+              <td mat-cell *matCellDef="let row"> {{row.code_achat}} </td>
             </ng-container>
   
             <!-- nom_pms Column -->

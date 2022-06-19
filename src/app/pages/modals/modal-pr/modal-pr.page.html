@@ -1,0 +1,205 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>modal-pr</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div>
+    <form [formGroup]="beneficiaireForm" (ngSubmit)="onSave()" class="contonair-flex">
+      <div fxLayout="column width100">
+        <!--Column 1-->
+        <div class="child-column-flex" fxLayout="row">
+          <!--Formulaire Nom-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline">
+              <mat-label>Nom</mat-label>
+              <input matInput type="text" placeholder="Merci de saisissez!" formControlName="nom">
+            </mat-form-field>
+          </div>
+           <!--Formulaire Prenom-->
+           <div class="child-row-flex">
+            <mat-form-field appearance="outline">
+              <mat-label>Prenom</mat-label>
+              <input matInput type="text" placeholder="Merci de saisissez!" formControlName="prenom">
+            </mat-form-field>
+          </div>
+          <!--Formulaire surnom-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline">
+              <mat-label>Surnom</mat-label>
+              <input matInput type="text" placeholder="Merci de saisissez!" formControlName="surnom">
+            </mat-form-field>
+          </div>
+        </div>
+        <!--Column 2-->
+        <div class="child-column-flex" fxLayout="row">
+          <!--Formulaire Sexe-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline">
+              <mat-label>Sexe</mat-label>
+              <mat-select formControlName="sexe">
+                <mat-option *ngFor="let sexe of data_sexe" [value]="sexe.value">
+                  {{ sexe.description }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <!--Formulaire Date de naissance-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="fill">
+              <mat-label>Date de naissance</mat-label>
+              <input matInput [matDatepicker]="dt_nais" formControlName="dt_naissance" disabled>
+              <mat-datepicker-toggle matSuffix [for]="dt_nais"></mat-datepicker-toggle>
+              <mat-datepicker #dt_nais></mat-datepicker>
+            </mat-form-field>
+          </div>
+          <!--Formulaire Date de naissance vers-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline">
+              <mat-label>Vers</mat-label>
+              <input matInput type="number" placeholder="Merci de saisissez!" formControlName="dt_naissance_vers">
+            </mat-form-field>
+          </div>
+          <!--Formulaire Cin-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline">
+              <mat-label>Cin</mat-label>
+              <input matInput type="number" placeholder="Merci de saisissez!" formControlName="cin">
+            </mat-form-field>
+          </div>
+        </div>
+        <!--Column 3-->
+        <div class="child-column-flex" fxLayout="row">
+          <!--Formulaire Date de naissance-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="fill">
+              <mat-label>Date de délivrance</mat-label>
+              <input matInput [matDatepicker]="dt_del" formControlName="dt_delivrance" disabled>
+              <mat-datepicker-toggle matSuffix [for]="dt_del"></mat-datepicker-toggle>
+              <mat-datepicker #dt_del></mat-datepicker>
+            </mat-form-field>
+          </div>
+          <!--Formulaire Image cin 1-->
+          <div class="child-row-flex">
+            <ion-thumbnail slot="start">
+              <ion-img [src]="fileImage_cin1.data"></ion-img>
+            </ion-thumbnail>
+            <ion-button fill="clear" expand="full" color="blue" (click)="takeImage('img-cin1')">
+              <ion-icon slot="start" name="camera"></ion-icon>
+            </ion-button>
+          </div>
+          <!--Formulaire Image cin 2-->
+          <div class="child-row-flex">
+            <ion-thumbnail slot="start">
+              <ion-img [src]="fileImage_cin2.data"></ion-img>
+            </ion-thumbnail>
+            <ion-button fill="clear" expand="full" color="blue" (click)="takeImage('img-cin2')">
+              <ion-icon slot="start" name="camera"></ion-icon>
+            </ion-button>
+          </div>
+          <!--Formulaire Cin-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline">
+              <mat-label>Contact</mat-label>
+              <input matInput type="number" placeholder="Merci de saisissez!" formControlName="contact">
+            </mat-form-field>
+          </div>
+        </div>
+        <!--Column 4-->
+        <div class="child-column-flex" fxLayout="row">
+          <!--Formulaire Region-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline" floatLabel="auto">
+              <mat-label>Region</mat-label>
+              <mat-select formControlName="region">
+                <mat-option (click)="onSelectRegion()" *ngFor="let reg of data_region" [value]="reg">
+                  {{ reg.nom_reg }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <!--Formulaire District-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline" floatLabel="auto">
+              <mat-label>District</mat-label>
+              <mat-select formControlName="district">
+                <mat-option (click)="onSelectDistrict()" *ngFor="let dist of data_district_filter" [value]="dist">
+                  {{ dist.nom_dist }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <!--Formulaire Commune-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline" floatLabel="auto">
+              <mat-label>Commune</mat-label>
+              <mat-select formControlName="commune">
+                <mat-option (click)="onSelectCommune()" *ngFor="let com of data_commune_filter" [value]="com">
+                  {{ com.nom_com }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <!--Column 5-->
+        <div class="child-column-flex" fxLayout="row">
+          <!--Formulaire Fokontany-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline" floatLabel="auto">
+              <mat-label>Fokontany</mat-label>
+              <mat-select formControlName="fokontany">
+                <mat-option (click)="onSelectFokontany('autres')" *ngIf="data_fokontany_filter.length !== 0">Autres</mat-option>
+                <mat-option (click)="onSelectFokontany('fokontany')" *ngFor="let fkt of data_fokontany_filter" [value]="fkt">
+                  {{ fkt.nom_fkt }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <!--Formulaire Village-->
+          <div class="child-row-flex" *ngIf="isAutresFkt">
+            <mat-form-field appearance="outline">
+              <mat-label>Village</mat-label>
+              <input matInput type="text" placeholder="Merci de saisissez!" formControlName="village">
+            </mat-form-field>
+          </div>
+          <!--Formulaire Village-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline">
+              <mat-label>Lieu delivrance</mat-label>
+              <input matInput type="text" placeholder="Merci de saisissez!" formControlName="lieu_delivrance">
+            </mat-form-field>
+          </div>
+          <!--Formulaire Image PR-->
+          <div class="child-row-flex">
+            <ion-thumbnail slot="start">
+              <ion-img [src]="fileImage_pr.data"></ion-img>
+            </ion-thumbnail>
+            <ion-button fill="clear" expand="full" color="blue" (click)="takeImage('img-pr')">
+              <ion-icon slot="start" name="camera"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+        <!--Column 5-->
+        <div class="child-column-flex" fxLayout="row">
+          <!--Formulaire Village-->
+          <div class="child-row-flex">
+            <mat-form-field appearance="outline">
+              <mat-label>Code achat</mat-label>
+              <input matInput type="text" placeholder="Merci de saisissez!" formControlName="code_achat">
+            </mat-form-field>
+          </div>
+        </div>
+        <!--Column boutton-->
+        <div class="child-btn" fxLayout="row">
+          <div class="child-row1">
+            <button mat-raised-button (click)="onDismiss()" color="danger">Annuller</button>
+          </div>
+          <div class="child-row1">
+            <button mat-raised-button color="primary" [disabled]="!beneficiaireForm.valid || isValidate">Valider</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</ion-content>

@@ -38,13 +38,32 @@ const routes: Routes = [
   {
     path: 'modal-bloc',
     loadChildren: () => import('./pages/modals/modal-bloc/modal-bloc.module').then( m => m.ModalBlocPageModule)
+  },  {
+    path: 'suivi',
+    loadChildren: () => import('./pages/pr/suivi/suivi.module').then( m => m.SuiviPageModule)
+  },
+  {
+    path: 'beneficiaire',
+    loadChildren: () => import('./pages/pr/beneficiaire/beneficiaire.module').then( m => m.BeneficiairePageModule)
+  },
+  {
+    path: 'animation-ve',
+    loadChildren: () => import('./pages/pr/animation-ve/animation-ve.module').then( m => m.AnimationVePageModule)
+  },
+  {
+    path: 'modal-pr',
+    loadChildren: () => import('./pages/modals/modal-pr/modal-pr.module').then( m => m.ModalPrPageModule)
   }
+
 
 ];
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })
+    RouterModule.forRoot(routes, { 
+      preloadingStrategy: PreloadAllModules
+      //onSameUrlNavigation : 'reload'
+    })
   ],
   exports: [RouterModule]
 })

@@ -1,6 +1,6 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController, ModalController, Platform, ToastController } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
@@ -9,7 +9,7 @@ import { ModalPage } from '../../modal/modal.page';
 
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
-import { Benef_activ_pms, Local_Parcelle, Loc_all_suivi_mep, Loc_association, Loc_culture_Pms, Loc_Espece, Loc_saison, Loc_suivi_mep, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { Benef_activ_pms, Local_Parcelle, Loc_all_suivi_mep, Loc_association, Loc_culture_Pms, Loc_Espece, Loc_projet, Loc_saison, Loc_suivi_mep, Loc_variette } from 'src/app/interfaces/interfaces-local';
 import { Db_Culture_pms, Db_suivi_pms } from 'src/app/interfaces/interface-insertDb';
 
 // DATE IMPORT 
@@ -21,8 +21,9 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 // Add the new import Image
 import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { IMAGE_DIR } from 'src/app/utils/global-variables';
+import { CONTROLE_MEP, DECLARATION_MEP, EC, EC_CULTURAL, IMAGE_DIR, STC, SYNC, UPDATE } from 'src/app/utils/global-variables';
 import { SuiviPageRoutingModule } from './suivi-routing.module';
+import { SharedService } from 'src/app/services/shared.service';
 
 const moment = _moment;
 
@@ -31,8 +32,10 @@ interface newCulture {
   code_saison: string,
   saison: string,
   code_ass: string,
+  code_achat: null,
   saison_descr: string,
   association: string,
+  ancronyme: string,
   code_pms: string,
   pms: string,
   parcelle: string,
@@ -45,7 +48,6 @@ interface newCulture {
   annee_du: string,
   dateSemis: any,
   sfce: number,
-  Objectif: number,
   qsa: number,
   ddp: any
 }
@@ -64,7 +66,7 @@ interface Mep_export {
   QSA: number,
   DDS: string,
   sfce_emblavee: number,
-  Objectif: number,
+  code_achat: string,
   SC: string,
   EA :string
 }
@@ -73,6 +75,7 @@ interface Suivi_export {
   Annee: string,
   Association: string,
   Code_pms: string,
+  Code_achat: string,
   Nom: string,
   Prenom: string,
   Code_parce: string,
@@ -84,8 +87,9 @@ interface Suivi_export {
   STC: string,
   EC: string,
   PB: string,
-  EX: string,
-  Controle: string
+  EX: number,
+  Controle: string,
+  Declaration: string
 }
 
 interface LocalFile {
@@ -99,7 +103,7 @@ interface LocalFile {
   templateUrl: './suivi.page.html',
   styleUrls: ['./suivi.page.scss'],
 })
-export class SuiviPage implements OnInit {
+export class SuiviPage implements OnInit, OnDestroy {
   suiviForm: FormGroup;
 
   // image
@@ -110,35 +114,37 @@ export class SuiviPage implements OnInit {
   private region: any;
   private district: any;
   private commune: any;
-  private projet: any;
+  private projet: Loc_projet;
   private user: Utilisateurs[];
+  private activite: string;
   private isUpdated: boolean = false;
   private isEditableCulte: boolean = false;
   private indexRowEdit: number;
   private indexRowSuivi: number;
   private isNewCultureClicked: boolean = false;
   private new_culte: newCulture = {
-    code_saison: '',
-    saison: '',
-    association: '',
-    code_pms: '',
-    pms: '',
-    parcelle: '',
-    espece: '',
-    code_variette: '',
-    variette: '',
-    sc: '',
-    ea_id_variette: '',
-    ea: '',
-    annee_du: '',
-    dateSemis: undefined,
-    sfce: 0,
-    Objectif: 0,
-    qsa: 0,
-    ddp: undefined,
-    code_ass: '',
-    saison_descr: '',
-    order_assoc: 0
+    code_saison: null,
+    saison: null,
+    association: null,
+    code_pms: null,
+    code_achat: null,
+    pms: null,
+    parcelle: null,
+    espece: null,
+    code_variette: null,
+    variette: null,
+    sc: null,
+    ea_id_variette: null,
+    ea: null,
+    annee_du: null,
+    dateSemis: null,
+    sfce: null,
+    qsa: null,
+    ddp: null,
+    code_ass: null,
+    saison_descr: null,
+    order_assoc: null,
+    ancronyme: null
   };
   /**Filtre */
   private selectedAssoc: any;
@@ -170,26 +176,8 @@ export class SuiviPage implements OnInit {
   private isClickedElemCultToSuivi: boolean = false;
   private isNewItemsSuivi: boolean = false;
   private isEditableSuivi: boolean = false;
-  private data_stc: any[] = [
-    {value: 'LEV', intitule: 'Levée'},
-    {value: 'FEU', intitule: 'Feuilles'},
-    {value: 'RAM', intitule: 'Ramification'},
-    {value: 'MON', intitule: 'Montaison'},
-    {value: 'TAL', intitule: 'Tallage'},
-    {value: 'FLO', intitule: 'Florison'},
-    {value: 'DM', intitule: 'Début Matiration'},
-    {value: 'MAT', intitule: 'Maturation'},
-    {value: 'REC', intitule: 'Récolté'},
-    {value: 'PREC', intitule: 'Post Récolte'},
-    {value: 'ECHEC', intitule: 'Echec'}
-  ];
-  private data_ec: any[] = [
-    {value: 'TMV', intitule: 'Mauvais état'},
-    {value: 'MM', intitule: 'Moyen'},
-    {value: 'BON', intitule: 'Bon état'},
-    {value: 'TBE', intitule: 'Trés bon état'},
-    {value: 'ECHEC', intitule: 'Echec'},
-  ];
+  private data_stc: any[] = STC;
+  private data_ec: any[] = EC_CULTURAL;
   private code_cult_selected: string;
   private fileLastImage: LocalFile = {
     name: null,
@@ -200,11 +188,11 @@ export class SuiviPage implements OnInit {
   arr:any[] = [];
 
   // table culture
-  private displayedColumns: string[] = ['saison', 'association', 'code_pms', 'nom_pms', 'code_parce', 'variette', 'qsa', 'img_fact', 'dds', 'sfce', 'objectif', 'sc', 'ea'];
-  private displayedColumnsNew: string[] = ['new_saison', 'new_association', 'new_code_pms', 'new_nom_pms', 'new_code_parce', 'new_variette', 'new_qsa', 'new_img_fact', 'new_dds', 'new_sfce', 'new_objectif', 'new_sc', 'new_ea', 'new_action'];
-  private displayedColumnsSuivi: string[] = ['ddp', 'stc', 'ec', 'pb', 'ex', 'img_cult', 'controle', 'action'];
-  private displayedNewColumnsSuivi: string[] = ['new_ddp', 'new_stc', 'new_ec', 'new_pb', 'new_ex', 'new_img_cult', 'new_controle', 'new_action'];
-  private displayedColmnSv: string[] = ['annee', 'saison', 'association', 'code_pms', 'nom_pms', 'code_parce', 'variette', 'qsa', 'dds', 'ddp', 'stc', 'ec', 'img_cult', 'pb', 'ex', 'ctrl']
+  private displayedColumns: string[] = ['saison', 'association', 'code_pms', 'code_achat', 'nom_pms', 'code_parce', 'variette', 'qsa', 'img_fact', 'dds', 'sfce', 'sc', 'ea'];
+  private displayedColumnsNew: string[] = ['new_saison', 'new_association', 'new_code_pms', 'new_code_achat', 'new_nom_pms', 'new_code_parce', 'new_variette', 'new_qsa', 'new_img_fact', 'new_dds', 'new_sfce','new_sc', 'new_ea', 'new_action'];
+  private displayedColumnsSuivi: string[] = ['ddp', 'stc', 'ec', 'img_cult', 'ex', 'controle', 'declaration', 'pb', 'action'];
+  private displayedNewColumnsSuivi: string[] = ['new_ddp', 'new_stc', 'new_ec', 'new_img_cult', 'new_ex', 'new_controle', 'new_declaration', 'new_pb', 'new_action'];
+  private displayedColmnSv: string[] = ['annee', 'saison', 'association', 'code_pms', 'code_achat', 'nom_pms', 'code_parce', 'variette', 'qsa', 'dds', 'ddp', 'stc', 'ec', 'img_cult', 'pb', 'ex', 'ctrl', 'declaration']
 
   private dataSource = new MatTableDataSource<Loc_culture_Pms>();
   private dataSourceSingleSuivi = new MatTableDataSource<any>();
@@ -215,21 +203,28 @@ export class SuiviPage implements OnInit {
   private suiviToExport: Suivi_export[] = [];
   private info_mep_select: Loc_culture_Pms;
 
+  private controle_: any[] = CONTROLE_MEP;
+  private declaration_: any[] = DECLARATION_MEP;
+
   constructor(private plt: Platform,
               private router: Router, 
+              private route: ActivatedRoute,
               private loadData: LoadDataService,
               private crudDb: CrudDbService,
               private modalCtrl: ModalController,
               private file: File,
               private loadingCtrl: LoadingController,
               private formBuilder: FormBuilder,
-              private toastCtrl: ToastController) { 
+              private toastCtrl: ToastController,
+              private sharedService: SharedService) { 
     const routeState = this.router.getCurrentNavigation().extras.state;
+    this.loading();
     if (routeState) {
       let zone: any;
       zone = JSON.parse(routeState.zone);
       this.projet = JSON.parse(routeState.projet);
       this.user = JSON.parse(routeState.user);
+      this.activite = routeState.activite;
 
       console.log(zone);
       console.log(this.projet);
@@ -243,26 +238,51 @@ export class SuiviPage implements OnInit {
       this.loadSaison();
       this.loadEspece();
       this.loadVariette();
-      this.loadExportMep(this.data_culture);
 
     } else console.log("Router Suivi is not current");
   }
 
   ngOnInit() {
     setTimeout(async () => {
-      const loading = await this.loadingCtrl.create();
-      await loading.present();
       this.dataSource.data = this.data_culture;
-      this.loadingCtrl.dismiss();
-    }, 1000);
+    }, 1500);
     this.suiviForm = this.formBuilder.group({
       ddp: [null, Validators.required],
-      stc: ['', Validators.required],
-      ec: ['', Validators.required],
-      pb: '',
-      ex: '',
-      controle: '',
+      stc: [null, Validators.required],
+      ec: [null, Validators.required],
+      pb: null,
+      ex: null,
+      controle: null,
+      declaration: null
     });
+  }
+
+  ngOnDestroy(): void {
+    console.log(":::::Component Suivi function destroy:::::::::::::::::::::::");
+    if (this.sharedService.getData() != null) {
+      this.sharedService.setData(null);
+    }
+  }
+
+  /**Event lifeCycle Component */
+  ionViewWillEnter() {
+    console.log("*************************************Life cycle Suivi Componenet::::::::::::::::::::::::");
+    this.refreshTbSuivi();
+  }
+  ionViewDidEnter() {
+    console.log(":::::LifeCycle Suivi function:::: ionViewDidEnter:::");
+    this.loadExportMep(this.data_culture);
+    this.loadExportSuivi(this.data_all_suivi_mep);
+    this.loadingCtrl.dismiss();
+  }
+  ionViewDidLeave(){
+    console.log(":::::LifeCycle beneficiare function:::::: ionViewDidLeave:::");
+    this.loadingCtrl.dismiss();
+  }
+
+  async loading() {
+    const loading = await this.loadingCtrl.create();
+    await loading.present();
   }
 
   // filtre
@@ -356,15 +376,25 @@ export class SuiviPage implements OnInit {
   }
 
   async loadFktAssociation() {
-    /**const loading = await this.loadingCtrl.create();
-    await loading.present();*/
 
-    const code_com = this.commune.code_com;
+    //const code_com = this.commune.code_com;
     let code_equipe: number;
     this.data_association = [];
+    this.filterDataAssoc = [];
     this.data_pms = [];
+    this.pmsToFilter = [];
+    this.data_culture = [];
+    this.data_parcelle_pms = [];
+    this.data_all_suivi_mep = [];
+    this.suiviToExport = [];
+    this.dataSource.filter = '';
+    this.dataSourceSuivi.filter = '';
 
-    this.loadData.loadFokontany(code_com).then((res_fkt) => {
+    let id_commune = {
+      code_commune: this.commune.code_com
+    }
+
+    this.loadData.loadFokontany(id_commune).then((res_fkt) => {
       console.log(res_fkt);
       if (res_fkt.values.length > 0) {
         res_fkt.values.forEach((elem_fkt, index) => {
@@ -410,12 +440,13 @@ export class SuiviPage implements OnInit {
                 this.loadCulture(elem_ass.code_ass);
               });
             }
-            console.log(this.dataSource.data);
           });
 
           // Fin du boucle
           if ((res_fkt.values.length - 1) === index) {            
-
+            //this.refreshTbSuivi();
+            this.loadExportMep(this.data_culture);
+            this.loadExportSuivi(this.data_all_suivi_mep);
           }
         });
       }
@@ -423,8 +454,6 @@ export class SuiviPage implements OnInit {
   }
   // refresh datasource table culture
   async refreshTbCulture() {
-    const loading = await this.loadingCtrl.create();
-    await loading.present();
     if (this.data_association.length > 0) {
       this.data_culture = [];
       
@@ -435,12 +464,10 @@ export class SuiviPage implements OnInit {
         this.dataSource.data = this.data_culture;
         this.loadingCtrl.dismiss();
       }, 500);
-    } else this.loadingCtrl.dismiss();
+    }
   }
 // Load All Suivi Culture
   async refreshTbSuivi() {
-    const loading = await this.loadingCtrl.create();
-    await loading.present();
     if (this.data_association.length > 0) {
       this.data_all_suivi_mep = [];
       this.data_association.forEach((elem_ass, i) => {
@@ -456,9 +483,8 @@ export class SuiviPage implements OnInit {
       setTimeout(() => {
         this.dataSourceSuivi.data = this.data_all_suivi_mep;
         this.loadExportSuivi(this.data_all_suivi_mep);
-        this.loadingCtrl.dismiss();
       }, 500);
-    } else this.loadingCtrl.dismiss();
+    } 
   }
 
   // load Culture Pms
@@ -487,6 +513,7 @@ export class SuiviPage implements OnInit {
         Annee_du: item.annee_du,
         Association: item.association,
         Code_pms: item.code_benef_pms,
+        code_achat: item.code_achat,
         Nom: item.nom,
         Prenom: item.prenom,
         Code_parce: item.id_parce,
@@ -496,7 +523,6 @@ export class SuiviPage implements OnInit {
         QSA: item.qsa,
         DDS: item.dds,
         sfce_emblavee: item.sfce,
-        Objectif: item.objectif,
         SC: item.sc,
         EA:item.ea
       });
@@ -512,6 +538,7 @@ export class SuiviPage implements OnInit {
         Saison: elem.saison,
         Association: elem.association,
         Code_pms: elem.code_pms,
+        Code_achat: elem.code_achat,
         Nom: elem.nom,
         Prenom: elem.prenom,
         Code_parce: elem.id_parce,
@@ -524,7 +551,8 @@ export class SuiviPage implements OnInit {
         EC: elem.ec,
         PB: elem.pb,
         EX: elem.ex,
-        Controle: elem.controle
+        Controle: elem.controle,
+        Declaration: elem.declaration
       });
     });
   }
@@ -569,12 +597,6 @@ export class SuiviPage implements OnInit {
   createExcel() {
     var ws = XLSX.utils.json_to_sheet(this.mepToExport);
     var ws2 = XLSX.utils.json_to_sheet( this.suiviToExport);
-    /**var wb = {
-      Sheets: {
-        'data_sheet': ws
-      },
-      SheetNames: ['MEP', 'suivi']
-    };*/
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "MEP");
     XLSX.utils.book_append_sheet(wb, ws2, "Suivi");
@@ -638,10 +660,11 @@ export class SuiviPage implements OnInit {
     console.log(row);
   }
 
-  /*******************
-   * Edit action
-   *******************/
-   onClickEditDoneAction(table, row) {
+  /*********************************************************
+   * Save Action Update(Add, update) TB Mise en Place Semences
+   *********************************************************/
+   // Edit Table
+  onClickEditDoneAction(table, row) {
     if (table === 'culture') {
       console.log(row);
       console.log("Edit culture *** ,", this.new_culte);
@@ -658,7 +681,6 @@ export class SuiviPage implements OnInit {
         img_fact: null,
         dds: this.new_culte.dateSemis,
         sfce: this.new_culte.sfce,
-        objectif: this.new_culte.Objectif,
         sc: this.new_culte.sc,
         ea_id_variette: this.new_culte.ea_id_variette,
         ea_autres: this.new_culte.ea_id_variette !== null ? null : this.new_culte.ea,
@@ -677,7 +699,6 @@ export class SuiviPage implements OnInit {
       this.isEditableCulte = false;
     }
    }
-
    /** Add new Elem */
   onClickDoneAction() {
     let nom_pr: string = this.projet.nom;
@@ -685,9 +706,12 @@ export class SuiviPage implements OnInit {
     let data_culture_assoc: Loc_culture_Pms[] = [];
     let latestIdCulture: string;
     let code_pr: string = '';
-    let code_association: string = '';
+    let code_association: string = this.new_culte.ancronyme;
     let code_saison: string = '';
     let order: number = 1;
+
+    console.log("............Generer code Projet:::: ", this.projet);
+    console.log("............Generer code Association:::: ", code_association);
 
     const id_ass = {
       code_ass: this.new_culte.code_ass,
@@ -712,12 +736,12 @@ export class SuiviPage implements OnInit {
           }
         });
         // extract latestId
-        let arr_latestIdCult = latestIdCulture.trim().split("_");
+        let arr_latestIdCult = latestIdCulture.trim().split("-");
         arr_latestIdCult.forEach((elem, i) => {
           if ((arr_latestIdCult.length - 1) === i) {
             console.log(elem)
             order = parseInt(elem) + 1;
-            console.log(order);
+            console.log("Order:::", order);
           }
         });
       }
@@ -736,7 +760,7 @@ export class SuiviPage implements OnInit {
       });
 
       // generer code Projet
-      let arr_nom = nom_pr.trim().split(" ");
+      /**let arr_nom = nom_pr.trim().split(" ");
       arr_nom.forEach((elem, i) => {
         let len = arr_nom.length;
         switch (len) {
@@ -761,11 +785,11 @@ export class SuiviPage implements OnInit {
             }
         }
         console.log(code_pr);
-      });
+      });*/
   
       // generer code Association
-      let arr_ass = nom_ass.trim().split(" ");
-      arr_ass.forEach((elem, i) => {
+      //let arr_ass = nom_ass.trim().split(" ");
+      /**arr_ass.forEach((elem, i) => {
         if (arr_ass.length === 1) {
           code_association = elem.charAt(0) + elem.charAt(1) + elem.charAt(2)
         } else {
@@ -776,8 +800,8 @@ export class SuiviPage implements OnInit {
           }
         }
         console.log(code_association);
-      });
-      this.codeCulture = code_pr + '_' + saison + '_' + this.new_culte.order_assoc + code_association + '_' + order.toString();
+      });*/
+      this.codeCulture = saison + '-' + this.new_culte.order_assoc + code_association + '-' + order.toString();
 
       // Insert new Culture
       const  dataNewCulteToInsert: Db_Culture_pms = {
@@ -793,12 +817,11 @@ export class SuiviPage implements OnInit {
         img_fact: null,
         dds: this.new_culte.dateSemis,
         sfce: this.new_culte.sfce,
-        objectif: this.new_culte.Objectif,
         sc: this.new_culte.sc,
         ea_id_variette: this.new_culte.ea_id_variette,
         ea_autres: this.new_culte.ea_id_variette !== null ? null : this.new_culte.ea,
-        statuts: 'EC',
-        Etat: 'ToSync',
+        statuts: EC,
+        Etat: SYNC,
       }
       console.log(dataNewCulteToInsert);
       this.crudDb.AddNewCulture(dataNewCulteToInsert).then(res => {
@@ -824,10 +847,71 @@ export class SuiviPage implements OnInit {
   onClickCancelAction() {
     this.isNewCultureClicked = false;
   }
+  // Modal Data
+  async presentModal(data_: any) {
+    console.log(data_)
+    let modal: any;
+    if (data_.intitule == 'add_suivi') {
+      modal = await this.modalCtrl.create({
+        component: ModalPage,
+        cssClass: 'my-custom-modal-suivi',
+        backdropDismiss: false,
+        componentProps: {
+          isSuiviRp: true,
+          association: this.data_association,
+          saison: this.data_saison,
+          pms: this.data_pms,
+          parcelle: this.data_parcelle_pms,
+          espece: this.data_espece,
+          variette: this.data_var
+        }
+      })
+    } else {
+      modal = await this.modalCtrl.create({
+        component: ModalPage,
+        cssClass: 'my-custom-modal-suivi',
+        backdropDismiss: false,
+        componentProps: {
+          isSuiviRp: true,
+          association: this.data_association,
+          saison: this.data_saison,
+          pms: this.data_pms,
+          parcelle: this.data_parcelle_pms,
+          espece: this.data_espece,
+          variette: this.data_var,
+          data_edit: data_.data
+        }
+      })
+    }
+    // dismissed
+    modal.onDidDismiss().then((data_modal) => {
+      console.log("*** Modal Suivi dismissed ****");
+      console.log(data_modal);
+      if (data_modal.data != undefined) {
+        let res = data_modal.data;
+        /**let ddp: Moment = this.new_culte.ddp;
+        let dds: Moment = this.new_culte.dateSemis;*/
+
+        this.new_culte = res.new_cult;
+        this.new_culte.ddp = res.new_cult.ddp.format("YYYY-MM-DD");
+        this.new_culte.dateSemis = res.new_cult.dateSemis.format("YYYY-MM-DD");
+
+        if (data_.intitule == 'add_suivi') {
+          console.log("**Add suivi dismissed");
+          this.isNewCultureClicked = true;
+        } else {
+          console.log("**Edit suivi dismissed");
+        }
+      }
+    });
+    await modal.present();
+  }
+
+
   /**
-   * ***********************
-   * On clicked Suivi
-   * ********************/
+   * ***************************************************
+   * SUIVI MEP CULTURE
+   * ************************************************************/
   onClickSuivi() {
     this.isSuiviClicked = true;
     this.displayedColumns.push('action');
@@ -846,7 +930,8 @@ export class SuiviPage implements OnInit {
       ec: this.data_ec.find(ec => ec.value === elem.ec),
       pb: elem.pb,
       ex: elem.ex,
-      controle: elem.controle
+      controle: elem.controle,
+      declaration: elem.declaration
     });
     this.indexRowSuivi = index;
     this.isEditableSuivi = true;
@@ -881,7 +966,8 @@ export class SuiviPage implements OnInit {
       name: this.fileLastImage.name,
       path: this.fileLastImage.path,
       controle: val.controle,
-      etat: "ToSync"
+      declaration: val.declaration,
+      etat: SYNC
     }
     console.log(val);
     console.log(data_);
@@ -932,7 +1018,8 @@ export class SuiviPage implements OnInit {
       name: this.fileLastImage.name === 'null' || this.fileLastImage.name === null? elem.name:this.fileLastImage.name,
       path: '',
       controle: val.controle,
-      etat: elem.etat === "ToSync"? "ToSync": "ToUpdate"
+      declaration: val.declaration,
+      etat: elem.etat === SYNC? SYNC: UPDATE
     }
     console.log(this.suiviForm.value);
     console.log(data_);
@@ -941,7 +1028,7 @@ export class SuiviPage implements OnInit {
       // refresh
       this.loadSuiviMep(this.code_cult_selected);
     });
-    if  (this.fileLastImage != undefined && this.fileLastImage.data !== null) {
+    if (this.fileLastImage != undefined && this.fileLastImage.data !== null) {
       this.deleteImage(this.fileLastImage);
       this.fileLastImage = {
         data: null,
@@ -989,61 +1076,35 @@ export class SuiviPage implements OnInit {
     return ec1 && ec2? ec1.value === ec2.value : ec2 === ec2;
   }
 
-  // Modal Data
-  async presentModal(data_: any) {
-    console.log(data_)
-    let modal: any;
-    if (data_.intitule == 'add_suivi') {
-      modal = await this.modalCtrl.create({
-        component: ModalPage,
-        cssClass: 'my-custom-modal-suivi',
-        backdropDismiss: false,
-        componentProps: {
-          isSuiviRp: true,
-          association: this.data_association,
-          saison: this.data_saison,
-          pms: this.data_pms,
-          parcelle: this.data_parcelle_pms,
-          espece: this.data_espece,
-          variette: this.data_var
-        }
-      })
-    } else {
-      modal = await this.modalCtrl.create({
-        component: ModalPage,
-        cssClass: 'my-custom-modal-suivi',
-        backdropDismiss: false,
-        componentProps: {
-          isSuiviRp: true,
-          association: this.data_association,
-          saison: this.data_saison,
-          pms: this.data_pms,
-          parcelle: this.data_parcelle_pms,
-          espece: this.data_espece,
-          variette: this.data_var,
-          data_edit: data_.data
-        }
-      })
-    }
-    // dismissed
-    modal.onDidDismiss().then((data_modal) => {
-      console.log("*** Modal Suivi dismissed ****");
-      console.log(data_modal);
-      if (data_modal.data != undefined) {
-        let res = data_modal.data;
-        let ddp: Moment = this.new_culte.ddp;
-        let dds: Moment = this.new_culte.dateSemis;
+  // Modal modifcation Zone
+  async modificationZone() {
+    const modal = await this.modalCtrl.create({
+      component: ModalPage,
+      componentProps: {
+        'isModificationZone': true,
+        'activite': this.activite
+      }
+    });
+    modal.onDidDismiss().then(async (data_dism) => {
+      const loading = await this.loadingCtrl.create();
+      await loading.present();
+      console.log(data_dism);
+      if (data_dism.data != undefined) {
+        console.log("***Modal Data***", data_dism);
+        this.sharedService.setData(data_dism);
+        this.region = data_dism.data.region;
+        this.district = data_dism.data.district;
+        this.commune = data_dism.data.commune;
+        this.loadFktAssociation();
+        // Initialized
+        this.onFinish();
 
-        this.new_culte = res.new_cult;
-        this.new_culte.ddp = ddp.format("YYYY-MM-DD");
-        this.new_culte.dateSemis = dds.format("YYYY-MM-DD");
-
-        if (data_.intitule == 'add_suivi') {
-          console.log("**Add suivi dismissed");
-          this.isNewCultureClicked = true;
-        } else {
-          console.log("**Edit suivi dismissed");
-        }
+        setTimeout(() => {
+          this.dataSource.data = this.data_culture;
+          // init suivi
+          this.refreshTbSuivi();
+          this.loadingCtrl.dismiss();
+        }, 1000);
       }
     });
     await modal.present();
@@ -1075,6 +1136,7 @@ export class SuiviPage implements OnInit {
     this.selectedAssocSv = null;
     this.selectedBeneficiareSv = null;
     this.loadExportMep(this.data_culture);
+    this.loadExportSuivi(this.data_all_suivi_mep);
   }
 
   initDataTable() {

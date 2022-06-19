@@ -321,6 +321,38 @@
                                     <th mat-header-cell *matHeaderCellDef> {{ update_mep.ea }} </th>
                                   </ng-container>
 
+                                  <!-- nbre_ligne  Column -->
+                                  <ng-container matColumnDef="nbre_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> nbre_ligne </th>
+                                    <td mat-cell *matCellDef="let row; let i = index"> 
+                                      <span *ngIf="!isRowMepSgEdit || indexRowEditMepSg != i">
+                                        {{row.nbre_ligne}}
+                                      </span>
+                                      <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
+                                        {{ update_mep.nbre_ligne }}
+                                      </span>
+                                    </td>
+                                  </ng-container> 
+                                  <ng-container matColumnDef="new_nbre_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> {{ update_mep.nbre_ligne }} </th>
+                                  </ng-container>
+
+                                  <!-- long_ligne  Column -->
+                                  <ng-container matColumnDef="long_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> long_ligne </th>
+                                    <td mat-cell *matCellDef="let row; let i = index"> 
+                                      <span *ngIf="!isRowMepSgEdit || indexRowEditMepSg != i">
+                                        {{row.long_ligne}}
+                                      </span>
+                                      <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
+                                        {{ update_mep.long_ligne }}
+                                      </span>
+                                    </td>
+                                  </ng-container> 
+                                  <ng-container matColumnDef="new_long_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> {{ update_mep.long_ligne }} </th>
+                                  </ng-container>
+
                                   <!-- New action Column -->
                                   <ng-container matColumnDef="new_action">
                                     <th mat-header-cell *matHeaderCellDef>
@@ -473,7 +505,7 @@
                                         <mat-form-field appearance="outline">
                                           <mat-label>stc</mat-label>
                                           <mat-select formControlName="stc">
-                                            <mat-option>none</mat-option>
+                                            <mat-option (click)="onClickAucun('stc-sg')">-----</mat-option>
                                             <mat-option *ngFor="let stc of data_stc" [value]="stc">
                                               {{ stc.intitule }}
                                             </mat-option>
@@ -489,7 +521,7 @@
                                         <mat-form-field appearance="outline">
                                           <mat-label>stc</mat-label>
                                           <mat-select formControlName="stc">
-                                            <mat-option>none</mat-option>
+                                            <mat-option (click)="onClickAucun('stc-sg')">-----</mat-option>
                                             <mat-option *ngFor="let stc of data_stc" [value]="stc">
                                               {{ stc.intitule }}
                                             </mat-option>
@@ -497,7 +529,44 @@
                                         </mat-form-field>
                                       </span>
                                     </th>
-                                  </ng-container>    
+                                  </ng-container>
+                                  
+                                  <!-- Etat Cultural Column -->
+                                  <ng-container matColumnDef="ec">
+                                    <th mat-header-cell *matHeaderCellDef> Etat </th>
+                                    <td mat-cell *matCellDef="let row; let i = index">
+                                      <span *ngIf="!isRowSvSgEdit || indexSg != i">
+                                        {{row.ec}}
+                                      </span>
+                                      <span *ngIf="isRowSvSgEdit && i == indexSg">
+                                        <mat-form-field appearance="outline">
+                                          <mat-label>Etat Cultural</mat-label>
+                                          <mat-select formControlName="ec">
+                                            <mat-option (click)="onClickAucun('ec-sg')">---</mat-option>
+                                            <mat-option *ngFor="let ec of data_ec" [value]="ec">
+                                              {{ ec.intitule }}
+                                            </mat-option>
+                                          </mat-select>
+                                        </mat-form-field>
+                                      </span>
+                                    </td>
+                                  </ng-container> 
+                                  <!-- new Etat Cultural Column -->
+                                  <ng-container matColumnDef="new_ec">
+                                    <th mat-header-cell *matHeaderCellDef>  
+                                      <span>
+                                        <mat-form-field appearance="outline">
+                                          <mat-label>Etat cultural</mat-label>
+                                          <mat-select formControlName="ec">
+                                            <mat-option (click)="onClickAucun('ec-sg')">---</mat-option>
+                                            <mat-option *ngFor="let ec of data_ec" [value]="ec">
+                                              {{ ec.intitule }}
+                                            </mat-option>
+                                          </mat-select>
+                                        </mat-form-field>
+                                      </span>
+                                    </th>
+                                  </ng-container>
                         
                                   <!-- Image culture Column -->
                                   <ng-container matColumnDef="img_cult">
@@ -642,23 +711,7 @@
                                   </ng-container>
                                   <ng-container matColumnDef="new_annee">
                                     <th mat-header-cell *matHeaderCellDef> {{ update_mep.annee_du }} </th>
-                                  </ng-container>
-                        
-                                  <!-- Saison Column -->
-                                  <ng-container matColumnDef="saison">
-                                    <th mat-header-cell *matHeaderCellDef> Saison </th>
-                                    <td mat-cell *matCellDef="let row; let i = index"> 
-                                      <span *ngIf="!isRowMepPaEdit || indexRowEditMepPa != i">
-                                        {{row.intitule}} 
-                                      </span>
-                                      <span *ngIf="indexRowEditMepPa == i  && isRowMepPaEdit">
-                                        {{ update_mep.nom_saison }} 
-                                      </span>
-                                    </td>
-                                  </ng-container> 
-                                  <ng-container matColumnDef="new_saison">
-                                    <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_saison }} </th>
-                                  </ng-container>                 
+                                  </ng-container>               
                         
                                   <!-- Bloc Column -->
                                   <ng-container matColumnDef="bloc">
@@ -770,7 +823,23 @@
                                   </ng-container>  
                                   <ng-container matColumnDef="new_qo">
                                     <th mat-header-cell *matHeaderCellDef> {{ update_mep.qso }} </th>
-                                  </ng-container>               
+                                  </ng-container>   
+                                  
+                                  <!-- Date de distribution Column -->
+                                  <ng-container matColumnDef="dt_dist">
+                                    <th mat-header-cell *matHeaderCellDef> dt_distribution </th>
+                                    <td mat-cell *matCellDef="let row; let i = index">  
+                                      <span *ngIf="!isRowMepPaEdit || indexRowEditMepPa != i">
+                                        {{row.dt_distribution}}
+                                      </span>
+                                      <span *ngIf="indexRowEditMepPa == i && isRowMepPaEdit">
+                                        {{ update_mep.dt_distribution }}
+                                      </span>
+                                    </td>
+                                  </ng-container>     
+                                  <ng-container matColumnDef="new_dt_dist">
+                                    <th mat-header-cell *matHeaderCellDef> {{ update_mep.dt_distribution }} </th>
+                                  </ng-container>  
                         
                                   <!-- Date de semis Column -->
                                   <ng-container matColumnDef="dt_mep">
@@ -788,20 +857,36 @@
                                     <th mat-header-cell *matHeaderCellDef> {{ update_mep.dds }} </th>
                                   </ng-container>              
                       
-                                  <!-- sfce  Column -->
-                                  <ng-container matColumnDef="sfce_embl">
-                                    <th mat-header-cell *matHeaderCellDef> sfce_embl </th>
+                                  <!-- nbre_ligne  Column -->
+                                  <ng-container matColumnDef="nbre_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> nbre_ligne </th>
                                     <td mat-cell *matCellDef="let row; let i = index"> 
                                       <span *ngIf="!isRowMepPaEdit || indexRowEditMepPa != i">
-                                        {{row.sfce}}
+                                        {{row.nbre_ligne}}
                                       </span>
                                       <span *ngIf="indexRowEditMepPa == i && isRowMepPaEdit">
-                                        {{ update_mep.sfce }}
+                                        {{ update_mep.nbre_ligne }}
                                       </span>
                                     </td>
                                   </ng-container> 
-                                  <ng-container matColumnDef="new_sfce_embl">
-                                    <th mat-header-cell *matHeaderCellDef> {{ update_mep.sfce }} </th>
+                                  <ng-container matColumnDef="new_nbre_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> {{ update_mep.nbre_ligne }} </th>
+                                  </ng-container>
+
+                                  <!-- long_ligne  Column -->
+                                  <ng-container matColumnDef="long_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> long_ligne </th>
+                                    <td mat-cell *matCellDef="let row; let i = index"> 
+                                      <span *ngIf="!isRowMepPaEdit || indexRowEditMepPa != i">
+                                        {{row.long_ligne}}
+                                      </span>
+                                      <span *ngIf="indexRowEditMepPa == i && isRowMepPaEdit">
+                                        {{ update_mep.long_ligne }}
+                                      </span>
+                                    </td>
+                                  </ng-container> 
+                                  <ng-container matColumnDef="new_long_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> {{ update_mep.long_ligne }} </th>
                                   </ng-container>
                                   
                                   <!-- New action Column -->
@@ -917,8 +1002,131 @@
                                         </mat-form-field>
                                       </span>
                                     </th>
-                                  </ng-container>                                                 
+                                  </ng-container>
+                                  
+                                  <!-- Etat Cultural Column -->
+                                  <ng-container matColumnDef="ec">
+                                    <th mat-header-cell *matHeaderCellDef> Etat </th>
+                                    <td mat-cell *matCellDef="let row; let i = index">
+                                      <span *ngIf="!isRowSvPaEdit || indexPa != i">
+                                        {{row.ec}}
+                                      </span>
+                                      <span *ngIf="isRowSvPaEdit && i == indexPa">
+                                        <mat-form-field appearance="outline">
+                                          <mat-label>Etat Cultural</mat-label>
+                                          <mat-select formControlName="ec">
+                                            <mat-option (click)="onClickAucun('ec-pa')">---</mat-option>
+                                            <mat-option *ngFor="let ec of data_ec" [value]="ec">
+                                              {{ ec.intitule }}
+                                            </mat-option>
+                                          </mat-select>
+                                        </mat-form-field>
+                                      </span>
+                                    </td>
+                                  </ng-container> 
+                                  <!-- new Etat Cultural Column -->
+                                  <ng-container matColumnDef="new_ec">
+                                    <th mat-header-cell *matHeaderCellDef>  
+                                      <span>
+                                        <mat-form-field appearance="outline">
+                                          <mat-label>Etat cultural</mat-label>
+                                          <mat-select formControlName="ec">
+                                            <mat-option (click)="onClickAucun('ec-pa')">---</mat-option>
+                                            <mat-option *ngFor="let ec of data_ec" [value]="ec">
+                                              {{ ec.intitule }}
+                                            </mat-option>
+                                          </mat-select>
+                                        </mat-form-field>
+                                      </span>
+                                    </th>
+                                  </ng-container>
                         
+                                  <!-- Image culture Column -->
+                                  <ng-container matColumnDef="img_cult">
+                                    <th mat-header-cell *matHeaderCellDef> img_cult </th>
+                                    <td mat-cell *matCellDef="let row; let i = index">  
+                                      <span *ngIf="!isRowSvPaEdit || indexPa != i">
+                                        <ion-thumbnail slot="start">
+                                          <ion-img [src]="row.img_cult"></ion-img>
+                                        </ion-thumbnail>
+                                      </span>
+                                      <span *ngIf="isRowSvPaEdit && i == indexPa">
+                                        <ion-thumbnail slot="start">
+                                          <ion-img [src]="fileImgSvSg.data" *ngIf="fileImgSvSg.data !== null"></ion-img>
+                                          <ion-img [src]="row.img_cult" *ngIf="fileImgSvSg.data === null"></ion-img>
+                                        </ion-thumbnail>
+                                        <ion-button fill="clear" color="blue" (click)="selectImage('sv-sg')">
+                                          <ion-icon slot="start" name="camera"></ion-icon>
+                                        </ion-button>
+                                      </span>
+                                    </td>
+                                  </ng-container>  
+                                  <!-- New Image culture de semis Column -->
+                                  <ng-container matColumnDef="new_img_cult">
+                                    <th mat-header-cell *matHeaderCellDef> 
+                                      <span>
+                                        <ion-thumbnail slot="start">
+                                          <ion-img [src]="fileImgSvSg.data"></ion-img>
+                                        </ion-thumbnail>
+                                        <ion-button fill="clear" expand="full" color="blue" (click)="selectImage('sv-sg')">
+                                          <ion-icon slot="start" name="camera"></ion-icon>
+                                        </ion-button>
+                                      </span>
+                                    </th>
+                                  </ng-container>
+
+                                  <!-- Nbre_Ligne Ligne Column -->
+                                  <ng-container matColumnDef="nbre_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> nbre_ligne </th>
+                                    <td mat-cell *matCellDef="let row; let i = index"> 
+                                      <span *ngIf="!isRowSvPaEdit || indexPa != i">
+                                        {{row.nbre_ligne}}
+                                      </span>
+                                      <span *ngIf="isRowSvPaEdit && i == indexPa">
+                                        <mat-form-field appearance="outline">
+                                          <mat-label>Nb_ligne</mat-label>
+                                          <input matInput type="number" placeholder="Merci de saisissez!" formControlName="nbre_ligne">
+                                        </mat-form-field>
+                                      </span>
+                                    </td>
+                                  </ng-container>
+                                  <ng-container matColumnDef="new_nbre_ligne">
+                                    <th mat-header-cell *matHeaderCellDef>
+                                      <span>
+                                        <mat-form-field appearance="outline">
+                                          <mat-label>nbre_ligne</mat-label>
+                                          <input matInput type="number" placeholder="Merci de saisissez!" formControlName="nbre_ligne">
+                                        </mat-form-field>
+                                      </span>
+                                    </th>
+                                  </ng-container>  
+                                  
+                                  <!-- Huteur Ligne Column -->
+                                  <ng-container matColumnDef="hauteur">
+                                    <th mat-header-cell *matHeaderCellDef> Hauteur </th>
+                                    <td mat-cell *matCellDef="let row; let i = index"> 
+                                      <span *ngIf="!isRowSvPaEdit || indexPa != i">
+                                        {{row.hauteur}}
+                                      </span>
+                                      <span *ngIf="isRowSvPaEdit && i == indexPa">
+                                        <mat-form-field appearance="outline">
+                                          <mat-label>Hauteur</mat-label>
+                                          <input matInput type="number" placeholder="Merci de saisissez!" formControlName="hauteur">
+                                        </mat-form-field>
+                                      </span>
+                                    </td>
+                                  </ng-container>
+                                  <ng-container matColumnDef="new_hauteur">
+                                    <th mat-header-cell *matHeaderCellDef>
+                                      <span>
+                                        <mat-form-field appearance="outline">
+                                          <mat-label>Hauteur</mat-label>
+                                          <input matInput type="number" placeholder="Merci de saisissez!" formControlName="hauteur">
+                                        </mat-form-field>
+                                      </span>
+                                    </th>
+                                  </ng-container>
+
                                   <!-- QR Column -->
                                   <ng-container matColumnDef="qr">
                                     <th mat-header-cell *matHeaderCellDef> QR </th>
@@ -1139,7 +1347,7 @@
                                   </ng-container> 
                                   <ng-container matColumnDef="new_espece">
                                     <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_espece }} </th>
-                                  </ng-container>            
+                                  </ng-container> 
                         
                                   <!-- qso Column -->
                                   <ng-container matColumnDef="qso">
@@ -1188,6 +1396,38 @@
                                   </ng-container> 
                                   <ng-container matColumnDef="new_sfce_embl">
                                     <th mat-header-cell *matHeaderCellDef> {{ update_mep.sfce }} </th>
+                                  </ng-container>
+
+                                  <!-- nbre_ligne  Column -->
+                                  <ng-container matColumnDef="nbre_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> nbre_ligne </th>
+                                    <td mat-cell *matCellDef="let row; let i = index"> 
+                                      <span *ngIf="!isRowMepMvEdit || indexRowEditMepMv != i">
+                                        {{row.nbre_ligne}}
+                                      </span>
+                                      <span *ngIf="indexRowEditMepMv == i  && isRowMepMvEdit">
+                                        {{ update_mep.nbre_ligne }}
+                                      </span>
+                                    </td>
+                                  </ng-container> 
+                                  <ng-container matColumnDef="new_nbre_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> {{ update_mep.nbre_ligne }} </th>
+                                  </ng-container>
+
+                                  <!-- nbre_ligne  Column -->
+                                  <ng-container matColumnDef="long_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> long_ligne </th>
+                                    <td mat-cell *matCellDef="let row; let i = index"> 
+                                      <span *ngIf="!isRowMepMvEdit || indexRowEditMepMv != i">
+                                        {{row.long_ligne}}
+                                      </span>
+                                      <span *ngIf="indexRowEditMepMv == i  && isRowMepMvEdit">
+                                        {{ update_mep.long_ligne }}
+                                      </span>
+                                    </td>
+                                  </ng-container> 
+                                  <ng-container matColumnDef="new_long_ligne">
+                                    <th mat-header-cell *matHeaderCellDef> {{ update_mep.long_ligne }} </th>
                                   </ng-container>
                                   
                                   <!-- sc Column -->
@@ -1602,6 +1842,16 @@
                             </span>
                           </td>
                         </ng-container>
+
+                        <!-- Etat Column -->
+                        <ng-container matColumnDef="ec">
+                          <th mat-header-cell *matHeaderCellDef> Etat </th>
+                          <td mat-cell *matCellDef="let row; let i = index"> 
+                            <span>
+                              {{row.ec}}
+                            </span>
+                          </td>
+                        </ng-container>
                         
                         <!-- long_ligne Ligne Column -->
                         <ng-container matColumnDef="long_ligne">
@@ -1787,7 +2037,49 @@
                           </td>
                         </ng-container>
 
-                        <!-- Nombre Ligne Column -->
+                        <!-- EC Column -->
+                        <ng-container matColumnDef="ec">
+                          <th mat-header-cell *matHeaderCellDef> Etat </th>
+                          <td mat-cell *matCellDef="let row; let i = index"> 
+                            <span>
+                              {{row.ec}}
+                            </span>
+                          </td>
+                        </ng-container>
+                        
+                        <!-- nbre_ligne Column -->
+                        <ng-container matColumnDef="nbre_ligne">
+                          <th mat-header-cell *matHeaderCellDef> nb_Ligne </th>
+                          <td mat-cell *matCellDef="let row; let i = index"> 
+                            <span>
+                              {{row.nbre_ligne}}
+                            </span>
+                          </td>
+                        </ng-container>
+
+                        <!-- nbre_ligne Column -->
+                        <ng-container matColumnDef="hauteur">
+                          <th mat-header-cell *matHeaderCellDef> Hauteur </th>
+                          <td mat-cell *matCellDef="let row; let i = index"> 
+                            <span>
+                              {{row.hauteur}}
+                            </span>
+                          </td>
+                        </ng-container>
+
+                        <!-- nbre_ligne Column -->
+                        <ng-container matColumnDef="img_cult">
+                          <th mat-header-cell *matHeaderCellDef> Img_cult </th>
+                          <td mat-cell *matCellDef="let row; let i = index"> 
+                            <span>
+                              <ion-thumbnail slot="start">
+                                <ion-img [src]="row.img_cult"></ion-img>
+                              </ion-thumbnail>
+                            </span>
+                          </td>
+                        </ng-container>
+
+                        <!-- QR Column -->
                         <ng-container matColumnDef="qr">
                           <th mat-header-cell *matHeaderCellDef> QR </th>
                           <td mat-cell *matCellDef="let row; let i = index"> 

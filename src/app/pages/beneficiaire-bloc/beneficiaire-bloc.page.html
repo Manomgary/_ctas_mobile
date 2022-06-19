@@ -210,6 +210,12 @@
                             <th mat-header-cell *matHeaderCellDef mat-sort-header> code benef </th>
                             <td mat-cell *matCellDef="let row"> {{row.code_benef_bl}} </td>
                           </ng-container>
+
+                          <!-- Nom_bloc Column -->
+                          <ng-container matColumnDef="code_achat">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header> code achat </th>
+                            <td mat-cell *matCellDef="let row"> {{row.code_achat}} </td>
+                          </ng-container>
                 
                           <!-- Nom Concerné Column -->
                           <ng-container matColumnDef="nom">

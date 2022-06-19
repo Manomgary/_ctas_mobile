@@ -76,7 +76,6 @@ export class SynchroPage implements OnInit {
             img_fact: elem.img_fact,
             dds: elem.dds,
             sfce: elem.sfce,
-            objectif: elem.objectif,
             sc: elem.sc,
             ea_id_variette: elem.ea_id_variette,
             ea_autres: elem.ea_autres,
@@ -157,6 +156,7 @@ export class SynchroPage implements OnInit {
             ex: item.ex,
             img_cult: item.img_cult,
             controle: item.controle,
+            declaration: item.declaration,
             etat: ISSYNC,
             code_culture: item.id_culture,
             id: item.id
@@ -196,6 +196,7 @@ export class SynchroPage implements OnInit {
             img_cult: elem_suivi.img_cult,
             name: elem_suivi.name,
             controle: elem_suivi.controle,
+            declaration: elem_suivi.declaration,
             etat: elem_suivi.etat
           });
         });

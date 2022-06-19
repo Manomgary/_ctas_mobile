@@ -1,14 +1,16 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnChanges, OnInit, Output, EventEmitter, SimpleChanges, ViewChild, OnDestroy } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 // Imports 
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
-import { Loc_association, Benef_activ_pms, Local_Parcelle } from 'src/app/interfaces/interfaces-local';
+import { Loc_association, Benef_activ_pms, Local_Parcelle, Loc_projet } from 'src/app/interfaces/interfaces-local';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
+import { SharedService } from 'src/app/services/shared.service';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
+import { ModalPage } from '../modal/modal.page';
 
 export interface UserData {
   id: string;
@@ -21,12 +23,12 @@ export interface UserData {
   templateUrl: './beneficiaire.page.html',
   styleUrls: ['./beneficiaire.page.scss'],
 })
-export class BeneficiairePage implements OnInit, AfterViewInit {
+export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
 
-  displayedColumnsBenef: string[] = ['association', 'fokontany', 'code_pms', 'pms', 'sexe', 'age', 'cin', 'village', 'collaborateur', 'nb_parcelle', 'sum_parce'];
+  displayedColumnsBenef: string[] = ['association', 'fokontany', 'code_pms', 'code_ahat', 'pms', 'sexe', 'age', 'cin', 'village', 'collaborateur', 'nb_parcelle', 'sum_parce'];
   displayedColumns: string[] = ['fokontany', 'association', 'nb_pms', 'code_benef', 'pa', 'sexe', 'cin', 'surnom', 'technicien'];
-  displayedColumnsParce: string[] = ['code_parce', 'code_pms', 'nom', 'ref_gps', 'lat', 'log', 'superficie', 'nb_cultures', 'cultures'];
-  displayedColumnsParceSingle: string[] = ['code_pms', 'nom', 'code_parce', 'ref_gps', 'lat', 'log', 'superficie', 'nb_cultures', 'cultures'];
+  displayedColumnsParce: string[] = ['code_parce', 'code_pms', 'code_ahat', 'nom', 'ref_gps', 'lat', 'log', 'superficie', 'nb_cultures', 'cultures'];
+  displayedColumnsParceSingle: string[] = ['code_pms', 'code_ahat', 'nom', 'code_parce', 'ref_gps', 'lat', 'log', 'superficie', 'nb_cultures', 'cultures'];
   filterDataAssoc: string[] = [];
   filterData: Loc_association[] = [];
   filterDataParce: Local_Parcelle[] = [];
@@ -44,8 +46,8 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
   dataSourceBenef = new MatTableDataSource<Benef_activ_pms>();
   dataSourceParce = new MatTableDataSource<Local_Parcelle>(); 
   dataSourceParceSingle = new MatTableDataSource<Local_Parcelle>();
-  private isFktLoaded: BehaviorSubject<boolean> = new BehaviorSubject(false);
-  private isRouterActive: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  
+  private isRouterActive: boolean = false;
 
   // Association Paginator
   @ViewChild('assocPaginator') assocPaginator: MatPaginator;
@@ -59,63 +61,57 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
   @ViewChild('parcePaginator') parcePaginator: MatPaginator;
   @ViewChild('parceSort') parceSort: MatSort;
 
+  @Output('zone_benef') zone: EventEmitter<any> = new EventEmitter();
+
   region: any;
   district: any;
   commune: any;
-  projet: any;
+  projet: Loc_projet;
   user: Utilisateurs[];
+  activite: string;
 
   private fokontany: any[] = [];
 
-  constructor(public modalCtrl: ModalController, 
+  constructor(
+              public modalCtrl: ModalController, 
               private router: Router, 
               private loadData: LoadDataService,
-              private loadingCtrl: LoadingController,) {
-        
-    if (this.router.getCurrentNavigation().extras.state) {
+              private loadingCtrl: LoadingController,
+              private route: ActivatedRoute,
+              private sharedService: SharedService) {
+    this.loading();
+    const routeState = this.router.getCurrentNavigation().extras.state;
+    console.log(":::::CONSTRUCTEUR Beneficiaire::::::::::::::::::::::::", routeState);
+    if (routeState) {
+      console.log(":::::CONSTRUCTEUR Beneficiaire::::::::::::::::::::::::")
       let data: any;
-      let projet: any;
-      this.fokontany = [];
-      const routeState = this.router.getCurrentNavigation().extras.state;
+      let projet: Loc_projet;
+      
       data = JSON.parse(routeState.zone);
       projet = JSON.parse(routeState.projet);
       this.user = JSON.parse(routeState.user);
+      this.activite = routeState.activite;
       ///this.region = JSON.parse(data.data);
       console.log("Beneficiaire RP=====>");
       console.log(routeState);
       console.log(data);
       console.log(projet);
       console.log(this.user);
+
       this.region = data.data.region;
       this.district = data.data.district;
       this.commune = data.data.commune;
       this.projet = projet;
-
-      this.isRouterActive.next(true);
+      this.loadFktAssociation();
+      this.isRouterActive = true;
 
     } else console.log("router Beneficiaire is not current");
-    // Assign the data to the data source for the table to render
-    this.isRouterActive.subscribe(isActive => {
-      if (isActive) {
-        console.log("Constructeur Beneficiaire Active router");
-        if (!this.isFktLoaded.value) {
-          console.log(this.isFktLoaded.value);
-          this.loadFktAssociation();
-        }
-        this.isRouterActive.next(false);
-      }
-    });
-    /**this.loadData.loadASSParce().then(res => {
-      console.log(res);
-    });
-    this.loadData.loadParce().then(res => {
-      console.log("Select All Parcelle");
-      console.log(res);
-    });
-    this.loadData.loadAllAssociation().then(res => {
-      console.log("Select All Association");
-      console.log(res);
-    });*/
+  }
+  ngOnDestroy(): void {
+    console.log(":::::Component beneficiare function destroy:::::::::::::::::::::::");
+    if (this.sharedService.getData() != null) {
+      this.sharedService.setData(null);
+    }
   }
 
   ngOnInit() {
@@ -123,6 +119,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    console.log(":::::Component beneficiare function AfterViewInit:::::::::::::::::::::::");
     this.assocSort.disableClear = true;
     this.dataSource.paginator = this.assocPaginator;
     this.dataSource.sort = this.assocSort;
@@ -133,6 +130,62 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
 
     this.dataSourceParce.paginator = this.parcePaginator;
     this.dataSourceParce.sort = this.parceSort;
+  }
+  /** Navigation LifeCycle event component */
+  ionViewDidLoad() {
+    console.log(":::::LifeCycle beneficiare function:::: ionViewDidLoad:::");
+  }
+  ionViewWillEnter(){
+    if (this.isRouterActive) {
+      console.log("::::::Contructeur loaded:::::");
+    } else {
+      this.loading();
+      console.log("::::::Contructeur unloaded:::::", this.sharedService.getData());
+      if (this.sharedService.getData() != null) {
+        let data = this.sharedService.getData();
+        this.region = data.data.region;
+        this.district = data.data.district;
+        this.commune = data.data.commune;
+        this.loadFktAssociation();
+        //this.dataSource.data = this.association;
+      } else {
+        // Initialized data 
+        this.initPropr();
+        this.dataSource.filter = '';
+        this.dataSourceBenef.filter = '';    
+        this.dataSourceParce.filter = '';
+        this.dataSource.data = this.association;
+        this.dataSourceBenef.data =  this.data_pms;
+        this.dataSourceParce.data = this.parcelle_pms;
+      }
+    }
+    console.log(":::::LifeCycle beneficiare function::::: ionViewWillEnter::", this.isRouterActive);
+  }
+  ionViewDidEnter() {
+    console.log(":::::LifeCycle Beneficiaire function:::: ionViewDidEnter:::");
+    setTimeout(() => {
+      this.initPropr();
+      this.dataSource.filter = '';
+      this.dataSourceBenef.filter = '';    
+      this.dataSourceParce.filter  = '';
+      this.dataSource.data = this.association;
+      this.dataSourceBenef.data =  this.data_pms;
+      this.dataSourceParce.data = this.parcelle_pms;
+      this.loadingCtrl.dismiss();
+    }, 1000);
+  }
+  ionViewDidLeave(){
+    console.log(":::::LifeCycle beneficiare function:::::: ionViewDidLeave:::");
+    this.isRouterActive = false;
+    this.loadingCtrl.dismiss();
+  }
+  ionViewWillUnload() {
+    console.log(":::::LifeCycle beneficiare function:::::: ionViewWillUnload:::");
+  }
+
+  async loading() {
+    const loading = await this.loadingCtrl.create();
+    await loading.present();
   }
 
   applyFilter(event: Event) {
@@ -203,19 +256,22 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
   }
 
   async loadFktAssociation() {
-    const loading = await this.loadingCtrl.create();
-    await loading.present();
     let fkt = [];
+    this.fokontany = [];
     this.dataSource.data = [];
     this.dataSourceBenef.data = [];
     this.data_pms = [];
     this.parcelle_pms = [];
     this.association = [];
+    this.filterDataAssoc = [];
     let code_equipe: number;
     let count = 0;
     console.log("::::BENEFICIAIRE FOKONTANY::: " + count);
     console.log(this.commune);
-    this.loadData.loadFokontany(this.commune.code_com).then((res) => {
+    let id_commune = {
+      code_commune: this.commune.code_com
+    }
+    this.loadData.loadFokontany(id_commune).then((res) => {
       count ++;
       console.log(res.values);
       res.values.forEach(element => {
@@ -263,7 +319,8 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
                   id_fkt:  elem.id_fkt, 
                   nom_fkt: elem.nom_fkt,
                   code_ass: elem.code_ass, 
-                  nom_ass: elem.nom_ass, 
+                  nom_ass: elem.nom_ass,
+                  ancronyme: elem.ancronyme,
                   id_tech: elem.id_tech, 
                   technicien: elem.technicien,
                   nb_benef: elem.nb_benef, 
@@ -291,6 +348,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
                   });
                 });
               });
+              this.dataSourceParce.data = this.parcelle_pms;
               this.dataSourceBenef.data = this.data_pms;
               this.dataSource.data = this.association;
               console.log(this.dataSource.data);
@@ -302,11 +360,10 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
             if ((this.fokontany.length - 1) === i) {
               console.log("****Dernier boucle fkt***");
               this.fokontany = [];
-              this.loadingCtrl.dismiss();
-              return this.isFktLoaded.next(true);
+              //return this.isFktLoaded.next(true);
             }    
           });
-        } else this.loadingCtrl.dismiss();
+        }
     });
 
   }
@@ -361,6 +418,50 @@ export class BeneficiairePage implements OnInit, AfterViewInit {
     this.selectedAssoc = '';
     this.selectedAssocParce = '';
     this.selectedAssocPms = '';
+  }
+
+  async presentModal() {
+    console.log("Activité:::", this.activite);
+    console.log("Projet:::", this.projet);
+    console.log("Users:::", this.user);
+    const modal = await this.modalCtrl.create({
+      component: ModalPage,
+      componentProps: {
+        'isModificationZone': true,
+        'activite': this.activite
+      }
+    });
+    modal.onDidDismiss().then(async (data_dism) => {
+      console.log(data_dism);
+      if (data_dism.data != undefined) {
+        console.log("***Modal Data***", data_dism);
+        // Initialized data source an property
+        this.initPropr();
+        this.dataSource.filter = '';
+        this.dataSourceBenef.filter = '';    
+        this.dataSourceParce.filter = '';
+        // load data
+        this.sharedService.setData(data_dism); // shared zone selected to other component
+        this.region = data_dism.data.region;
+        this.district = data_dism.data.district;
+        this.commune = data_dism.data.commune;
+        this.loadFktAssociation();
+
+        // Initialized data
+        setTimeout(() => {
+          this.dataSource.data = this.association;
+          this.dataSourceBenef.data =  this.data_pms;
+          this.dataSourceParce.data = this.parcelle_pms;
+        }, 1000);
+
+        this.router.routeReuseStrategy.shouldReuseRoute = () => false;
+        this.router.onSameUrlNavigation = 'reload';
+        this.router.navigate(['./'], {
+          relativeTo: this.route
+        })
+      }
+    });
+    await modal.present();
   }
 
   addData() {

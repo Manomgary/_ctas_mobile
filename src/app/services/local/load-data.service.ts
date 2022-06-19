@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 // Imports 
 import { SqliteService } from '../sqlite.service'; 
 import { DatabaseService } from '../database.service';
-import { DB_NAME } from 'src/app/utils/global-variables';
+import { DB_NAME, SYNC } from 'src/app/utils/global-variables';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 import { Equipe, ProjetEquipe, Utilisateurs } from 'src/app/utils/interface-bd';
@@ -106,7 +106,7 @@ export class LoadDataService {
     this.dbService.dbReady.subscribe(async isReady => {
       if (isReady) {
         let projet: any[] = [];
-        let statement = `SELECT numero, code_proj, nom, description, logo, statuts FROM projet;`;
+        let statement = `SELECT numero, code_proj, nom, description, ancronyme, logo, statuts FROM projet`;
         let req = ''
 
         if (!(Object.keys(data).length === 0)) {
@@ -123,9 +123,10 @@ export class LoadDataService {
               projet.push({
                 numero: elem.numero,
                 code_proj: elem.code_proj, 
-                nom: elem.nom, 
+                nom: elem.nom,
+                ancronyme: elem.ancronyme,
                 description: elem.description,
-                logo: elem.logo,  
+                logo: elem.logo,
                 statuts: elem.statuts
               });
             });
@@ -137,17 +138,23 @@ export class LoadDataService {
     return this.projets.asObservable();
   }
 
-  loadActiveProjet(id_projet: string): Observable<any[]> {
+  loadActiveProjet(data: any): Observable<any[]> {
 
     this.dbService.dbReady.subscribe(async isReady => {
       if (isReady) {
         let act_pr: any[]  = [];
         console.log(this.dbService.dbReady.value);
-        const statement = `SELECT  AP.code, AP.id_proj, P.nom, AP.id_activ, A.code_act, A.intitule, A.description,  AP.statuts 
+        /**const statement = `SELECT  AP.code, AP.id_proj, P.nom, AP.id_activ, A.intitule, A.description,  AP.statuts 
                             FROM  participe_proj_activ AP 
                             INNER JOIN activite A ON A.code_act = AP.id_activ
                             INNER JOIN projet P ON P.code_proj = AP.id_proj
-                            WHERE AP.id_proj = "${ id_projet }";`;
+                            WHERE AP.id_proj = "${ id_projet }";`;*/
+        const statement = `SELECT PEV.code, PEV.id_projet AS id_proj, PRJ.nom, PEV.id_equipe, PEV.id_volet, PEV.status_pev AS statuts, A.code_act AS id_activ, A.intitule, A.description
+                          FROM projet_equipe_volet PEV
+                          INNER JOIN activite A ON A.id_volet = PEV.id_volet
+                          INNER JOIN projet PRJ ON PRJ.code_proj = PEV.id_projet AND PRJ.statuts = "activer"
+                          INNER JOIN projet_equipe PE ON PE.id_projet = PEV.id_projet AND PE.id_equipe = PEV.id_equipe AND PE.status_pe = "active"
+                          WHERE PEV.status_pev = "active" AND PEV.id_projet = "${ data.id_projet }" AND PEV.id_equipe = ${ data.code_equipe };`;
         await this.db.query(statement).then(res => {
           console.log(":::RESPONSE QUERY Activite Projet ::::");
           if (res.values.length >0) {
@@ -234,22 +241,33 @@ export class LoadDataService {
     return this.district.asObservable();
   }
 
+  async loadAllDistrict() {
+    const statement = `SELECT  code_dist, nom_dist, id_reg 
+                            FROM zone_district;`;
+    return await this.db.query(statement);
+  }
+
   async loadCommune(id_dist) {
-    const statement = `SELECT R.nom_reg, C.id_dist, D.nom_dist,  C.code_com, C.nom_com
+    console.log("!!!!!!!!Load commune Code dist::::::::", id_dist);
+    let statement = `SELECT R.nom_reg, C.id_dist, D.nom_dist,  C.code_com, C.nom_com
                         FROM zone_commune C 
                         INNER JOIN zone_district D ON D.code_dist = C.id_dist
-                        INNER JOIN zone_region R ON R.code_reg = D.id_reg
-                        WHERE C.id_dist = "${id_dist}";`;
+                        INNER JOIN zone_region R ON R.code_reg = D.id_reg`;
+    if (Object.keys(id_dist).length > 0 && id_dist.code_dist != undefined) {
+      statement += ` WHERE C.id_dist = "${id_dist.code_dist}";`;
+    }
     return await this.db.query(statement); 
   }
 
   async loadFokontany(id_commune) {
-    const statement = `SELECT D.id_reg, R.nom_reg, C.id_dist, D.nom_dist, F.id_com, C.nom_com, F.code_fkt, F.nom_fkt 
+    let statement = `SELECT D.id_reg, R.nom_reg, C.id_dist, D.nom_dist, F.id_com, C.nom_com, F.code_fkt, F.nom_fkt 
     FROM zone_fonkotany F 
     INNER JOIN zone_commune C ON C.code_com = F.id_com 
     INNER JOIN zone_district D ON D.code_dist = C.id_dist
-    INNER JOIN zone_region R ON R.code_reg = D.id_reg 
-    WHERE C.code_com = "${ id_commune  }" ORDER BY R.nom_reg, D.nom_dist, C.nom_com, F.nom_fkt;`;
+    INNER JOIN zone_region R ON R.code_reg = D.id_reg`;
+    if (Object.keys(id_commune).length > 0 && id_commune.code_commune != undefined) {
+      statement += ` WHERE C.code_com = "${ id_commune.code_commune  }" ORDER BY R.nom_reg, D.nom_dist, C.nom_com, F.nom_fkt;`;
+    } else statement += ` ORDER BY R.nom_reg, D.nom_dist, C.nom_com, F.nom_fkt;`;
     return await this.db.query(statement);
   }
 
@@ -320,7 +338,7 @@ export class LoadDataService {
     /**
      * Selectionner des associations il ya des beneficiaires et de Présidents Association(PA = Col06)
      */
-    let statement1 = `SELECT ASS.numero, ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, COUNT(BAPMS.code_benef_pms) as nb_benef, B.nom as nom_pa, B.prenom, B.sexe, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_benef 
+    let statement1 = `SELECT ASS.numero, ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.ancronyme, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, COUNT(BAPMS.code_benef_pms) as nb_benef, B.nom as nom_pa, B.prenom, B.sexe, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_benef 
                       FROM association ASS 
                       INNER JOIN projet P ON P.code_proj = ASS.id_prjt 
                       INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt 
@@ -331,7 +349,7 @@ export class LoadDataService {
         /**
      * Selectionner des associations il ya des beneficiaires mais il n' y a pas des Présidents Association
      */
-    let statement2 = `SELECT ASS.numero, ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, COUNT(BAPMS.code_benef_pms) as nb_benef, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    let statement2 = `SELECT ASS.numero, ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.ancronyme, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, COUNT(BAPMS.code_benef_pms) as nb_benef, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
                       FROM association ASS 
                       INNER JOIN projet P ON P.code_proj = ASS.id_prjt 
                       INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt 
@@ -340,7 +358,7 @@ export class LoadDataService {
     /**
      * Selectionner des associations il n'y a aucun beneficiaires
      */
-    let statement3 = `SELECT ASS.numero, ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    let statement3 = `SELECT ASS.numero, ASS.id_prjt, P.code_proj, P.nom as nom_pr, ASS.id_fkt, FKT.nom_fkt, ASS.code_ass, ASS.nom as nom_ass, ASS.ancronyme, ASS.id_tech, E.nom || ' ' || E.prenom AS technicien, ASS.status, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
                       FROM association ASS 
                       INNER JOIN projet P ON P.code_proj = ASS.id_prjt 
                       INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt 
@@ -378,7 +396,7 @@ export class LoadDataService {
   }
 
   async loadParcelle(data: any) {
-    let stat = `SELECT fkt.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom As nom_ass, BPMS.code_benef_pms, B.nom, B.prenom, ASS_PRC.code_parce, ASS_PRC.id_benef, ASS_PRC.ref_gps, ASS_PRC.lat, ASS_PRC.log, ASS_PRC.superficie, ASS_PRC.id_fkt, ASS_PRC.status 
+    let stat = `SELECT fkt.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom As nom_ass, BPMS.code_benef_pms, BPMS.code_achat, B.nom, B.prenom, ASS_PRC.code_parce, ASS_PRC.id_benef, ASS_PRC.ref_gps, ASS_PRC.lat, ASS_PRC.log, ASS_PRC.superficie, ASS_PRC.id_fkt, ASS_PRC.status 
                   FROM assoc_parce ASS_PRC 
                   INNER JOIN beneficiaire B ON B.code_benef = ASS_PRC.id_benef 
                   INNER JOIN association ASS ON ASS.code_ass = ASS_PRC.id_assoc
@@ -395,7 +413,7 @@ export class LoadDataService {
   }
 
   async loadBlocEquipeZone(data: any) {
-    const statement = `SELECT B.code_bloc, B.nom AS nom_bloc, B.id_prjt, B.id_tech, B.status, BLZ.id_fkt, FKT.nom_fkt, C.code_com, C.nom_com, COUNT(BLZ.id_fkt) as nb_fkt
+    const statement = `SELECT B.ordre, B.code_bloc, B.nom AS nom_bloc, B.ancronyme, B.id_prjt, B.id_tech, B.status, BLZ.id_fkt, FKT.nom_fkt, C.code_com, C.nom_com, COUNT(BLZ.id_fkt) as nb_fkt
                         FROM bloc B
                         INNER JOIN bloc_zone BLZ ON BLZ.id_bloc = B.code_bloc
                         INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = BLZ.id_fkt
@@ -406,7 +424,7 @@ export class LoadDataService {
   }
 
   async loadBenefBloc(code_bloc: any) {
-    const req = `SELECT BABL.code_benef_bl, B.nom, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, COM.nom_com, B.id_fkt, FKT.nom_fkt, B.statut AS statut_benef, BABL.id_proj, BABL.id_activ, BABL.id_benef, BABL.id_bloc, BL.nom AS nom_bloc, BABL.id_collaborateur, CL.nom AS nom_collab, BABL.status, COUNT(BPARC.code_parce) AS nb_parce, SUM(BPARC.superficie) AS sum_superficie
+    const req = `SELECT BABL.code_benef_bl, B.nom, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, COM.nom_com, B.id_fkt, FKT.nom_fkt, B.statut AS statut_benef, BABL.id_proj, BABL.id_activ, BABL.id_benef, BABL.code_achat, BABL.id_bloc, BL.nom AS nom_bloc, BABL.id_collaborateur, CL.nom AS nom_collab, BABL.status, COUNT(BPARC.code_parce) AS nb_parce, SUM(BPARC.superficie) AS sum_superficie
                 FROM benef_activ_bl BABL
                 INNER JOIN beneficiaire B ON B.code_benef = BABL.id_benef 
                 INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
@@ -418,7 +436,7 @@ export class LoadDataService {
                 GROUP BY BABL.code_benef_bl
                   UNION
                 SELECT BABL.code_benef_bl, B.nom, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, 
-                COM.nom_com, B.id_fkt, FKT.nom_fkt, B.statut AS statut_benef, BABL.id_proj, BABL.id_activ, BABL.id_benef, BABL.id_bloc, BL.nom AS nom_bloc, BABL.id_collaborateur, CL.nom AS nom_collab, BABL.status, 0, 0
+                COM.nom_com, B.id_fkt, FKT.nom_fkt, B.statut AS statut_benef, BABL.id_proj, BABL.id_activ, BABL.id_benef, BABL.code_achat, BABL.id_bloc, BL.nom AS nom_bloc, BABL.id_collaborateur, CL.nom AS nom_collab, BABL.status, 0, 0
                 FROM benef_activ_bl BABL
                 INNER JOIN beneficiaire B ON B.code_benef = BABL.id_benef 
                 INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
@@ -477,7 +495,7 @@ export class LoadDataService {
   }
 
   async loadEspece() {
-    const statement = `SELECT E.code_espece, E.nom_espece, E.id_categ, CE.libelle 
+    const statement = `SELECT E.code_espece, E.nom_espece, E.id_categ, CE.libelle, E.saisonnier, E.unite 
                       FROM espece E
                       INNER JOIN categorie_espece CE ON CE.code_cat = E.id_categ`;
     return await this.db.query(statement);
@@ -540,7 +558,6 @@ export class LoadDataService {
                 code: elem.code,
                 id_projet: elem.id_projet,
                 id_equipe: elem.id_equipe,
-                id_volet: elem.id_volet,
                 status_pe: elem.status_pe
               });
             });
@@ -588,7 +605,7 @@ export class LoadDataService {
         /**
          * Séléctionner béneficiaire Association + nombre de parcelle
          */
-        const statement = `SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, PARC_ASS.code_parce, COUNT(PARC_ASS.code_parce) AS nb_parcelle, SUM(PARC_ASS.superficie) AS sum_superf, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, FKT.nom_fkt AS adress, BPMS.id_collaborateur, C.nom as nom_collab, B.statut
+        const statement = `SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, BPMS.code_achat, PARC_ASS.code_parce, COUNT(PARC_ASS.code_parce) AS nb_parcelle, SUM(PARC_ASS.superficie) AS sum_superf, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, FKT.nom_fkt AS adress, BPMS.id_collaborateur, C.nom as nom_collab, B.statut
                           FROM benef_activ_pms BPMS 
                           INNER JOIN projet P ON P.code_proj = BPMS.id_proj
                           INNER JOIN activite A ON A.code_act = BPMS.id_activ
@@ -601,7 +618,7 @@ export class LoadDataService {
                           WHERE BPMS.status = "active" AND PARC_ASS.status = "active" AND ASS.code_ass  = "${code_ass}"
                           GROUP BY BPMS.code_benef_pms
                               UNION
-                          SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, '', 0, 0, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, FKT.nom_fkt AS adress, BPMS.id_collaborateur, C.nom as nom_collab, B.statut
+                          SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, BPMS.code_achat, '', 0, 0, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, FKT.nom_fkt AS adress, BPMS.id_collaborateur, C.nom as nom_collab, B.statut
                           FROM benef_activ_pms BPMS 
                             INNER JOIN projet P ON P.code_proj = BPMS.id_proj
                             INNER JOIN activite A ON A.code_act = BPMS.id_activ
@@ -632,7 +649,7 @@ export class LoadDataService {
  * Load Culture ENCOURS beneficiare PMS
  ***************************************/
   async loadCulturesPms(data: any) {
-    let state = `SELECT CLT.code_culture, CLT.id_parce, AS_PRC.superficie, BPMS.code_benef_pms, B.nom, B.prenom, ESP.code_espece, ESP.nom_espece, CLT.id_var, VAR.nom_var, CLT.id_saison, S.intitule as saison, ASS.code_ass, ASS.nom AS association, CLT.annee_du, CLT.ddp, CLT.qsa, CLT.img_fact, CLT.dds, CLT.sfce, CLT.objectif, CLT.sc, CLT.ea_id_variette, CLT.ea_autres, CASE 
+    let state = `SELECT CLT.code_culture, CLT.id_parce, AS_PRC.superficie, BPMS.code_benef_pms, BPMS.code_achat, B.nom, B.prenom, ESP.code_espece, ESP.nom_espece, CLT.id_var, VAR.nom_var, CLT.id_saison, S.intitule as saison, ASS.code_ass, ASS.nom AS association, CLT.annee_du, CLT.ddp, CLT.qsa, CLT.img_fact, CLT.dds, CLT.sfce, CLT.sc, CLT.ea_id_variette, CLT.ea_autres, CASE 
                   WHEN CLT.ea_id_variette IS NOT NULL THEN (SELECT V.nom_var FROM variette V WHERE V.code_var = CLT.ea_id_variette)
                   WHEN CLT.ea_autres IS NOT NULL THEN CLT.ea_autres
                   ELSE '' END AS ea, 
@@ -667,16 +684,16 @@ export class LoadDataService {
   * LOAD SUIVI CULTURE
   ***********************************************/
   async loadSuiviCulture(code_culture: string) {
-   const state = `SELECT id, id_culture, ddp, stc, ec, pb, ex, img_cult, name, path, controle FROM suivi_pms 
+   const state = `SELECT id, id_culture, ddp, stc, ec, pb, ex, img_cult, name, path, controle, declaration FROM suivi_pms 
                   WHERE id_culture = '${code_culture}'`;
    return await this.db.query(state);
   }
   async loadAllSuiviCulture(code_ass: string) {
     const state = `SELECT SPMS.id, SPMS.id_culture, ASS.code_ass, ASS.nom AS association, 
-    BPMS.code_benef_pms AS code_pms, BNF.nom, BNF.prenom, CPMS.id_parce, ASS_PRC.superficie AS superficie_reel, 
+    BPMS.code_benef_pms AS code_pms, BPMS.code_achat, BNF.nom, BNF.prenom, CPMS.id_parce, ASS_PRC.superficie AS superficie_reel, 
     CPMS.id_var, VAR.nom_var, CPMS.id_saison, SS.intitule AS saison, 
-    SS.description AS desc_saison, CPMS.annee_du, CPMS.qsa, CPMS.dds, CPMS.sfce, CPMS.objectif, CPMS.sc, SPMS.ddp, 
-    SPMS.stc, SPMS.ec, SPMS.pb, SPMS.ex, SPMS.img_cult, SPMS.name, SPMS.controle 
+    SS.description AS desc_saison, CPMS.annee_du, CPMS.qsa, CPMS.dds, CPMS.sfce, CPMS.sc, SPMS.ddp, 
+    SPMS.stc, SPMS.ec, SPMS.pb, SPMS.ex, SPMS.img_cult, SPMS.name, SPMS.controle, SPMS.declaration
     FROM suivi_pms  SPMS
     INNER JOIN cultures_pms CPMS ON CPMS.code_culture = SPMS.id_culture
     INNER JOIN saison SS ON SS.code_saison = CPMS.id_saison
@@ -764,29 +781,32 @@ export class LoadDataService {
   }
 
   async loadMepBloc(data: any) {
-    const state = `SELECT CBL.code_culture, BL.code_bloc, BL.nom AS nom_bl, BBL.code_benef_bl, BNF.nom, BNF.prenom, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, SS.intitule, CBL.annee_du, CBL.ddp, CBL.qso, CBL.dds, CBL.sfce, CBL.sc, CBL.ea_autres, CBL.ea_id_variette, CBL.dt_creation, CBL.dt_modification, CBL.status, CBL.etat, CBL.id_equipe, CBL.type, 
-                CASE 
-                WHEN CBL.id_var IS NOT NULL THEN 
-                (SELECT E.code_espece FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.id_var)
-                ELSE '' END AS code_espece,
-                CASE WHEN CBL.id_var IS NOT NULL THEN 
-                (SELECT V.nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.id_var)
-                ELSE '' END AS nom_var, 
-                CASE WHEN CBL.ea_id_variette IS NOT NULL THEN (SELECT E.code_espece FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.ea_id_variette)
-                ELSE '' END AS code_espece_ea,
-                CASE WHEN CBL.id_espece IS NOT NULL THEN (SELECT nom_espece FROM espece WHERE code_espece = CBL.id_espece) ELSE '' END AS nom_espece, CASE 
-                WHEN CBL.ea_id_variette IS NOT NULL THEN (SELECT (E.nom_espece || ' ' || V.nom_var) AS nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.ea_id_variette)
-                WHEN CBL.ea_autres IS NOT NULL THEN CBL.ea_autres 
-                ELSE '' END AS ea
-                FROM culture_bl CBL
-                INNER JOIN saison SS ON SS.code_saison = CBL.id_saison
-                INNER JOIN bloc_parce BPRC ON BPRC.code_parce = CBL.id_parce
-                INNER JOIN benef_activ_bl BBL ON BBL.id_benef = BPRC.id_benef 
-                INNER JOIN beneficiaire BNF ON BNF.code_benef = BPRC.id_benef
-                INNER JOIN bloc BL ON BL.code_bloc = BBL.id_bloc
-                WHERE BPRC.status = "active" AND BBL.status = "active" AND BNF.statut = "active" `;
+    const state = `SELECT CBL.code_culture, BL.code_bloc, BL.nom AS nom_bl, BBL.code_benef_bl, BNF.nom, BNF.prenom, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, CBL.annee_du, CBL.ddp, CBL.qso, CBL.dt_distribution, CBL.dds, CBL.sfce, CBL.nbre_ligne, CBL.long_ligne, CBL.usage, CBL.sc, CBL.ea_autres, CBL.ea_id_variette, CBL.dt_creation, CBL.dt_modification, CBL.status, CBL.etat, CBL.id_equipe, CBL.type, 
+                  CASE WHEN CBL.id_var IS NOT NULL THEN (SELECT E.code_espece FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.id_var)
+                  ELSE '' END AS code_espece,
+                  CASE WHEN CBL.id_var IS NOT NULL THEN (SELECT (E.nom_espece || ' ' || V.nom_var) AS nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.id_var)
+                  ELSE '' END AS nom_var, 
+                  CASE WHEN CBL.ea_id_variette IS NOT NULL THEN (SELECT E.code_espece FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.ea_id_variette)
+                  ELSE '' END AS code_espece_ea,
+                  CASE WHEN CBL.id_espece IS NOT NULL THEN (SELECT nom_espece FROM espece WHERE code_espece = CBL.id_espece) ELSE '' END AS nom_espece, CASE 
+                  WHEN CBL.ea_id_variette IS NOT NULL THEN (SELECT (E.nom_espece || ' ' || V.nom_var) AS nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.ea_id_variette)
+                  WHEN CBL.ea_autres IS NOT NULL THEN CBL.ea_autres 
+                  ELSE '' END AS ea,
+                  CASE WHEN CBL.id_saison IS NOT NULL THEN (SELECT intitule FROM saison WHERE code_saison = CBL.id_saison) 
+                  ELSE NULL END AS intitule
+                  FROM culture_bl CBL
+                  INNER JOIN bloc_parce BPRC ON BPRC.code_parce = CBL.id_parce
+                  INNER JOIN benef_activ_bl BBL ON BBL.id_benef = BPRC.id_benef 
+                  INNER JOIN beneficiaire BNF ON BNF.code_benef = BPRC.id_benef
+                  INNER JOIN bloc BL ON BL.code_bloc = BBL.id_bloc
+                  WHERE BPRC.status = "active" AND BBL.status = "active" AND BNF.statut = "active" `;
     if (data.type != undefined && data.id_bloc != undefined && data.id_saison != undefined && data.annee_du != undefined) {
+      // Mep saisonnier
       let req = state + `AND CBL.type = "${data.type}" AND BL.code_bloc  = "${data.id_bloc}" AND CBL.id_saison = "${data.id_saison}" AND CBL.annee_du = "${data.annee_du}";`;
+      return await this.db.query(req);
+    } else if(data.type != undefined && data.id_bloc != undefined && data.annee_du != undefined) {
+      // Mep PA et MV Culture non saisoniale
+      let req = state + `AND CBL.type = "${data.type}" AND BL.code_bloc  = "${data.id_bloc}" AND CBL.annee_du = "${data.annee_du}" AND CBL.id_saison IS NULL;`;
       return await this.db.query(req);
     } else {
       let req = state + `AND BL.code_bloc  = "${data.id_bloc}";`;
@@ -797,7 +817,7 @@ export class LoadDataService {
    * Load Single Suivi Mep Bloc
    */
   async loadSuiviBloc(code_mep: string) {
-    const req = `SELECT SVBL.code_sv, SVBL.id_culture, SVBL.ddp, SVBL.stc, SVBL.ql, SVBL.qr, SVBL.long_ligne, SVBL.nbre_ligne, SVBL.nbre_pied, SVBL.img_cult, SVBL.ex, SVBL.etat 
+    const req = `SELECT SVBL.code_sv, SVBL.id_culture, SVBL.ddp, SVBL.stc, SVBL.ec, SVBL.ql, SVBL.qr, SVBL.long_ligne, SVBL.nbre_ligne, SVBL.nbre_pied, SVBL.hauteur, SVBL.img_cult, SVBL.dt_capture, SVBL.ex, SVBL.etat 
                 FROM suivi_bl SVBL
                 INNER JOIN culture_bl CBL ON CBL.code_culture = SVBL.id_culture
                 WHERE SVBL.id_culture = "${code_mep}"`;
@@ -807,21 +827,158 @@ export class LoadDataService {
    * Load All Suivi Mep Bloc
    */
   async loadAllSuiviBloc(data: any) {
-    const req = `SELECT SBL.code_sv, BL.nom AS bloc, BABL.code_benef_bl, BNF.nom, BNF.prenom, SBL.id_culture, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, Ss.intitule AS saison, CBL.annee_du, CBL.qso, CBL.dds, CBL.sfce, CBL.sc AS mep_sc, CBL.ea_autres, CBL.ea_id_variette, SBL.ddp, SBL.stc, SBL.ql, SBL.qr, SBL.long_ligne, SBL.nbre_ligne, SBL.nbre_pied, SBL.img_cult, SBL.ex, SBL.etat, CBL.type,
+    const req = `SELECT SBL.code_sv, BL.nom AS bloc, BABL.code_benef_bl, BNF.nom, BNF.prenom, SBL.id_culture, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, CBL.annee_du, CBL.qso, CBL.dds, CBL.sfce, CBL.sc AS mep_sc, CBL.ea_autres, CBL.ea_id_variette, SBL.ddp, SBL.stc, SBL.ec, SBL.ql, SBL.qr, SBL.long_ligne, SBL.nbre_ligne, SBL.nbre_pied, SBL.hauteur, SBL.img_cult, SBL.ex, SBL.etat, CBL.type,
                 CASE WHEN CBL.id_espece IS NOT NULL THEN (SELECT nom_espece FROM espece WHERE code_espece = CBL.id_espece)
-                ELSE '' END AS espece,
+                ELSE NULL END AS espece,
                 CASE WHEN CBL.id_var IS NOT NULL THEN (SELECT E.nom_espece || ' ' || V.nom_var AS nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE code_var = CBL.id_var)
-                ELSE '' END AS variette
+                ELSE NULL END AS variette,
+                CASE WHEN CBL.id_saison IS NOT NULL THEN (SELECT intitule FROM saison WHERE code_saison = CBL.id_saison)
+                ELSE NULL END AS saison
                 FROM suivi_bl SBL
                 INNER JOIN culture_bl CBL ON CBL.code_culture = SBL.id_culture
                 INNER JOIN bloc_parce BPRC ON BPRC.code_parce = CBL.id_parce
                 INNER JOIN bloc BL ON BL.code_bloc = BPRC.id_bloc
-                INNER JOIN saison Ss ON Ss.code_saison = CBL.id_saison
                 INNER JOIN beneficiaire BNF ON BNF.code_benef = BPRC.id_benef
                 INNER JOIN benef_activ_bl BABL ON BABL.id_benef = BNF.code_benef
                 WHERE BNF.statut = "active" AND BPRC.status = "active" AND BABL.status = "active" AND BL.code_bloc = "${data.id_bloc}"`;
     return await this.db.query(req);
   }
+
+  /******************************************************
+   * Paysant Realais
+   *******************************************************/
+  async loadPRBloc(data: any) {
+    const req = `SELECT BNF.img_benef, BNF.nom, BNF.prenom, BNF.sexe, BNF.dt_nais, BNF.dt_nais_vers, BNF.surnom, BNF.cin, BNF.img_cin, BNF.contact, BNF.id_fkt, BNF.village, BAPR.code_pr, BAPR.id_proj, BAPR.id_activ, BAPR.id_benef, BAPR.id_bloc, BAPR.code_achat, BAPR.id_collaborateur, BAPR.id_tech, BAPR.etat, BAPR.status, 
+              CASE WHEN BAPR.id_bloc IS NOT NULL THEN (SELECT BL.nom FROM bloc BL WHERE BL.code_bloc = BAPR.id_bloc)
+              ELSE NULL
+              END AS bloc,
+              CASE WHEN BNF.id_fkt IS NOT NULL THEN (SELECT R.code_reg FROM zone_commune C INNER JOIN zone_fonkotany FKT ON FKT.id_com = C.code_com INNER JOIN zone_district D ON D.code_dist = C.id_dist INNER JOIN zone_region R ON R.code_reg = D.id_reg WHERE FKT.code_fkt = BNF.id_fkt)
+              WHEN BNF.id_fkt IS NULL AND BNF.id_commune IS NOT NULL THEN (SELECT R.code_reg FROM zone_district D INNER JOIN zone_commune C ON C.id_dist = D.code_dist INNER JOIN zone_region R ON R.code_reg = D.id_reg WHERE C.code_com = BNF.id_commune)
+              ELSE NULL END AS code_region,
+              CASE WHEN BNF.id_fkt IS NOT NULL THEN (SELECT R.nom_reg FROM zone_commune C INNER JOIN zone_fonkotany FKT ON FKT.id_com = C.code_com INNER JOIN zone_district D ON D.code_dist = C.id_dist INNER JOIN zone_region R ON R.code_reg = D.id_reg WHERE FKT.code_fkt = BNF.id_fkt)
+              WHEN BNF.id_fkt IS NULL AND BNF.id_commune IS NOT NULL THEN (SELECT R.nom_reg FROM zone_district D INNER JOIN zone_commune C ON C.id_dist = D.code_dist INNER JOIN zone_region R ON R.code_reg = D.id_reg WHERE C.code_com = BNF.id_commune)
+              ELSE NULL END AS nom_region,
+              CASE WHEN BNF.id_fkt IS NOT NULL THEN (SELECT D.code_dist FROM zone_commune C INNER JOIN zone_fonkotany FKT ON FKT.id_com = C.code_com INNER JOIN zone_district D ON D.code_dist = C.id_dist WHERE FKT.code_fkt = BNF.id_fkt)
+              WHEN BNF.id_fkt IS NULL AND BNF.id_commune IS NOT NULL THEN (SELECT D.code_dist FROM zone_district D INNER JOIN zone_commune C ON C.id_dist = D.code_dist WHERE C.code_com = BNF.id_commune)
+              ELSE NULL END AS code_dist,
+              CASE WHEN BNF.id_fkt IS NOT NULL THEN (SELECT D.nom_dist FROM zone_commune C INNER JOIN zone_fonkotany FKT ON FKT.id_com = C.code_com INNER JOIN zone_district D ON D.code_dist = C.id_dist WHERE FKT.code_fkt = BNF.id_fkt)
+              WHEN BNF.id_fkt IS NULL AND BNF.id_commune IS NOT NULL THEN (SELECT D.nom_dist FROM zone_district D INNER JOIN zone_commune C ON C.id_dist = D.code_dist WHERE C.code_com = BNF.id_commune)
+              ELSE NULL END AS nom_dist,
+              CASE WHEN BNF.id_fkt IS NOT NULL THEN (SELECT C.code_com FROM zone_commune C INNER JOIN zone_fonkotany FKT ON FKT.id_com = C.code_com WHERE FKT.code_fkt = BNF.id_fkt)
+              WHEN BNF.id_fkt IS NULL AND BNF.id_commune IS NOT NULL THEN BNF.id_commune
+              ELSE NULL END AS code_commune,
+              CASE WHEN BNF.id_fkt IS NOT NULL THEN (SELECT C.nom_com FROM zone_commune C INNER JOIN zone_fonkotany FKT ON FKT.id_com = C.code_com WHERE FKT.code_fkt = BNF.id_fkt)
+              WHEN BNF.id_fkt IS NULL AND BNF.id_commune IS NOT NULL THEN (SELECT COM.nom_com FROM zone_commune COM WHERE COM.code_com = BNF.id_commune) 
+              ELSE NULL END AS commune,
+              CASE WHEN BNF.id_fkt IS NOT NULL THEN (SELECT FKT.nom_fkt FROM zone_fonkotany FKT WHERE FKT.code_fkt = BNF.id_fkt)
+              WHEN BNF.id_fkt IS NULL AND BNF.village IS NOT NULL THEN BNF.village  
+              ELSE NULL END AS fokontany,
+              CASE WHEN BNF.dt_nais IS NOT NULL THEN BNF.dt_nais
+              WHEN BNF.dt_nais_vers IS NOT NULL THEN BNF.dt_nais_vers
+              ELSE NULL END AS date_naissance
+              FROM benef_activ_pr BAPR
+              INNER JOIN projet PRJ ON PRJ.code_proj = BAPR.id_proj
+              INNER JOIN participe_proj_activ PPA ON PPA.id_activ = BAPR.id_activ AND PPA.id_proj = BAPR.id_proj
+              INNER JOIN beneficiaire BNF ON BNF.code_benef = BAPR.id_benef
+              INNER JOIN equipe EQ ON EQ.code_equipe = BAPR.id_tech
+              INNER JOIN collaborateur COL ON COL.code_col = BAPR.id_collaborateur
+              WHERE BAPR.status = "active" AND PRJ.statuts = "activer" AND PPA.statuts = "active" AND BNF.statut = "active" AND EQ.statuts = "active" AND BAPR.id_tech = ${data.id_tech} AND BAPR.id_proj = "${data.code_projet}"`;
+    return await this.db.query(req)
+  }
+  async loadPRParceBloc(data: any) {
+    const req = `SELECT BAPR.code_pr, CEP.code_parce, CEP.id_bloc, CEP.id_benef, CEP.ref_gps, CEP.lat, CEP.log, CEP.superficie, CEP.id_commune, CEP.id_fkt, CEP.village, CEP.anne_adheran, CEP.dt_creation, CEP.etat, CEP.status,
+        CASE WHEN CEP.id_bloc IS NOT NULL THEN (SELECT BL.nom FROM bloc BL WHERE BL.code_bloc = CEP.id_bloc)
+        ELSE NULL END AS bloc_cep,
+        CASE WHEN CEP.id_fkt IS NOT NULL THEN (SELECT R.code_reg FROM zone_fonkotany FKT INNER JOIN zone_commune C ON C.code_com = FKT.id_com INNER JOIN zone_district D ON D.code_dist = C.id_dist INNER JOIN zone_region R ON R.code_reg = D.id_reg WHERE FKT.code_fkt = CEP.id_fkt)
+        WHEN CEP.id_fkt IS NULL AND CEP.id_commune IS NOT NULL THEN (SELECT R.code_reg FROM zone_district D INNER JOIN zone_commune C ON C.id_dist = D.code_dist INNER JOIN zone_region R ON R.code_reg = D.id_reg WHERE C.code_com = CEP.id_commune)
+        ELSE NULL END AS code_region,
+        CASE WHEN CEP.id_fkt IS NOT NULL THEN (SELECT R.nom_reg FROM zone_fonkotany FKT INNER JOIN zone_commune C ON C.code_com = FKT.id_com INNER JOIN zone_district D ON D.code_dist = C.id_dist INNER JOIN zone_region R ON R.code_reg = D.id_reg WHERE FKT.code_fkt = CEP.id_fkt)
+        WHEN CEP.id_fkt IS NULL AND CEP.id_commune IS NOT NULL THEN (SELECT R.nom_reg FROM zone_district D INNER JOIN zone_commune C ON C.id_dist = D.code_dist INNER JOIN zone_region R ON R.code_reg = D.id_reg WHERE C.code_com = CEP.id_commune)
+        ELSE NULL END AS nom_region,
+        CASE WHEN CEP.id_fkt IS NOT NULL THEN (SELECT D.code_dist FROM zone_fonkotany FKT INNER JOIN zone_commune C ON C.code_com = FKT.id_com INNER JOIN zone_district D ON D.code_dist = C.id_dist WHERE FKT.code_fkt = CEP.id_fkt)
+        WHEN CEP.id_fkt IS NULL AND CEP.id_commune IS NOT NULL THEN (SELECT D.code_dist FROM zone_district D INNER JOIN zone_commune C ON C.id_dist = D.code_dist WHERE C.code_com = CEP.id_commune)
+        ELSE NULL END AS code_district,
+        CASE WHEN CEP.id_fkt IS NOT NULL THEN (SELECT D.nom_dist FROM zone_fonkotany FKT INNER JOIN zone_commune C ON C.code_com = FKT.id_com INNER JOIN zone_district D ON D.code_dist = C.id_dist WHERE FKT.code_fkt = CEP.id_fkt)
+        WHEN CEP.id_fkt IS NULL AND CEP.id_commune IS NOT NULL THEN (SELECT D.nom_dist FROM zone_district D INNER JOIN zone_commune C ON C.id_dist = D.code_dist WHERE C.code_com = CEP.id_commune)
+        ELSE NULL END AS district,
+        CASE WHEN CEP.id_fkt IS NOT NULL THEN (SELECT COM.code_com FROM zone_fonkotany FKT INNER JOIN zone_commune COM ON COM.code_com = FKT.id_com WHERE FKT.code_fkt = CEP.id_fkt)
+        WHEN CEP.id_fkt IS NULL AND CEP.id_commune IS NOT NULL THEN CEP.id_commune
+        ELSE NULL END AS code_commune,
+        CASE WHEN CEP.id_fkt IS NOT NULL THEN (SELECT C.nom_com FROM zone_fonkotany FKT INNER JOIN zone_commune C ON C.code_com = FKT.id_com WHERE FKT.code_fkt = CEP.id_fkt)
+        WHEN CEP.id_fkt IS NULL AND CEP.id_commune IS NOT NULL THEN (SELECT C.nom_com FROM zone_commune C WHERE C.code_com = CEP.id_commune)
+        ELSE NULL END AS commune,
+        CASE WHEN CEP.id_fkt IS NOT NULL THEN (SELECT FKT.nom_fkt FROM zone_fonkotany FKT WHERE FKT.code_fkt = CEP.id_fkt)
+        WHEN CEP.id_fkt IS NULL AND CEP.village IS NOT NULL THEN CEP.village
+        ELSE NULL END AS fokontany
+        FROM cep_parce CEP
+        INNER JOIN beneficiaire BNF ON BNF.code_benef = CEP.id_benef
+        INNER JOIN benef_activ_pr BAPR ON BAPR.id_benef = BNF.code_benef AND BAPR.status = "active"
+        WHERE CEP.status = "active" AND BAPR.id_proj = "${data.code_projet}" AND BAPR.id_tech = ${data.id_tech}`;
+    return await this.db.query(req);
+  }
+
+  async loadAnimationVe(data: any) {
+    const req  = `SELECT BNF.code_benef, BNF.nom, BNF.prenom, PR.code_pr, PR.code_achat, ANIM.code AS code_anime, ANIM.id_pr, ANIM.id_fkt, ANIM.village, ANIM.date_anim, ANIM.nb_participant, ANIM.nb_h, ANIM.nb_f, ANIM.nb_inf_25, ANIM.type, ANIM.img_piece, ANIM.img_group_particip, ANIM.id_tech_recenseur, ANIM.etat, ANIM.status,
+                (SELECT COUNT(*) FROM animation_ve_specu SPEC WHERE SPEC.id_anime_ve = ANIM.code) AS nb_specu, (SELECT SUM(SPEC.quantite) FROM animation_ve_specu SPEC WHERE SPEC.id_anime_ve = ANIM.code) AS somme_specu,
+                CASE WHEN ANIM.id_fkt IS NOT NULL THEN (SELECT R.code_reg FROM zone_fonkotany FKT INNER JOIN zone_commune C ON C.code_com = FKT.id_com INNER JOIN zone_district D ON D.code_dist = C.id_dist INNER JOIN zone_region R ON R.code_reg = D.id_reg WHERE FKT.code_fkt = ANIM.id_fkt)
+                WHEN ANIM.id_fkt IS NULL AND ANIM.village IS NOT NULL AND ANIM.id_commune IS NOT NULL THEN (SELECT R.code_reg FROM zone_commune C INNER JOIN zone_district D ON D.code_dist = C.id_dist INNER JOIN zone_region R ON R.code_reg = D.id_reg WHERE C.code_com = ANIM.id_commune)
+                ELSE NULL END AS code_reg,
+                CASE WHEN ANIM.id_fkt IS NOT NULL THEN (SELECT D.code_dist FROM zone_fonkotany FKT INNER JOIN zone_commune C ON C.code_com = FKT.id_com INNER JOIN zone_district D ON D.code_dist = C.id_dist WHERE FKT.code_fkt = ANIM.id_fkt)
+                WHEN ANIM.id_fkt IS NULL AND ANIM.village IS NOT NULL AND ANIM.id_commune IS NOT NULL THEN (SELECT D.code_dist FROM zone_commune C INNER JOIN zone_district D ON D.code_dist = C.id_dist WHERE C.code_com = ANIM.id_commune)
+                ELSE NULL END AS code_dist,
+                CASE WHEN ANIM.id_fkt IS NOT NULL THEN (SELECT D.nom_dist FROM zone_fonkotany FKT INNER JOIN zone_commune C ON C.code_com = FKT.id_com INNER JOIN zone_district D ON D.code_dist = C.id_dist WHERE FKT.code_fkt = ANIM.id_fkt)
+                WHEN ANIM.id_fkt IS NULL AND ANIM.village IS NOT NULL AND ANIM.id_commune IS NOT NULL THEN (SELECT D.nom_dist FROM zone_commune C INNER JOIN zone_district D ON D.code_dist = C.id_dist WHERE C.code_com = ANIM.id_commune)
+                ELSE NULL END AS nom_dist,
+                CASE WHEN ANIM.id_fkt IS NOT NULL THEN (SELECT C.code_com FROM zone_fonkotany FKT INNER JOIN zone_commune C ON C.code_com = FKT.id_com WHERE FKT.code_fkt = ANIM.id_fkt)
+                WHEN ANIM.id_fkt IS NULL AND ANIM.village IS NOT NULL AND ANIM.id_commune IS NOT NULL THEN (SELECT C.code_com FROM zone_commune C WHERE C.code_com = ANIM.id_commune)
+                ELSE NULL END AS code_commune,
+                CASE WHEN ANIM.id_fkt IS NOT NULL THEN (SELECT C.nom_com FROM zone_fonkotany FKT INNER JOIN zone_commune C ON C.code_com = FKT.id_com WHERE FKT.code_fkt = ANIM.id_fkt)
+                WHEN ANIM.id_fkt IS NULL AND ANIM.village IS NOT NULL AND ANIM.id_commune IS NOT NULL THEN (SELECT C.nom_com FROM zone_commune C WHERE C.code_com = ANIM.id_commune)
+                ELSE NULL END AS commune,
+                CASE WHEN ANIM.id_fkt IS NOT NULL THEN (SELECT FKT.nom_fkt FROM zone_fonkotany FKT WHERE FKT.code_fkt = ANIM.id_fkt)
+                WHEN ANIM.id_fkt IS NULL AND ANIM.village IS NOT NULL AND ANIM.id_commune IS NOT NULL THEN ANIM.village
+                ELSE NULL END AS fokontany
+                FROM animation_ve ANIM
+                INNER JOIN benef_activ_pr PR ON PR.code_pr = ANIM.id_pr AND PR.status = "active" AND PR.etat = "valide"
+                INNER JOIN activite A ON A.code_act = PR.id_activ
+                INNER JOIN beneficiaire BNF ON BNF.code_benef = PR.id_benef AND BNF.etat = "valide" AND BNF.statut = "active"
+                INNER JOIN equipe EQ ON EQ.code_equipe = PR.id_tech AND EQ.statuts = "active"
+                INNER JOIN projet PRJ ON PRJ.code_proj = PR.id_proj AND PRJ.statuts = "activer"
+                INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND EQ.code_equipe = PE.id_equipe AND PE.status_pe = "active"
+                INNER JOIN projet_equipe_volet PEV ON PEV.id_volet = A.id_volet AND PEV.id_equipe = PR.id_tech AND PEV.status_pev = "active"
+                WHERE ANIM.status = "active" AND PRJ.code_proj = "${data.code_projet}" AND EQ.code_equipe = ${data.code_equipe}`;
+    return await this.db.query(req);
+  }
+
+  async loadAnimeSpecu(data: any) {
+    const req = `SELECT SPECU.code_specu, SPECU.id_anime_ve, SPECU.id_var, SPECU.id_espece, SPECU.quantite, SPECU.etat, SPECU.status,
+            CASE WHEN SPECU.id_var IS NOT NULL THEN (SELECT E.nom_espece || ' ' || V.nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = SPECU.id_var)
+            WHEN SPECU.id_espece IS NOT NULL THEN (SELECT E.nom_espece FROM espece E WHERE E.code_espece = SPECU.id_espece)
+            ELSE NULL END AS speculation
+            FROM animation_ve_specu SPECU
+            INNER JOIN animation_ve ANIM ON ANIM.code = SPECU.id_anime_ve AND ANIM.status = "active"
+            INNER JOIN benef_activ_pr BAPR ON BAPR.code_pr = ANIM.id_pr AND BAPR.status = "active"
+            INNER JOIN equipe EQ ON EQ.code_equipe = BAPR.id_tech AND EQ.statuts = "active"
+            INNER JOIN projet PRJ ON PRJ.code_proj = BAPR.id_proj AND PRJ.statuts = "activer"
+            INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND PE.id_equipe = EQ.code_equipe AND PE.status_pe = "active"
+            WHERE SPECU.etat = "valide" AND SPECU.status = "active" AND PRJ.code_proj = "${data.code_projet}" AND EQ.code_equipe = ${data.code_equipe}`;
+    return await this.db.query(req);
+  }
+
+  async loadBenefPRTemp(data: any) {
+    const req = `SELECT BAPR.code_pr, BAPR.id_proj, BAPR.id_activ, BAPR.id_benef, BAPR.id_bloc, BAPR.code_achat, BAPR.id_collaborateur, BAPR.id_tech, BAPR.etat, BAPR.status 
+                FROM benef_activ_pr BAPR
+                INNER JOIN equipe EQ ON EQ.code_equipe = BAPR.id_tech AND EQ.statuts = "active"
+                INNER JOIN projet PRJ ON PRJ.code_proj = BAPR.id_proj AND PRJ.statuts = "activer"
+                INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND PE.id_equipe = EQ.code_equipe AND PE.status_pe = "active"
+                WHERE BAPR.etat == "${SYNC}" AND BAPR.status = "active" AND EQ.code_equipe = ${data.code_equipe} AND PRJ.code_proj = "${data.code_projet}"`;
+    return await this.db.query(req);
+  }
+
+   async loadAllTable(table: string) {
+      const req = `SELECT * FROM ${table}`;
+      return await this.db.query(req);
+   }
 
   getStateQuer() {
     return this.dbReady.asObservable();

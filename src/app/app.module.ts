@@ -48,6 +48,8 @@ import { SynchroPage } from './pages/synchro/synchro.page';
 import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, } from '@angular/material-moment-adapter';
 import {DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE} from '@angular/material/core';
 import { MY_DATE_FORMATS } from 'src/app/utils/my-date-formats';
+import { PrModule } from './pages/pr/pr.module';
+import { ModalPrPage } from './pages/modals/modal-pr/modal-pr.page';
 
 
 
@@ -64,6 +66,7 @@ import { MY_DATE_FORMATS } from 'src/app/utils/my-date-formats';
     LoginPage,
     ModalPage,
     ModalBlocPage,
+    ModalPrPage,
     SynchroPage
   ],
   entryComponents: [],
@@ -76,7 +79,8 @@ import { MY_DATE_FORMATS } from 'src/app/utils/my-date-formats';
             AppRoutingModule, 
             BrowserAnimationsModule,
             HttpClientModule,
-            FlexLayoutModule 
+            FlexLayoutModule,
+            PrModule
           ],
   providers: [
     HttpClient,

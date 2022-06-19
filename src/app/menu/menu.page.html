@@ -32,6 +32,14 @@
                   {{ p.title }}
                 </ion-label>
             </ion-item>
+            <!--<ion-item 
+              (click) = "goNavTestToUrl(p)"
+                [class.active-item]="selectedPath.startsWith(p.url)">
+                <ion-icon [name]="p.icone" slot="start" [color]="p.color"></ion-icon>
+                <ion-label>
+                  -- {{ p.title }}
+                </ion-label>
+            </ion-item>-->
           </ion-menu-toggle>          
         </div>
 
@@ -63,12 +71,12 @@
           </ion-menu-toggle>          
         </div>
 
-        <ion-item (click)="presentModal()">
-          <ion-icon name="map" color="success" slot="start"></ion-icon>
-            Modification de zone d'intervention
+        <ion-item (click)="onSync()" routerDirection="root">
+          <ion-icon name="cloud-upload" slot="start" color="primary"></ion-icon>
+            Synchronisation
         </ion-item>
-        <ion-item trappable routerLink="/login" routerDirection="root">
-          <ion-icon name="log-out" slot="start" color="danger"></ion-icon>
+        <ion-item trappable routerLink="/login">
+          <ion-icon name="power" slot="start" color="danger"></ion-icon>
             Deconnection
         </ion-item>
       </ion-list>

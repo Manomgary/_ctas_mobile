@@ -42,8 +42,10 @@
 						<mat-form-field appearance="outline">
 							<mat-label>Mot de passe</mat-label>
 							<input matInput [type]="hide ? 'password' : 'text'" formControlName="passWord" placeholder="saisir votre mot de passe"> 
-							<button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide" type="button" >
-								<mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+							<button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide" type="button">
+								<!--<mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>-->
+								<ion-icon *ngIf="hide" name="eye-off"></ion-icon>
+								<ion-icon *ngIf="!hide" name="eye"></ion-icon>
 							</button>
 							<!--<mat-error *ngIf="!isNotPass"> {{msg}} </mat-error>-->
 						</mat-form-field>	

@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ModalController, NavParams } from '@ionic/angular';
 import * as moment from 'moment';
 import { Local_benef_activ_bl, Local_bloc_parce, Loc_Bloc, Loc_categEspece, Loc_Espece, Loc_mep_bloc, Loc_saison, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { ROLE_CACT_INERME, SC } from 'src/app/utils/global-variables';
 
 @Component({
   selector: 'app-modal-bloc',
@@ -26,6 +27,9 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
   private isEditMepMv: boolean = false;
   // get data_Edit
   private data_Mep_edit: Loc_mep_bloc;
+  private role_cact_inerme: any[] = ROLE_CACT_INERME;
+  private isCultureBande: boolean = false;
+  private isCultureSaisonnier: boolean = false;
   //private data_MepPa_edit: Loc_mep_bloc;
   //private data_MepMv_edit: Loc_mep_bloc;
   // select data semences en grains
@@ -38,7 +42,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
   data_benef_filtre: Local_benef_activ_bl[] = [];
   data_parcelle: Local_bloc_parce[] = [];//
   data_parcelle_filter: Local_bloc_parce[] = [];
-  data_sc: any[] = ['C.Pure', 'C.Associe'];
+  data_sc: any[] = SC;
   data_categ: Loc_categEspece[] = [];//
   data_var: Loc_variette[] = [];//
   data_espece: Loc_Espece[] = []; //
@@ -49,6 +53,8 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
   
   isAssocie: boolean = false;
   isSelectedAutreCulte: boolean = false;
+
+  espece_unite: string = null;
 
   constructor(
     private modalCtrl: ModalController,
@@ -121,15 +127,19 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
     console.log(":::::OnInit::::::::");
     if (this.isAddMepSg || this.isAddMepMv || this.isAddMepPa) {
       this.sg_paForm = this.formBuilder.group({
-        annee: [null, Validators.required],
-        saison: [null, Validators.required],
+        annee: this.isAddMepSg?[null, Validators.required]:null,
+        saison: this.isAddMepSg?[null, Validators.required]:null,
         bloc: [null, Validators.required],
-        beneficiaire: [null, Validators.required],
+        beneficiaire: null,
         parcelle: [null, Validators.required],
         ddp: [null, Validators.required],
         qso: [null, Validators.required],
+        dt_distribution: null,
         dds: [null, Validators.required],
-        sfce: [null, Validators.required],
+        sfce: this.isAddMepSg? [null, Validators.required] : null,
+        nbre_ligne: this.isAddMepPa?[null, Validators.required]:null,
+        long_ligne: null,
+        usage: null,
         sc: this.isAddMepSg? [null, Validators.required]: null,
         categorie_ea: null,
         espece: [null, Validators.required],
@@ -139,7 +149,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
         autreCultureEa: null
       });
     } else if (this.isEditMepSg || this.isEditMepMv || this.isEditMepPa) {
-      let saison_: Loc_saison;
+      let saison_: Loc_saison = null;
       let bloc_: Loc_Bloc;
       let benef_: Local_benef_activ_bl;
       let parce_: Local_bloc_parce;
@@ -148,6 +158,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
       let categ_: Loc_categEspece = null;
       let espece_ea: Loc_Espece = null;
       let var_ea_: Loc_variette = null;
+      let sc_: any = null;
 
       this.data_benef_filtre = this.data_benef.filter(item => {return item.id_bloc === this.data_Mep_edit.code_bloc});
       this.data_parcelle_filter = this.data_parcelle.filter(item => {return item.code_benef_bl === this.data_Mep_edit.code_benef_bl});
@@ -174,7 +185,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
             }
           });
         }
-        if (this.data_Mep_edit.sc === 'C.Associe') {
+        if (this.data_Mep_edit.sc === 'C.associé') {
           this.isAssocie = true;
           // operation ea
           if (this.data_Mep_edit.ea_id_variette != null) {
@@ -198,6 +209,8 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
           } else {
             this.isSelectedAutreCulte = true;
           }
+        } else if (this.data_Mep_edit.sc === 'C.bande') {
+          this.isCultureBande = true;
         }
       }  else if(this.isEditMepPa) {
         this.data_espece.filter(item => {
@@ -236,17 +249,27 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
         }
       });
 
+      this.data_sc.forEach(item => {
+        if (item.value === this.data_Mep_edit.sc) {
+          sc_ = item;
+        }
+      });
+
       this.sg_paForm = this.formBuilder.group({
         annee: [this.data_Mep_edit.annee_du, Validators.required],
-        saison: [saison_, Validators.required],
+        saison: this.isEditMepSg?[saison_, Validators.required]:saison_,
         bloc: [bloc_, Validators.required],
-        beneficiaire: [benef_, Validators.required],
+        beneficiaire: benef_,
         parcelle: [parce_, Validators.required],
         ddp: [moment(this.data_Mep_edit.ddp, "YYYY-MM-DD"), Validators.required],
         qso: [this.data_Mep_edit.qso, Validators.required],
+        dt_distribution: this.data_Mep_edit.dt_distribution,
         dds: [moment(this.data_Mep_edit.dds, "YYYY-MM-DD"), Validators.required],
-        sfce: [this.data_Mep_edit.sfce, Validators.required],
-        sc: this.isEditMepSg? [this.data_Mep_edit.sc, Validators.required]: this.data_Mep_edit.sc,
+        sfce: this.isEditMepSg?[this.data_Mep_edit.sfce, Validators.required]:this.data_Mep_edit.sfce,
+        nbre_ligne: this.isEditMepPa?[this.data_Mep_edit.nbre_ligne, Validators.required]:this.data_Mep_edit.nbre_ligne,
+        long_ligne: this.data_Mep_edit.long_ligne,
+        usage: this.data_Mep_edit.usage,
+        sc: this.isEditMepSg? [sc_, Validators.required]: sc_,
         categorie_ea: this.isEditMepSg? categ_: categ_,
         espece: [espece_, Validators.required],
         espece_ea: espece_ea,
@@ -262,23 +285,27 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
 
   onDismiss(src: any) {
     if (src === 'mep-sg') {
+      console.log( "je suis messagier du modal bloc, MEP SG");
       const dismiss = {
         messag: "je suis messagier du modal bloc, MEP SG",
-        isAddMepSg: true
+        //isAddMepSg: true
       }
-      this.modalCtrl.dismiss(dismiss);
+      this.modalCtrl.dismiss();
     } else if (src === 'mep-mv') {
+      console.log( "je suis messagier du modal bloc, MEP MV");
       const dismiss = {
         messag: "je suis messagier du modal bloc, MEP MV",
-        isAddMepMv: true
+        //isAddMepMv: true
       }
-      this.modalCtrl.dismiss(dismiss);
+      this.modalCtrl.dismiss();
     } else if (src === 'mep-pa') {
+      console.log("je suis messagier du modal bloc, MEP PA");
       const dismiss = {
         messag: "je suis messagier du modal bloc, MEP PA",
-        isAddMepPa: true
+        //isAddMepPa: true
       }
-      this.modalCtrl.dismiss(dismiss);
+      //this.sg_paForm.reset();
+      this.modalCtrl.dismiss();
     }
   }
 
@@ -288,6 +315,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
     let val: Loc_Bloc = this.sg_paForm.value.bloc;
     
     this.data_benef_filtre = this.data_benef.filter(item => {return item.id_bloc === val.code_bloc});
+    this.data_parcelle_filter = this.data_parcelle.filter(item => {return item.id_bloc === val.code_bloc});
     console.log("Data Beneficiare filter :::: ", this.data_benef_filtre);
   }
   onSelectBenef(src) {
@@ -296,8 +324,10 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
     if (src === 'tout') {
       let val: Loc_Bloc = this.sg_paForm.value.bloc;
       this.data_parcelle_filter = this.data_parcelle.filter(item => {return item.id_bloc === val.code_bloc});
+      this.sg_paForm.patchValue({
+        parcelle: null
+      });
       console.log("Data filter parcelle", this.data_parcelle_filter);
-
     } else if (src === 'filter') {
       let val: Local_benef_activ_bl = this.sg_paForm.value.beneficiaire;
 
@@ -305,8 +335,17 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
       console.log("Data filter parcelle", this.data_parcelle_filter);
     }
   }
+  onSelectParce() {
+    this.data_benef_filtre.forEach(elem => {
+      if (elem.code_benef_bl === this.sg_paForm.value.parcelle.code_benef_bl) {
+        this.sg_paForm.patchValue({
+          beneficiaire: elem
+        });
+      }
+    });
+  }
   onSeletSc() {
-    if (this.sg_paForm.value.sc === 'C.Associe') {
+    if (this.sg_paForm.value.sc.value === 'C.associé') {
       this.isAssocie = true;
       this.sg_paForm.patchValue({
         categorie_ea: null,
@@ -316,6 +355,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
       });
       this.data_espece_filter_ea = [];
       this.data_variette_filter_ea = [];
+      this.isCultureBande = false;
     } else {
       this.isAssocie = false;
       this.sg_paForm.patchValue({
@@ -326,6 +366,10 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
       });
       this.data_espece_filter_ea = [];
       this.data_variette_filter_ea = [];
+      // Culture bande
+      if (this.sg_paForm.value.sc.value === 'C.bande') {
+        this.isCultureBande = true;
+      } else this.isCultureBande = false;
     }
   }
   onSeletCateg(data: any) {
@@ -351,8 +395,14 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
   onSelectEspece() {
     console.log("selected espece!!! Data Variette :::", this.data_var);
     // filtre variette espece
+    let val_espece: Loc_Espece = this.sg_paForm.value.espece;
+    this.espece_unite = val_espece.unite;
+    if (val_espece.saisonnier === 1) {
+      this.isCultureSaisonnier = true;
+    } else {
+      this.isCultureSaisonnier = false;
+    }
     if (this.isAddMepSg || this.isEditMepSg) {
-      let val_espece: Loc_Espece = this.sg_paForm.value.espece;
       this.data_variette_filter = this.data_var.filter(item => {return item.id_espece === val_espece.code_espece});
       console.log("Data Variette Filter:::", this.data_variette_filter);
     }

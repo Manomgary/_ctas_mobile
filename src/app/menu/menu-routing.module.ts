@@ -12,15 +12,28 @@ const routes: Routes = [
     children: [
       {
         path: 'beneficiaire_rp',
-        loadChildren: () => import('../pages/beneficiaire/beneficiaire-routing.module').then( m => m.BeneficiairePageRoutingModule)
+        loadChildren: () => import('../pages/beneficiaire/beneficiaire-routing.module').then( m => m.BeneficiairePageRoutingModule),
+        pathMatch: 'full',
       },
       {
         path: 'beneficiaire_bloc',
         loadChildren: () => import('../pages/beneficiaire-bloc/beneficiaire-bloc-routing.module').then( m => m.BeneficiaireBlocPageRoutingModule)
       },
       {
+        path: 'beneficiare-pr',
+        loadChildren: () => import('../pages/pr/beneficiaire/beneficiaire-routing.module').then(m => m.BeneficiairePageRoutingModule)
+      },
+      {
+        path: 'animation-ve',
+        loadChildren: () => import('../pages/pr/animation-ve/animation-ve-routing.module').then( m => m.AnimationVePageRoutingModule)
+      },
+      {
         path: 'suivi_rp',
         loadChildren: () => import('../pages/suivi_/suivi/suivi-routing.module').then( m => m.SuiviPageRoutingModule)
+      },
+      {
+        path: 'suivi-pr',
+        loadChildren: () => import('../pages/pr/suivi/suivi-routing.module').then(m => m.SuiviPageRoutingModule)
       },
       {
         path: 'suivi_bloc',

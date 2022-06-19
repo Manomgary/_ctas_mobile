@@ -36,11 +36,15 @@ export class ApiService {
     return this.http.post<any>(this.base_path + 'equipe', data, this.httpOptions);
   }
 
-  // Get Equipe
+  // Get Projet Equipe 
   getProjetEquipe(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'projet/projet_equipe', data, this.httpOptions);
   }
   
+  //Get Projet Equipe Volet
+  getProjetEquipeVolet(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'projet/projet_equipe_volet', data, this.httpOptions);
+  }
 
   // get all project active
   getProjet(): Observable<Projet[]> {
@@ -55,6 +59,11 @@ export class ApiService {
   // Get List activite!!!
   getListActivite(): Observable<Activite[]> {
     return this.http.get<Activite[]>(this.base_path + 'activite');
+  }
+
+  // get Projet Volet
+  getProjetVolet(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'projet/projet_volet', data, this.httpOptions);
   }
 
   // Get List activite Projet
@@ -120,14 +129,29 @@ export class ApiService {
     return this.http.post<any>(this.base_path + 'beneficiaire/findBenefBlocByProjet', data, this.httpOptions);
   }
 
+  // Get Paysant Relais
+  getBenefPRBloc(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'beneficiaire/findBenefPRBloc', data, this.httpOptions)
+  }
+  
+  // beneficiaire Parcelle
+  getBenefPR(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'parcelle', data, this.httpOptions);
+  }
+
   // beneficiaire Parcelle
   getBenefParcelle(data: any): Observable<any> {
-    return this.http.post<any>(this.base_path + 'parcelle', data, this.httpOptions);
+    return this.http.post<any>(this.base_path + 'parcelle/findAllParceBenefBloc', data, this.httpOptions);
   }
 
     // beneficiaire Parcelle Bloc
   getBenefParcelleBloc(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'parcelle/findAllParceBenefBloc', data, this.httpOptions);
+  }
+
+  // parcellle 
+  getParcePRBloc(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'parcelle/findParcellePRBloc', data, this.httpOptions);
   }
 
     // beneficiaire Parcelle Ass
@@ -178,5 +202,13 @@ export class ApiService {
   // load Suivi Bloc
   getSuiviBloc(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'culture/find_suivi_bloc', data, this.httpOptions);
+  }
+  // load PR Animation
+  getAnimation(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'prBloc/findAnimationPr', data, this.httpOptions);
+  }
+  // load specu VE
+  getSpecuAnime(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'prBloc/findSpeculationAnime', data, this.httpOptions);
   }
 }

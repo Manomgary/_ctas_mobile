@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 
 import { NavigationExtras, Router, RouterEvent } from '@angular/router';
-import { ModalController } from '@ionic/angular';
+import { ModalController, NavController } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
-import { ModalPage } from '../pages/modal/modal.page';
+import { Loc_projet } from '../interfaces/interfaces-local';
+import { SharedService } from '../services/shared.service';
 import { Utilisateurs } from '../utils/interface-bd';
 
 export interface PageInterface {
@@ -23,7 +24,15 @@ export class MenuPage implements OnInit {
     // Basic root for our content view
     //rootPage = 'TabsPage';
     activite: string = '';
-    projet: any = {};
+    projet: Loc_projet = {
+      numero: null,
+      code_proj: null,
+      nom: null,
+      description: null,
+      logo: null,
+      statuts: null,
+      ancronyme: null
+    };
     zoneInter: any = [];
     users: Utilisateurs[] = [];
     firstNavigate: boolean = false;
@@ -46,9 +55,10 @@ export class MenuPage implements OnInit {
     ];
 
     pages_pr = [
-      { title: 'Identification de beneficiaire', url: '/menu/beneficiaire_rp', icone: 'person', color: 'primary', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users},
-      { title: 'Carnet de suivi PR', url: '/menu/suivi', icone: 'navigate', color: 'primary', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users},
-      //{ title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success', data: this.zoneInter, projet: this.projet , activite: this.activite, user: this.users}      
+      { title: 'Identification Paysant Relais', url: '/menu/beneficiare-pr', icone: 'person', color: 'primary', projet: this.projet, activite: this.activite, user: this.users},
+      { title: 'Animation/Visite Echange', url: '/menu/animation-ve', icone: 'person', color: 'primary', projet: this.projet, activite: this.activite, user: this.users},
+      { title: 'Carnet de suivi PR', url: '/menu/suivi-pr', icone: 'navigate', color: 'primary', projet: this.projet, activite: this.activite, user: this.users},
+      //{ title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success',  projet: this.projet , activite: this.activite, user: this.users}      
     ];
 
     pages_bi = [
@@ -57,63 +67,25 @@ export class MenuPage implements OnInit {
       //{ title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success', data: this.zoneInter, projet: this.projet, activite: this.activite, user: this.users}      
     ];
 
-
     selectedPath = '';
 
-  constructor(public router: Router, public modalCtrl: ModalController) { 
+  constructor(
+    public router: Router, 
+    public modalCtrl: ModalController,
+    private sharedService: SharedService) { 
     console.log("***Menu*** :::::constructeur:::::");
 
     if (this.router.getCurrentNavigation().extras.state) {
       this.firstNavigate = true;
 
       const routeState = this.router.getCurrentNavigation().extras.state;
-      this.zoneInter = JSON.parse(routeState.zone);
+      console.log("***Menu Router state zone*** :::::constructeur:::::", routeState.zone);
+      this.zoneInter = routeState.zone != undefined? JSON.parse(routeState.zone): null;
       this.projet = JSON.parse(routeState.projet);
       this.activite = routeState.activite;
       this.users = routeState.users;
       console.log(routeState);
-
-      if (this.activite.trim().toUpperCase() === 'BLOC') {
-        this.pages_bloc.forEach(elements => {
-          elements.data = this.zoneInter;
-          elements.projet = this.projet;
-          elements.activite = this.activite;
-          elements.user = this.users;
-        });
-        this.benefRoute = 'beneficiaire_bloc';
-        this.isBloc.next(true);
-        this.goToRoot();
-      } else if (this.activite.trim().toUpperCase() === 'RP') {
-        this.pages_pms.forEach(elements => {
-          elements.data = this.zoneInter;
-          elements.projet = this.projet;
-          elements.activite = this.activite;
-          elements.user = this.users;
-        });
-        this.benefRoute = 'beneficiaire_rp';
-        this.isPms.next(true);
-        this.goToRoot();
-      } else if (this.activite.trim().toUpperCase() === 'PR') {
-        this.pages_pr.forEach(elements => {
-          elements.data = this.zoneInter;
-          elements.projet = this.projet;
-          elements.activite = this.activite;
-          elements.user = this.users;
-        });
-        this.benefRoute = 'beneficiaire_rp';
-        this.isPr.next(true);
-        this.goToRoot();
-      } else if (this.activite.trim().toUpperCase() === 'BI') {
-        this.pages_pr.forEach(elements => {
-          elements.data = this.zoneInter;
-          elements.projet = this.projet;
-          elements.activite = this.activite;
-          elements.user = this.users;
-        });
-        this.benefRoute = 'beneficiaire_rp';
-        this.isBi.next(true);
-        this.goToRoot();
-      }
+      this.navigateRouter();
     }
     this.router.events.subscribe((event: RouterEvent) => {
       if (event && event.url) {
@@ -127,7 +99,6 @@ export class MenuPage implements OnInit {
   } 
   ngOnInit() {
     console.log("ngOnit:::::::::");
-
   }
 
   onClick(url) {
@@ -136,29 +107,130 @@ export class MenuPage implements OnInit {
 
   goToUrl(data: any) {
     console.log(data);
-    const navigationExtras: NavigationExtras = {
-      state : {
-        zone: JSON.stringify(data.data),
-        projet: JSON.stringify(data.projet),
-        user: JSON.stringify(data.user)
+    this.selectedPath = data.url;
+    if (this.sharedService.getData() != null) {
+      data.data = this.sharedService.getData();
+      switch(this.activite.trim().toUpperCase()) {
+        case 'BLOC':
+          this.pages_bloc.forEach(elements => {
+            elements.data = this.sharedService.getData();
+          });
+          break;
+        case 'RP':
+          this.pages_pms.forEach(elements => {
+            elements.data = this.sharedService.getData();
+          });
+          break;
       }
-    };
+    }
+    let navigationExtras: NavigationExtras;
+    switch(this.activite.trim().toUpperCase()) {
+      case 'PR' || 'BI':
+        navigationExtras = {
+          state : {
+            projet: JSON.stringify(data.projet),
+            user: JSON.stringify(data.user),
+            activite: this.activite
+          }
+        };
+        break;
+      default:
+        navigationExtras = {
+          state : {
+            zone: JSON.stringify(data.data),
+            projet: JSON.stringify(data.projet),
+            user: JSON.stringify(data.user),
+            activite: this.activite
+          }
+        };
+        break;
+    }
     console.log("Menu Page =====>");
     console.log(navigationExtras.state);
+    this.router.routeReuseStrategy.shouldReuseRoute = () => {
+      return false;
+    }
+    this.router.onSameUrlNavigation = 'reload';
     this.router.navigate([data.url], navigationExtras);
   }
 
   goToRoot() {
-    const navigationExtras: NavigationExtras = {
-      state : {
-        zone: JSON.stringify(this.zoneInter),
-        projet: JSON.stringify(this.projet),
-        user: JSON.stringify(this.users)
-      }
-    };
+    let navigationExtras: NavigationExtras;
+    switch(this.activite.trim().toUpperCase()) {
+      case 'PR' || 'BI':
+        navigationExtras = {
+          state : {
+            projet: JSON.stringify(this.projet),
+            user: JSON.stringify(this.users),
+            activite: this.activite
+          }
+        };
+        break;
+      default:
+        navigationExtras = {
+          state : {
+            zone: JSON.stringify(this.zoneInter),
+            projet: JSON.stringify(this.projet),
+            user: JSON.stringify(this.users),
+            activite: this.activite
+          }
+        };
+        break;
+    }
     console.log("Menu Page =====>");
     console.log(navigationExtras.state)
     this.router.navigate(['menu/' + this.benefRoute], navigationExtras);
   }
 
+  onSync() {
+    let navigationExtras: NavigationExtras = {
+      state : {
+        projet: JSON.stringify(this.projet),
+        users: JSON.stringify(this.users)
+      }
+    };
+    this.router.navigate(['/synchro'], navigationExtras);
+  }
+
+  navigateRouter() {
+    if (this.activite.trim().toUpperCase() === 'BLOC') {
+      this.pages_bloc.forEach(elements => {
+        elements.data = this.zoneInter;
+        elements.projet = this.projet;
+        elements.activite = this.activite;
+        elements.user = this.users;
+      });
+      this.benefRoute = 'beneficiaire_bloc';
+      this.isBloc.next(true);
+      this.goToRoot();
+    } else if (this.activite.trim().toUpperCase() === 'RP') {
+      this.pages_pms.forEach(elements => {
+        elements.data = this.zoneInter;
+        elements.projet = this.projet;
+        elements.activite = this.activite;
+        elements.user = this.users;
+      });
+      this.benefRoute = 'beneficiaire_rp';
+      this.isPms.next(true);
+      this.goToRoot();
+    } else if (this.activite.trim().toUpperCase() === 'PR') {
+      this.pages_pr.forEach(elements => {
+        elements.projet = this.projet;
+        elements.activite = this.activite;
+        elements.user = this.users;
+      });
+      this.benefRoute = 'beneficiare-pr';
+      this.isPr.next(true);
+      this.goToRoot();
+    } else if (this.activite.trim().toUpperCase() === 'BI') {
+      this.pages_pr.forEach(elements => {
+        elements.projet = this.projet;
+        elements.activite = this.activite;
+        elements.user = this.users;
+      });
+      this.benefRoute = 'beneficiaire_rp';
+      this.isBi.next(true);
+      this.goToRoot();
+    }
+  }
 }

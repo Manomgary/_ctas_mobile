@@ -28,6 +28,11 @@
                 <div class="label-region" fxLayoutAlign="center center">Commune</div>
                 <mat-card class="item-matcard-flex" fxLayoutAlign="start center">{{commune.nom_com}}</mat-card>
               </div>
+              <div class="child3-row-flex" fxLayout="row" fxLayoutGap="2px">
+                <button mat-raised-button (click)="modificationZone()" class="demo-button">
+                  Modifier
+                </button>
+              </div>
             </div>
           </div> 
         </div>
@@ -287,21 +292,21 @@
                               <th mat-header-cell *matHeaderCellDef> {{ new_culte.sfce }} </th>
                             </ng-container>                  
                 
-                            <!-- objectif Column -->
-                            <ng-container matColumnDef="objectif">
-                              <th mat-header-cell *matHeaderCellDef> objectif </th>
+                            <!-- Achat Column -->
+                            <ng-container matColumnDef="code_achat">
+                              <th mat-header-cell *matHeaderCellDef> Code_achat </th>
                               <td mat-cell *matCellDef="let row; let i = index"> 
                                 <span *ngIf="!isEditableCulte || indexRowEdit != i">
-                                  {{row.objectif}}
+                                  {{row.code_achat}}
                                 </span> 
                                 <span *ngIf="indexRowEdit == i  && isEditableCulte">
-                                  {{ new_culte.Objectif }}
+                                  {{ new_culte.code_achat }}
                                 </span>
                               </td>
                             </ng-container>
-                            <!-- New objectif Column -->
-                            <ng-container matColumnDef="new_objectif">
-                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.Objectif }} </th>
+                            <!-- New Achat Column -->
+                            <ng-container matColumnDef="new_code_achat">
+                              <th mat-header-cell *matHeaderCellDef> {{ new_culte.code_achat }} </th>
                             </ng-container>                  
                 
                             <!-- sc Column -->
@@ -410,6 +415,9 @@
                         </div>
                         <div class="child-row-info width100">
                           Code_pms : {{info_mep_select.code_benef_pms}}
+                        </div>
+                        <div class="child-row-info width100">
+                          Code_achat : {{info_mep_select.code_achat}}
                         </div>
                         <div class="child-row-info width100">
                           Nom_pms : {{info_mep_select.nom}} {{info_mep_select.prenom}}
@@ -563,14 +571,14 @@
                     
                               <!-- Estimation de production Column -->
                               <ng-container matColumnDef="ex">
-                                <th mat-header-cell *matHeaderCellDef> ex </th>
+                                <th mat-header-cell *matHeaderCellDef> EX </th>
                                 <td mat-cell *matCellDef="let row; let i = index">
                                   <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
                                     {{row.ex}} 
                                   </span> 
                                   <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
                                     <mat-form-field>
-                                      <input matInput placeholder="Enter pb" formControlName="ex">
+                                      <input matInput type="number" placeholder="Estimation en kg" formControlName="ex">
                                     </mat-form-field>
                                   </span>
                                 </td>
@@ -579,7 +587,7 @@
                               <ng-container matColumnDef="new_ex">
                                 <th mat-header-cell *matHeaderCellDef> 
                                   <mat-form-field>
-                                    <input matInput placeholder="Enter pb" formControlName="ex">
+                                    <input matInput type="number" placeholder="Estimation en kg" formControlName="ex">
                                   </mat-form-field>
                                 </th>
                               </ng-container>                  
@@ -619,20 +627,67 @@
                                     {{row.controle}} 
                                   </span>
                                   <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
-                                    <mat-form-field>
-                                      <input matInput placeholder="Enter controle" formControlName="controle">
-                                    </mat-form-field>
+                                    <mat-form-field appearance="outline">
+                                      <mat-label>Controle</mat-label>
+                                      <mat-select formControlName="controle">
+                                        <mat-option>Aucune</mat-option>
+                                        <mat-option *ngFor="let var_ctrl of controle_" [value]="var_ctrl.value">
+                                          {{ var_ctrl.value }}
+                                        </mat-option>
+                                      </mat-select>
+                                    </mat-form-field>	
                                   </span>
                                 </td>
                               </ng-container>
                               <!-- New new_controle Column -->
                               <ng-container matColumnDef="new_controle">
                                 <th mat-header-cell *matHeaderCellDef>
-                                  <mat-form-field>
-                                    <input matInput placeholder="Enter controle" formControlName="controle">
-                                  </mat-form-field>
+                                  <mat-form-field appearance="outline">
+                                    <mat-label>Controle</mat-label>
+                                    <mat-select formControlName="controle">
+                                      <mat-option>Aucune</mat-option>
+                                      <mat-option *ngFor="let var_ctrl of controle_" [value]="var_ctrl.value">
+                                        {{ var_ctrl.value }}
+                                      </mat-option>
+                                    </mat-select>
+                                  </mat-form-field>	
                                 </th>
-                              </ng-container>                                                                                
+                              </ng-container>
+
+                              <!-- declaration_ culture Column -->
+                              <ng-container matColumnDef="declaration">
+                                <th mat-header-cell *matHeaderCellDef> Declaration </th>
+                                <td mat-cell *matCellDef="let row; let i = index"> 
+                                  <span *ngIf="!isEditableSuivi || indexRowSuivi != i">
+                                    {{row.declaration}} 
+                                  </span>
+                                  <span *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                                    <mat-form-field appearance="outline">
+                                      <mat-label>Declaration</mat-label>
+                                      <mat-select formControlName="declaration">
+                                        <mat-option>Aucune</mat-option>
+                                        <mat-option *ngFor="let var_decl of declaration_" [value]="var_decl.value">
+                                          {{ var_decl.description }}
+                                        </mat-option>
+                                      </mat-select>
+                                    </mat-form-field>	
+                                  </span>
+                                </td>
+                              </ng-container>
+                              <!-- New new_declaration Column -->
+                              <ng-container matColumnDef="new_declaration">
+                                <th mat-header-cell *matHeaderCellDef>
+                                  <mat-form-field appearance="outline">
+                                    <mat-label>Declaration</mat-label>
+                                    <mat-select formControlName="declaration">
+                                      <mat-option>Aucune</mat-option>
+                                      <mat-option *ngFor="let var_decl of declaration_" [value]="var_decl.value">
+                                        {{ var_decl.description }}
+                                      </mat-option>
+                                    </mat-select>
+                                  </mat-form-field>	
+                                </th>
+                              </ng-container>                                                                              
             
                               <!-- New action Responsable Column -->
                               <ng-container matColumnDef="new_action">
@@ -713,7 +768,7 @@
               <!-- Row Exporter-->
               <div class="child-row-modifier" fxLayoutAlign="center center" fxLayout="row" fxLayoutGap="4px">
                 <div class="child-row-modifier1" *ngIf="!isUpdated">
-                  <button mat-raised-button (click)="createExcel()" class="demo-button" [disabled]="isSuiviClicked">
+                  <button mat-raised-button (click)="createExcel()" class="demo-button" [disabled]="suiviToExport.length == 0">
                     Exporter xcel
                   </button>
                 </div>
@@ -756,7 +811,13 @@
                   <ng-container matColumnDef="code_pms">
                     <th mat-header-cell *matHeaderCellDef> code Pms </th>
                     <td mat-cell *matCellDef="let row"> {{row.code_pms}} </td>
-                  </ng-container>                  
+                  </ng-container>     
+
+                  <!-- code Pms Column -->
+                  <ng-container matColumnDef="code_achat">
+                    <th mat-header-cell *matHeaderCellDef> code achat </th>
+                    <td mat-cell *matCellDef="let row"> {{row.code_achat}} </td>
+                  </ng-container>             
         
                   <!-- nom_pms Column -->
                   <ng-container matColumnDef="nom_pms">
@@ -834,10 +895,16 @@
                     <td mat-cell *matCellDef="let row"> {{row.ex}} </td>
                   </ng-container>
 
-                  <!-- pb Responsable Column -->
+                  <!-- Controle Column -->
                   <ng-container matColumnDef="ctrl">
                     <th mat-header-cell *matHeaderCellDef> CTRL </th>
                     <td mat-cell *matCellDef="let row"> {{row.controle}} </td>
+                  </ng-container>
+
+                  <!-- Controle Column -->
+                  <ng-container matColumnDef="declaration">
+                    <th mat-header-cell *matHeaderCellDef> Declaration </th>
+                    <td mat-cell *matCellDef="let row"> {{row.declaration}} </td>
                   </ng-container>
 
                   <tr mat-header-row *matHeaderRowDef="displayedColmnSv; sticky: true"></tr>

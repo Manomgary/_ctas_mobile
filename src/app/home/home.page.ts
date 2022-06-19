@@ -7,6 +7,7 @@ import { LoadingController, ModalController } from '@ionic/angular';
 import { Participe_proj_activ, Utilisateurs } from '../utils/interface-bd';
 import { LoadDataService } from '../services/local/load-data.service';
 import { ApiService } from '../services/api.service';
+import { Loc_activ_projet, Loc_projet } from '../interfaces/interfaces-local';
 
 @Component({
   selector: 'app-home',
@@ -16,13 +17,21 @@ import { ApiService } from '../services/api.service';
 export class HomePage implements OnInit {
   modalData: any;
   users: Utilisateurs[];
-  Activite_Projet: any[] = [];
-  projets: any[] = [];
+  Activite_Projet: Loc_activ_projet[] = [];
+  projets: Loc_projet[] = [];
   nomPrjt: string = '';
   usersReady: boolean = false;
   isFirstConnection: boolean = false;
   selectedActive: string = '';
-  selectedProjet: any = {};
+  selectedProjet: Loc_projet = {
+    numero: null,
+    code_proj: null,
+    nom: null,
+    description: null,
+    logo: null,
+    statuts: null,
+    ancronyme: null
+  };
  
   constructor(
               private route: Router,
@@ -46,7 +55,6 @@ export class HomePage implements OnInit {
   ngOnInit() {
     console.log("<=======NgOnInit Homme Page=================>");
     this.loadProjet();
-    this.loadUsers();
   }
 
   async presentModal(data) {
@@ -68,7 +76,7 @@ export class HomePage implements OnInit {
             state : {
               zone: JSON.stringify(this.modalData),
               projet: JSON.stringify(this.selectedProjet),
-              activite: this.selectedActive,
+              activite: this.selectedActive, // intituler de l'activité
               users: this.users
             }
           };
@@ -80,7 +88,18 @@ export class HomePage implements OnInit {
   }
   doMenu(data: any) {
     this.selectedActive = data;
-    this.presentModal(this.selectedActive);
+    if (this.selectedActive == "PR") {
+      const navigationExtras: NavigationExtras = {
+        state : {
+          projet: JSON.stringify(this.selectedProjet),
+          activite: this.selectedActive, // intituler de l'activité
+          users: this.users
+        }
+      };
+      this.route.navigate(['menu'], navigationExtras);
+    } else {
+      this.presentModal(this.selectedActive);
+    }
   }
 
   loadProjet() {
@@ -91,7 +110,11 @@ export class HomePage implements OnInit {
       if (this.projets.length > 0) {
         this.selectedProjet = this.projets[0];
         if (!(Object.keys(this.selectedProjet).length === 0)) {
-          this.loadActivitePr(this.selectedProjet.code_proj);
+          let data_ = {
+            id_projet: this.selectedProjet.code_proj,
+            code_equipe: this.users[this.users.length - 1].id_equipe
+          }
+          this.loadActivitePr(data_);
         }
       }
     });
@@ -101,7 +124,11 @@ export class HomePage implements OnInit {
     console.log("==== ngModel change ====");
     console.log(value);
     console.log(this.selectedProjet);
-    this.loadActivitePr(this.selectedProjet.code_proj);
+    let data_ = {
+      id_projet: this.selectedProjet.code_proj,
+      code_equipe: this.users[this.users.length - 1].id_equipe
+    }
+    this.loadActivitePr(data_);
   }
 
   loadActivitePr(id_projet) {
@@ -117,14 +144,6 @@ export class HomePage implements OnInit {
     });
   }
 
-  loadUsers() {
-    if (this.users != null && this.users.length > 0) {
-      this.users.forEach(async element => {
-        console.log("-------Homme Page USERS DATA-------");
-        console.log(element);  
-      });
-    } else console.log("users vide::: Home page");
-  }
   goToRoot() {
     const navigationExtras: NavigationExtras = {
       state : {

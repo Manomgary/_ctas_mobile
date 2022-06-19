@@ -29,6 +29,7 @@ export interface Sync_suivi_pms {
     img_cult: string,
     name: string,
     controle: string,
+    declaration: string,
     etat: string
 }
 export interface Sync_mep_bl {
@@ -39,9 +40,13 @@ export interface Sync_mep_bl {
     id_saison: string, 
     annee_du: string, 
     ddp: string, 
-    qso: number, 
+    qso: number,
+    dt_distribution: string, 
     dds: string, 
     sfce: number, 
+    nbre_ligne: number,
+    long_ligne: number,
+    usage: string,
     sc: string, 
     ea_autres: string, 
     ea_id_variette: string, 
@@ -57,12 +62,17 @@ export interface Sync_suivi_bl {
     id_culture: string, 
     ddp: string, 
     stc: string, 
+    ec: string,
     ql: number, 
     qr: number, 
     long_ligne: number, 
     nbre_ligne: number, 
     nbre_pied: number, 
+    hauteur: number,
     img_cult: string, 
+    dt_capture: string,
     ex: string, 
+    dt_creation: string,
+    dt_modification: string,
     etat: string
 }

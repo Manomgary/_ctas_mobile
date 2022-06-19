@@ -77,7 +77,6 @@ export class ModalPage implements OnInit {
   dateSemis: Moment;
   ddp: Moment;
   sfce: number;
-  Objectif: number;
   qsa: number;
   dd_modifie: Moment;
 
@@ -109,8 +108,6 @@ export class ModalPage implements OnInit {
   ngOnInit() {}
 
   async loadInitiale() {
-    console.log(this.navParams.get('isHome'));
-    console.log(this.navParams.get('isLogin'));
     if(this.navParams.get('isLogin')) {
       let data: any;
       this.isLogin = this.navParams.get('isLogin');
@@ -128,10 +125,14 @@ export class ModalPage implements OnInit {
         }
       });
       
-    } else if (this.navParams.get('isHome')) {
-
-      this.isHome = this.navParams.get('isHome');
-      this.selectedActivite = this.navParams.get('selectedActivite');
+    } else if (this.navParams.get('isHome') || this.navParams.get('isModificationZone')) {
+      if (this.navParams.get('isHome')) {
+        this.isHome = this.navParams.get('isHome');
+        this.selectedActivite = this.navParams.get('selectedActivite');
+      } else {
+        this.isHome = this.navParams.get('isModificationZone');
+        this.selectedActivite = this.navParams.get('activite');
+      }
       console.log("selected activiter ===> ", this.selectedActivite);
 
       if (this.selectedActivite.toUpperCase() === 'BLOC') {
@@ -196,7 +197,6 @@ export class ModalPage implements OnInit {
         });
         this.qsa = this.data_suivi_edit.qsa;
         this.sfce = this.data_suivi_edit.sfce;
-        this.Objectif = this.data_suivi_edit.objectif;
         this.dateSemis = dds_;
         this.ddp = ddp_;
         this.data_sc.filter(item => {
@@ -345,7 +345,9 @@ export class ModalPage implements OnInit {
       order_assoc: this.selected_association.numero,
       code_ass: this.selected_association.code_ass,
       association: this.selected_association.nom_ass,
+      ancronyme: this.selected_association.ancronyme,
       code_pms: this.selected_pms.code_benef_pms,
+      code_achat: this.selected_pms.code_achat,
       pms: this.selected_pms.nom_benef,
       parcelle: this.selected_parcelle.code_parce,
       espece: this.selected_espece.nom_espece,
@@ -357,7 +359,6 @@ export class ModalPage implements OnInit {
       dateSemis: this.dateSemis,
       ddp:this.ddp,
       sfce: this.sfce,
-      Objectif: this.Objectif,
       qsa: this.qsa
     }
     const dismissed = {
@@ -383,7 +384,9 @@ export class ModalPage implements OnInit {
     this.data_commune = [];
     console.log("Selected District!!!");
     console.log(this.selected_district.code_dist);
-    let id_dist = this.selected_district.code_dist;
+    let id_dist = {
+      code_dist: this.selected_district.code_dist
+    };
     this.loadData.loadCommune(id_dist).then(res => {
       console.log("*** MODAL CONTROLLER COMMUNE ****");
       console.log(res);
