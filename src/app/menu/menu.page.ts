@@ -65,9 +65,9 @@ export class MenuPage implements OnInit {
     ];
 
     pages_pr = [
-      { title: 'Identification Paysant Relais', url: '/menu/beneficiare-pr', icone: 'person', color: 'primary', projet: this.projet, activite: this.activite, user: this.users},
+      { title: 'Identification Paysant Relais', url: '/menu/beneficiaire_pr', icone: 'person', color: 'primary', projet: this.projet, activite: this.activite, user: this.users},
       { title: 'Animation/Visite Echange', url: '/menu/animation-ve', icone: 'person', color: 'primary', projet: this.projet, activite: this.activite, user: this.users},
-      { title: 'Carnet de suivi PR', url: '/menu/suivi-pr', icone: 'navigate', color: 'primary', projet: this.projet, activite: this.activite, user: this.users},
+      { title: 'Carnet de suivi PR', url: '/menu/suivi_pr', icone: 'navigate', color: 'primary', projet: this.projet, activite: this.activite, user: this.users},
       //{ title: 'Synchronisation', url: '/menu/synchronisation', icone: 'cloud-upload', color: 'success',  projet: this.projet , activite: this.activite, user: this.users}      
     ];
 
@@ -229,7 +229,7 @@ export class MenuPage implements OnInit {
         elements.activite = this.activite;
         elements.user = this.users;
       });
-      this.benefRoute = 'beneficiare-pr';
+      this.benefRoute = 'beneficiaire_pr';
       this.isPr.next(true);
       this.goToRoot();
     } else if (this.activite.intitule.trim().toUpperCase() === 'BI') {

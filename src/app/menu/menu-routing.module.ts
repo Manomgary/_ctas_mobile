@@ -20,8 +20,8 @@ const routes: Routes = [
         loadChildren: () => import('../pages/beneficiaire-bloc/beneficiaire-bloc-routing.module').then( m => m.BeneficiaireBlocPageRoutingModule)
       },
       {
-        path: 'beneficiare-pr',
-        loadChildren: () => import('../pages/pr/beneficiaire/beneficiaire-routing.module').then(m => m.BeneficiairePageRoutingModule)
+        path: 'beneficiaire_pr',
+        loadChildren: () => import('../pages/pr/beneficiaire-pr/beneficiaire-pr-routing.module').then( m => m.BeneficiairePrPageRoutingModule)
       },
       {
         path: 'animation-ve',
@@ -32,8 +32,8 @@ const routes: Routes = [
         loadChildren: () => import('../pages/suivi_/suivi/suivi-routing.module').then( m => m.SuiviPageRoutingModule)
       },
       {
-        path: 'suivi-pr',
-        loadChildren: () => import('../pages/pr/suivi/suivi-routing.module').then(m => m.SuiviPageRoutingModule)
+        path: 'suivi_pr',
+        loadChildren: () => import('../pages/pr/suivi-pr/suivi-pr-routing.module').then( m => m.SuiviPrPageRoutingModule)
       },
       {
         path: 'suivi_bloc',

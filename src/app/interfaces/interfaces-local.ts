@@ -373,6 +373,8 @@ export interface Loc_PR {
     date_naissance: string,
     surnom: string, 
     cin: number, 
+    dt_delivrance: string,
+    lieu_delivrance: string,
     img_cin: string, 
     contact: string, 
     id_fkt: string, 

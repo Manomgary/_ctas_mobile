@@ -121,11 +121,26 @@ export class CrudDbService {
       return await this.db.execute(state);
     }
   }
+  async UpdateBenef(data: UpdateBenef) {
+    if (this.db_ready.dbReady.value) {
+      const state_ = `UPDATE beneficiaire SET img_benef=${data.img_benef != null?`"${data.img_benef}"`:null}, nom="${data.nom}", prenom=${data.prenom != null?`"${data.prenom}"`:null}, sexe="${data.sexe}",
+                  dt_nais=${data.dt_nais != null?`"${data.dt_nais}"`:null}, dt_nais_vers=${data.dt_nais_vers != null?`"${data.dt_nais_vers}"`:null}, surnom=${data.surnom != null?`"${data.surnom}"`:null}, cin=${data.cin},
+                  dt_delivrance=${data.dt_delivrance != null?`"${data.dt_delivrance}"`:null}, lieu_delivrance=${data.lieu_delivrance != null?`"${data.lieu_delivrance}"`:null}, img_cin=${data.img_cin != null?`"${data.img_cin}"`:null}, contact=${data.contact != null?`"${data.contact}"`:null},
+                  id_fkt=${data.id_fkt != null?`"${data.id_fkt}"`:null}, id_commune=${data.id_commune != null?`"${data.id_commune}"`:null}, village=${data.village != null?`"${data.village}"`:null}, dt_Insert="${data.dt_Insert}", etat="${data.etat}", statut="${data.statut}" WHERE code_benef="${data.code_benef}"`;
+      return await this.db.execute(state_);
+    }
+  }
   async AddPrBenef(data: UpdateBenefActivPr) {
     if (this.db_ready.dbReady.value) {
       const state = `INSERT INTO benef_activ_pr(code_pr, id_proj, id_activ, id_benef, id_bloc, code_achat, id_collaborateur, id_tech, etat, status) 
                     VALUES ("${data.code_pr}", "${data.id_proj}", ${data.id_activ}, "${data.id_benef}", "${data.id_bloc}", ${data.code_achat != null? `"${data.code_achat}"`:null},
                     "${data.id_collaborateur}", ${data.id_tech}, "${data.etat}", "${data.status}")`;
+      return this.db.execute(state);
+    }
+  }
+  async UpdatePrBenef(data: UpdateBenefActivPr) {
+    if (this.db_ready.dbReady.value) {
+      const state = `UPDATE benef_activ_pr SET code_achat=${data.code_achat != null? `"${data.code_achat}"`:null}, etat="${data.etat}",status="${data.status}" WHERE code_pr="${data.code_pr}"`;
       return this.db.execute(state);
     }
   }

@@ -844,7 +844,7 @@ export class LoadDataService {
    * Paysant Realais
    *******************************************************/
   async loadPRBloc(data: any) {
-    const req = `SELECT BNF.img_benef, BNF.nom, BNF.prenom, BNF.sexe, BNF.dt_nais, BNF.dt_nais_vers, BNF.surnom, BNF.cin, BNF.img_cin, BNF.contact, BNF.id_fkt, BNF.village, BAPR.code_pr, BAPR.id_proj, BAPR.id_activ, BAPR.id_benef, BAPR.id_bloc, BAPR.code_achat, BAPR.id_collaborateur, BAPR.id_tech, BAPR.etat, BAPR.status, 
+    const req = `SELECT BNF.img_benef, BNF.nom, BNF.prenom, BNF.sexe, BNF.dt_nais, BNF.dt_nais_vers, BNF.surnom, BNF.cin, BNF.dt_delivrance, BNF.lieu_delivrance, BNF.img_cin, BNF.contact, BNF.id_fkt, BNF.village, BAPR.code_pr, BAPR.id_proj, BAPR.id_activ, BAPR.id_benef, BAPR.id_bloc, BAPR.code_achat, BAPR.id_collaborateur, BAPR.id_tech, BAPR.etat, BAPR.status, 
               CASE WHEN BAPR.id_bloc IS NOT NULL THEN (SELECT BL.nom FROM bloc BL WHERE BL.code_bloc = BAPR.id_bloc)
               ELSE NULL
               END AS bloc,

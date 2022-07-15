@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ModalController, NavParams, Platform } from '@ionic/angular';
-import { Loc_Commune, Loc_district, Loc_Fokontany, Loc_region } from 'src/app/interfaces/interfaces-local';
+import { Loc_Commune, Loc_district, Loc_Fokontany, Loc_PR, Loc_region } from 'src/app/interfaces/interfaces-local';
 import { CaptureImageService } from 'src/app/services/capture-image.service';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { SEXE } from 'src/app/utils/global-variables';
@@ -51,6 +51,9 @@ export class ModalPrPage implements OnInit {
     date: null,
     data: null
   };
+  isAddBenef = false;
+  isEditBenef = false;
+  element_benef: Loc_PR;
 
   constructor(
     private modalCtrl: ModalController,
@@ -61,55 +64,153 @@ export class ModalPrPage implements OnInit {
     private plt: Platform
   ) {
     if (this.navParams.get('isBenefPr')) {
-      console.log(":::::::::Modal From Benef PR Bloc:::::::");
+      console.log(":::::::::Modal From Benef PR Bloc:::::::", this.navParams.get('element'));
       this.loadZone();
+      if (this.navParams.get('isEdit')) {
+        this.isEditBenef = this.navParams.get('isEdit');
+        this.element_benef = this.navParams.get('element');
+      } else if (this.navParams.get('isAdd')) {
+        this.isAddBenef = this.navParams.get('isAdd');
+      }
     }
   }
 
   ngOnInit() {
-    this.beneficiaireForm = this.formBuilder.group({
-      nom: [null, Validators.required],
-      prenom: null,
-      surnom: null,
-      sexe: [null, Validators.required],
-      dt_naissance: null,
-      dt_naissance_vers: null,
-      cin: null,
-      dt_delivrance: null,
-      lieu_delivrance: null,
-      code_achat: null,
-      contact: null,
-      region: null,
-      district: null,
-      commune: null,
-      fokontany: null,
-      village: null
-    });
+    if (this.isAddBenef) {
+      this.beneficiaireForm = this.formBuilder.group({
+        nom: [null, Validators.required],
+        prenom: null,
+        surnom: null,
+        sexe: [null, Validators.required],
+        isDtVers: false,
+        //dt_naissance: [{value: null, disabled: true}],
+        dt_naissance: null,
+        dt_naissance_vers: null,
+        cin: null,
+        dt_delivrance: null,
+        lieu_delivrance: null,
+        code_achat: null,
+        contact: [null, Validators.maxLength(10)],
+        region: null,
+        district: null,
+        commune: null,
+        fokontany: null,
+        village: null
+      });
+    }
+    if (this.isEditBenef) {
+      let fkt: Loc_Fokontany = null;
+      let commune: Loc_Commune = null;
+      let district: Loc_district = null;
+      let region: Loc_region = null;
+
+      this.data_region.forEach(item => {
+        if (item.code_reg === this.element_benef.code_region) {
+          region= item
+        }
+      });
+      
+      //this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_benef.code_region});
+      //this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_benef.code_dist});
+      //this.data_fokontany_filter = this.data_fokontany.filter(elem => {return elem.id_com === this.element_benef.code_commune});
+
+      this.data_district.forEach(item => {
+          if (item.id_reg === this.element_benef.code_region) {
+            this.data_district_filter.push(item);
+          }
+        }
+      );
+      this.data_commune.forEach(item => 
+        {
+          if(item.id_dist === this.element_benef.code_dist) {
+            this.data_commune_filter.push(item);
+          }
+        }
+      );
+      this.data_fokontany.forEach(elem => 
+        {
+          if(elem.id_com === this.element_benef.code_commune) {
+            this.data_fokontany_filter.push(elem);
+          }
+        }
+      );
+
+      console.log("::::::::::::D:", this.data_district);
+      console.log("::::::::::::C:", this.data_commune);
+      console.log("::::::::::::F:", this.data_fokontany);
+      console.log("::::::::::::Dist::::", this.data_district_filter);
+      console.log("::::::::::::Commune::::", this.data_commune_filter);
+      console.log("::::::::::::Fokontany::::", this.data_fokontany_filter);
+
+      this.data_fokontany_filter.forEach(item => {
+        if (item.code_fkt === this.element_benef.id_fkt) {
+          fkt = item;
+        }
+      });
+      this.data_commune_filter.forEach(item => {
+        if (item.code_com === this.element_benef.code_commune) {
+          commune = item;
+        }
+      });
+      this.data_district_filter.forEach(item => {
+        if (item.code_dist === this.element_benef.code_dist) {
+          district = item;
+        }
+      });
+      
+      if (this.element_benef.village != null) {
+        this.isAutresFkt = true;
+      }
+      this.beneficiaireForm = this.formBuilder.group({
+        nom: [this.element_benef.nom, Validators.required],
+        prenom: this.element_benef.prenom,
+        surnom: this.element_benef.surnom,
+        sexe: [this.element_benef.sexe, Validators.required],
+        isDtVers: this.element_benef.dt_nais_vers != null?true:false,
+        dt_naissance: this.element_benef.dt_nais != null? moment(this.element_benef.dt_nais, "YYYY-MM-DD"):null,
+        dt_naissance_vers: this.element_benef.dt_nais_vers,
+        cin: this.element_benef.cin,
+        dt_delivrance: this.element_benef.dt_delivrance != null?moment(this.element_benef.dt_delivrance, "YYYY-MM-DD"):null,
+        lieu_delivrance: this.element_benef.lieu_delivrance,
+        code_achat: this.element_benef.code_achat,
+        contact: [this.element_benef.contact, Validators.maxLength(10)],
+        region: region,
+        district: district,
+        commune: commune,
+        fokontany: fkt,
+        village: this.element_benef.village
+      });
+    }
   }
 
   loadZone() {
     this.loadData.loadRegion().subscribe(res => {
       if (res.length > 0) {
-        this.data_region =  res;
+        res.forEach(item => {
+          this.data_region.push(item);
+        });
       }
     });
     this.loadData.loadAllDistrict().then(res => {
-      if (res.values.length > 0) {
-        res.values.forEach(item => {
+      let dist: Loc_district[] = res.values;
+      if (dist.length > 0) {
+        dist.forEach(item => {
           this.data_district.push(item);
         });
       }
     });
     this.loadData.loadCommune({}).then(res => {
-      if (res.values.length > 0) {
-        res.values.forEach(item => {
+      let commune: Loc_Commune[] = res.values;
+      if (commune.length > 0) {
+        commune.forEach(item => {
           this.data_commune.push(item);
         });
       }
     });
     this.loadData.loadFokontany({}).then(res => {
-      if (res.values.length > 0) {
-        res.values.forEach(elem => {
+      let fkt: Loc_Fokontany[] = res.values;
+      if (fkt.length > 0) {
+        fkt.forEach(elem => {
           this.data_fokontany.push(elem);
         });
       }

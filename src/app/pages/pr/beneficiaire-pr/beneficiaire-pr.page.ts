@@ -37,9 +37,9 @@ interface Update_pr {
 }
 
 @Component({
-  selector: 'app-beneficiaire',
-  templateUrl: './beneficiaire.page.html',
-  styleUrls: ['./beneficiaire.page.scss'],
+  selector: 'app-beneficiaire-pr',
+  templateUrl: './beneficiaire-pr.page.html',
+  styleUrls: ['./beneficiaire-pr.page.scss'],
   animations: [ //utiliser pour @detailExpand (table expendable)
     trigger('detailExpand', [
       state('collapsed', style({ height: '0px', minHeight: '0' })),
@@ -48,7 +48,7 @@ interface Update_pr {
     ])
   ]
 })
-export class BeneficiairePage implements OnInit {
+export class BeneficiairePrPage implements OnInit {
 
   private update_benef: Update_pr = {
     img_pr: null,
@@ -146,7 +146,7 @@ export class BeneficiairePage implements OnInit {
 
   onEdit(data_: any) {
     console.log(":::Data edit:::", data_);
-    this.indeRowEdit = data_.index;
+    this.indeRowEdit = data_.index_;
     let _data_: any = {
       src: 'edit', 
       element: data_.data

@@ -14,21 +14,21 @@
           <div class="child-row-flex">
             <mat-form-field appearance="outline">
               <mat-label>Nom</mat-label>
-              <input matInput type="text" placeholder="Merci de saisissez!" formControlName="nom">
+              <input matInput placeholder="Merci de saisissez!" formControlName="nom">
             </mat-form-field>
           </div>
            <!--Formulaire Prenom-->
            <div class="child-row-flex">
             <mat-form-field appearance="outline">
               <mat-label>Prenom</mat-label>
-              <input matInput type="text" placeholder="Merci de saisissez!" formControlName="prenom">
+              <input matInput placeholder="Merci de saisissez!" formControlName="prenom">
             </mat-form-field>
           </div>
           <!--Formulaire surnom-->
           <div class="child-row-flex">
             <mat-form-field appearance="outline">
               <mat-label>Surnom</mat-label>
-              <input matInput type="text" placeholder="Merci de saisissez!" formControlName="surnom">
+              <input matInput placeholder="Merci de saisissez!" formControlName="surnom">
             </mat-form-field>
           </div>
         </div>
@@ -45,17 +45,21 @@
               </mat-select>
             </mat-form-field>
           </div>
-          <!--Formulaire Date de naissance-->
+          <!--Formulaire Sexe-->
           <div class="child-row-flex">
+            <mat-checkbox class="example-margin" formControlName="isDtVers">Vers</mat-checkbox>
+          </div>
+          <!--Formulaire Date de naissance-->
+          <div class="child-row-flex" *ngIf="!beneficiaireForm.value.isDtVers">
             <mat-form-field appearance="fill">
               <mat-label>Date de naissance</mat-label>
-              <input matInput [matDatepicker]="dt_nais" formControlName="dt_naissance" disabled>
+              <input matInput [matDatepicker]="dt_nais" formControlName="dt_naissance">
               <mat-datepicker-toggle matSuffix [for]="dt_nais"></mat-datepicker-toggle>
-              <mat-datepicker #dt_nais></mat-datepicker>
+              <mat-datepicker #dt_nais disabled="false"></mat-datepicker>
             </mat-form-field>
           </div>
           <!--Formulaire Date de naissance vers-->
-          <div class="child-row-flex">
+          <div class="child-row-flex" *ngIf="beneficiaireForm.value.isDtVers">
             <mat-form-field appearance="outline">
               <mat-label>Vers</mat-label>
               <input matInput type="number" placeholder="Merci de saisissez!" formControlName="dt_naissance_vers">
@@ -71,13 +75,13 @@
         </div>
         <!--Column 3-->
         <div class="child-column-flex" fxLayout="row">
-          <!--Formulaire Date de naissance-->
+          <!--Formulaire Date de délivrance-->
           <div class="child-row-flex">
             <mat-form-field appearance="fill">
               <mat-label>Date de délivrance</mat-label>
-              <input matInput [matDatepicker]="dt_del" formControlName="dt_delivrance" disabled>
+              <input matInput [matDatepicker]="dt_del" formControlName="dt_delivrance">
               <mat-datepicker-toggle matSuffix [for]="dt_del"></mat-datepicker-toggle>
-              <mat-datepicker #dt_del></mat-datepicker>
+              <mat-datepicker #dt_del disabled="false"></mat-datepicker>
             </mat-form-field>
           </div>
           <!--Formulaire Image cin 1-->
@@ -180,7 +184,7 @@
             </ion-button>
           </div>
         </div>
-        <!--Column 5-->
+        <!--Column 6-->
         <div class="child-column-flex" fxLayout="row">
           <!--Formulaire Village-->
           <div class="child-row-flex">

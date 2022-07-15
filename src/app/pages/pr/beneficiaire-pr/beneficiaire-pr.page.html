@@ -55,11 +55,12 @@
         <button mat-raised-button (click)="onToggleTableRows()" color="primary">Tout Afficher</button>
         <button mat-raised-button (click)="onPresentModal({src: 'add'})" color="primary" *ngIf="isUpdate">Ajouter</button>
         <div class="table-container">
+          <!--If multiTemplateDataRows property of mat-table to true, you can't use index. Instead you have use either dataIndex-->
           <table mat-table [dataSource]="dataSourcePR" class="example-table" multiTemplateDataRows>
             <!-- Image culture Column -->
             <ng-container matColumnDef="img_pr">
               <th mat-header-cell *matHeaderCellDef>img</th>
-              <td mat-cell *matCellDef="let row; let i = index">  
+              <td mat-cell *matCellDef="let row; let i = dataIndex;">  
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
                   <ion-thumbnail slot="start">
                     <ion-img [src]="row.img_benef"></ion-img>
@@ -88,9 +89,9 @@
             <!--Column code_pr-->
             <ng-container matColumnDef="code_pr">
               <th mat-header-cell *matHeaderCellDef>Code Pr</th>
-              <td mat-cell *matCellDef="let row; let i = index">
+              <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
-                  {{row.code_pr}}
+                  {{row.code_pr}}-{{i}}
                 </span>
                 <span *ngIf="indeRowEdit == i  && isRowEdit">
                   {{row.code_pr}}
@@ -105,9 +106,9 @@
             <!--Column code_achat-->
             <ng-container matColumnDef="code_achat">
               <th mat-header-cell *matHeaderCellDef>Code achat</th>
-              <td mat-cell *matCellDef="let row; let i = index">
+              <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
-                  {{row.code_achat}}
+                  {{row.code_achat}}-{{i}}
                 </span>
                 <span *ngIf="indeRowEdit == i  && isRowEdit">
                   {{update_benef.code_achat}}
@@ -122,9 +123,9 @@
             <!--Column nom-->
             <ng-container matColumnDef="nom">
               <th mat-header-cell *matHeaderCellDef>Nom</th>
-              <td mat-cell *matCellDef="let row; let i = index">
+              <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
-                  {{row.nom}} {{row.prenom}}
+                  {{row.nom}} {{row.prenom}}-{{i}}
                 </span>
                 <span *ngIf="indeRowEdit == i  && isRowEdit">
                   {{update_benef.nom}} {{update_benef.prenom}}
@@ -139,7 +140,7 @@
             <!--Column sexe-->
             <ng-container matColumnDef="sexe">
               <th mat-header-cell *matHeaderCellDef>Sexe</th>
-              <td mat-cell *matCellDef="let row; let i = index">
+              <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
                   {{row.sexe}}
                 </span>
@@ -156,7 +157,7 @@
             <!--Column surnom-->
             <ng-container matColumnDef="surnom">
               <th mat-header-cell *matHeaderCellDef>Surnom</th>
-              <td mat-cell *matCellDef="let row; let i = index">
+              <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
                   {{row.surnom}}
                 </span>
@@ -173,7 +174,7 @@
             <!--Column cin-->
             <ng-container matColumnDef="cin">
               <th mat-header-cell *matHeaderCellDef>CIN</th>
-              <td mat-cell *matCellDef="let row; let i = index">
+              <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
                   {{row.cin}}
                 </span>
@@ -190,7 +191,7 @@
             <!--Column commune-->
             <ng-container matColumnDef="commune">
               <th mat-header-cell *matHeaderCellDef>Commune</th>
-              <td mat-cell *matCellDef="let row; let i = index">
+              <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
                   {{row.commune}}
                 </span>
@@ -207,7 +208,7 @@
             <!--Column fokontany-->
             <ng-container matColumnDef="fokontany">
               <th mat-header-cell *matHeaderCellDef>Fokontany</th>
-              <td mat-cell *matCellDef="let row; let i = index">
+              <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
                   {{row.fokontany}}
                 </span>
@@ -224,7 +225,7 @@
             <!--Column Action-->
             <ng-container matColumnDef="action">
               <th mat-header-cell *matHeaderCellDef> Action </th>
-              <td mat-cell *matCellDef="let row; index as i">
+              <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="indeRowEdit == i  && isRowEdit && isUpdate">
                   <a (click)="onClickSaveEdit({data: row})">modifier</a> |
                   <a (click)="onClickCancelEdit()">Annuler</a>
@@ -233,7 +234,7 @@
                   <button mat-flat-button class="btn-info btn-dimension" (click)="row.isExpanded = !row.isExpanded">afficher</button>
                 </span>
                 <span *ngIf="!isAddPr && !isRowEdit && isUpdate">
-                  <button mat-flat-button class="btn-info btn-dimension" (click)="onEdit({data: row, index: i})">Editer</button>
+                  <button mat-flat-button class="btn-info btn-dimension" (click)="onEdit({data: row, index_: i})">Editer</button>
                 </span>
               </td>
             </ng-container>
