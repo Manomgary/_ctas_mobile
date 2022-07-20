@@ -6,7 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 // Imports 
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController, ModalController } from '@ionic/angular';
-import { Loc_association, Benef_activ_pms, Local_Parcelle, Loc_projet, Loc_district, Loc_Commune, Loc_Fokontany, Loc_region, Update_infos_benef, Loc_activ_projet, Loc_Collabo_Activite } from 'src/app/interfaces/interfaces-local';
+import { Loc_association, Benef_activ_pms, Local_Parcelle, Loc_projet, Loc_district, Loc_Commune, Loc_Fokontany, Loc_region, Update_infos_benef, Loc_activ_projet, Loc_Collabo_Activite, Loc_Parce_saison } from 'src/app/interfaces/interfaces-local';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { SharedService } from 'src/app/services/shared.service';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
@@ -43,13 +43,14 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
   displayedColumnsAddBenef: string[] = ['new_association', 'new_fokontany', 'new_code_pms', 'new_code_ahat', 'new_pms', 'new_sexe', 'new_age', 'new_cin', 'new_village', 'new_collaborateur', 'new_action'];
   displayedColumns: string[] = ['fokontany', 'association', 'nb_pms', 'code_benef', 'pa', 'sexe', 'cin', 'surnom', 'technicien'];
   displayedColumnsParce: string[] = ['code_parce', 'code_pms', 'code_ahat', 'nom', 'ref_gps', 'lat', 'log', 'superficie', 'nb_cultures', 'cultures'];
-  displayedColumnsParcePms: string[] = ['code_parce', 'ref_gps', 'lat', 'log', 'superficie', 'action'];
+  displayedColumnsParcePms: string[] = ['annee', 'saison', 'variette', 'objectif', 'code_parce', 'ref_gps', 'lat', 'log', 'superficie', 'adresse', 'indication', 'action'];
 
   filterDataAssoc: string[] = [];
   filterData: Loc_association[] = [];
   filterDataParce: Local_Parcelle[] = [];
   data_pms: Benef_activ_pms[] = [];
   parcelle_pms: Local_Parcelle[] = [];
+  parcelle_saison_pms: Loc_Parce_saison[] = [];
   nb_parce_ass_filter: number = 0;
   association: Loc_association[] = []; 
   expandedElement: Benef_activ_pms | null;
@@ -379,16 +380,20 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
 
   loadPmsAsso() {
     this.data_pms = [];
-    this.parcelle_pms = [];
+    this.parcelle_saison_pms = [];
     if (this.association.length > 0 ) {
       this.association.forEach(((elem_assoc, ind_assoc) => {
         const data_pms = {
           code_ass: elem_assoc.code_ass
         }
-        this.loadData.loadParcelle(data_pms).then(res_parce => {
+        const data_parce = {
+          code_ass: elem_assoc.code_ass,
+          code_prj: this.projet.code_proj
+        }
+        this.loadData.loadParcelleSaison(data_parce).then(res_parce => {
           console.log(res_parce);
           res_parce.values.forEach(elem_parce => {
-            this.parcelle_pms.push(elem_parce);
+            this.parcelle_saison_pms.push(elem_parce);
           });
         });
         this.loadData.loadBeneficiairePms({code_ass: elem_assoc.code_ass}).then((res_pms) => {
@@ -409,8 +414,8 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
   refreshDataSource() {
     if (this.data_pms.length > 0) {
       this.data_pms.forEach(elem_pms => {
-        if (this.parcelle_pms.length > 0) {
-          elem_pms.parcelle = this.parcelle_pms.filter(item_parce => {return item_parce.code_benef_pms === elem_pms.code_benef_pms});
+        if (this.parcelle_saison_pms.length > 0) {
+          elem_pms.parcelle = this.parcelle_saison_pms.filter(item_parce => {return item_parce.id_pms === elem_pms.code_benef_pms});
         } else elem_pms.parcelle = [];
       });
     }

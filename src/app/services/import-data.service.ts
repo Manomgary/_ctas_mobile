@@ -920,14 +920,14 @@ export class ImportDataService implements OnInit, OnDestroy {
       data_assoc_parce = res;
       if (data_assoc_parce.length > 0) {
         data_assoc_parce.forEach((elem, i) => {
-          const insert = `INSERT OR IGNORE INTO assoc_parce(code_parce, id_assoc, id_benef, ref_gps, lat, log, superficie, id_fkt, anne_adheran, status) 
-                            VALUES ("${elem.code_parce}","${elem.id_assoc}", "${elem.id_benef}", ${elem.ref_gps != null ? `"${elem.ref_gps}"`:null}, ${elem.lat}, ${elem.log}, ${elem.superficie}, ${elem.id_fkt != null?`"${elem.id_fkt}"`:null}, ${elem.anne_adheran}, "${elem.status}");`;
+          const insert = `INSERT OR IGNORE INTO assoc_parce(code_parce, id_assoc, id_benef, ref_gps, lat, log, superficie, id_fkt, id_commune, village, anne_adheran, indication, etat, status) 
+                            VALUES ("${elem.code_parce}","${elem.id_assoc}", "${elem.id_benef}", ${elem.ref_gps != null ? `"${elem.ref_gps}"`:null}, ${elem.lat}, ${elem.log}, ${elem.superficie}, ${elem.id_fkt != null?`"${elem.id_fkt}"`:null}, ${elem.id_commune != null ? `"${elem.id_commune}"`:null}, ${elem.village != null ? `"${elem.village}"`:null}, ${elem.anne_adheran}, ${elem.indication != null?`"${elem.indication}"`:null}, "${elem.etat}", "${elem.status}");`;
           console.log(elem);
           this.insertData(insert);
           if (i == (data_assoc_parce.length - 1)) {
             console.log("==Fin du boucle assoc_parce==");
             this.select("assoc_parce", data_assoc_parce);
-            this.loadAssocitionParceSaison(data)
+            this.loadAssocitionParceSaison(data);
             //this.loadCultureAssoc(data);
           }
         });
@@ -940,9 +940,9 @@ export class ImportDataService implements OnInit, OnDestroy {
       data_parce_assocSaison = res_parce_saison;
       if (data_parce_assocSaison.length > 0) {
         data_parce_assocSaison.forEach((elem_saison_parce, ind_saison) => {
-          let value = [elem_saison_parce.code, elem_saison_parce.id_annee, elem_saison_parce.id_saison, elem_saison_parce.id_parce, elem_saison_parce.id_var, elem_saison_parce.objectif, elem_saison_parce.etat, elem_saison_parce.commentaire];
-          let state_add_mep = `INSERT OR IGNORE INTO assoc_parce_saison(code, id_annee, id_saison, id_parce, id_var, objectif, etat, commentaire) 
-                              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+          let value = [elem_saison_parce.code, elem_saison_parce.id_annee, elem_saison_parce.id_saison, elem_saison_parce.id_parce, elem_saison_parce.id_pms, elem_saison_parce.id_var, elem_saison_parce.objectif, elem_saison_parce.etat, elem_saison_parce.commentaire];
+          let state_add_mep = `INSERT OR IGNORE INTO assoc_parce_saison(code, id_annee, id_saison, id_parce, id_pms, id_var, objectif, etat, commentaire) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
           let req = {
             state_: state_add_mep, 
             data_: value

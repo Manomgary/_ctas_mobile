@@ -180,7 +180,11 @@ export interface Parcelle_Association {
     log: number,
     superficie: number,
     id_fkt: string,
+    id_commune: string, 
+    village: string,
     anne_adheran: string,
+    indication: string, 
+    etat: string,
     status: string
 }
 export interface bloc_Parcelle {
@@ -475,6 +479,7 @@ export interface AssociationParceSaison {
     id_annee: number, 
     id_saison: string, 
     id_parce: string, 
+    id_pms: string,
     id_var: string, 
     objectif: number, 
     etat: string, 

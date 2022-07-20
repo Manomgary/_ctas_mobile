@@ -320,6 +320,44 @@
                 <td mat-cell *matCellDef="let element; dataIndex as i;" [attr.colspan]="displayedColumnsBenef.length">
                   <div class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.parcelle.length > 0 || isUpdate && element.isExpanded? 'expanded' : 'collapsed'">
                     <table mat-table [dataSource]="element.parcelle">
+
+                      ['', 'code_parce', 'ref_gps', 'lat', 'log', 'superficie', '', '', 'action'];
+
+                      <!-- Annee agricole Column -->
+                      <ng-container matColumnDef="annee">
+                        <th mat-header-cell *matHeaderCellDef> Annee </th>
+                        <td mat-cell *matCellDef="let row"> {{row.annee_du}}-{{row.annee_au}} </td>
+                      </ng-container>
+
+                      <!-- Saison Column -->
+                      <ng-container matColumnDef="saison">
+                        <th mat-header-cell *matHeaderCellDef> Saison </th>
+                        <td mat-cell *matCellDef="let row"> {{row.saison}} </td>
+                      </ng-container>
+
+                      <!-- Saison Column -->
+                      <ng-container matColumnDef="variette">
+                        <th mat-header-cell *matHeaderCellDef> Variette </th>
+                        <td mat-cell *matCellDef="let row"> {{row.variette}} </td>
+                      </ng-container>
+
+                      <!-- Objectif Column -->
+                      <ng-container matColumnDef="objectif">
+                        <th mat-header-cell *matHeaderCellDef> Objectif </th>
+                        <td mat-cell *matCellDef="let row"> {{row.objectif}} </td>
+                      </ng-container>
+
+                      <!-- Fokontany Column -->
+                      <ng-container matColumnDef="adresse">
+                        <th mat-header-cell *matHeaderCellDef> Fokontany </th>
+                        <td mat-cell *matCellDef="let row"> {{row.fokontany_prc}} </td>
+                      </ng-container>
+
+                      <!-- Fokontany Column -->
+                      <ng-container matColumnDef="indication">
+                        <th mat-header-cell *matHeaderCellDef> Indication </th>
+                        <td mat-cell *matCellDef="let row"> {{row.indication}} </td>
+                      </ng-container>
             
                       <!-- Code_parce Column -->
                       <ng-container matColumnDef="code_parce">
