@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import * as moment from 'moment';
 import { BehaviorSubject } from 'rxjs';
 import { Db_Culture_pms, UpdateAnimeSpecu } from 'src/app/interfaces/interface-insertDb';
-import { Sync_activ_pms, Sync_activ_pr, Sync_anime_specu, Sync_anime_ve, Sync_benef_activ_pms, Sync_benef_activ_pr, Sync_culture_pms, Sync_info_benef, Sync_MepPR, Sync_mep_bl, Sync_suivi_bl, Sync_Suivi_MepPr, Sync_suivi_pms } from 'src/app/interfaces/interface-sync';
+import { Sync_activ_pms, Sync_activ_pr, Sync_anime_specu, Sync_anime_ve, Sync_benef_activ_pms, Sync_benef_activ_pr, Sync_cep_pr, Sync_culture_pms, Sync_info_benef, Sync_MepPR, Sync_mep_bl, Sync_parceSaison_pms, Sync_parce_pms, Sync_suivi_bl, Sync_Suivi_MepPr, Sync_suivi_pms } from 'src/app/interfaces/interface-sync';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 import { LoadSyncService } from 'src/app/services/local/load-sync.service';
 import { SyncService } from 'src/app/services/sync.service';
@@ -34,6 +34,11 @@ export class SynchroPage implements OnInit {
   private data_anime_ve: Sync_anime_ve[] = [];
   private data_anime_specu: Sync_anime_specu[] = [];
 
+  private data_cep_pr: Sync_cep_pr[] = [];
+
+  private data_parce_pms: Sync_parce_pms[] = [];
+  private data_parceSaison_pms: Sync_parceSaison_pms[] = [];
+
   private data_mep_pr: Sync_MepPR[] = [];
   private data_suivi_pr: Sync_Suivi_MepPr[] = [];
 
@@ -59,6 +64,8 @@ export class SynchroPage implements OnInit {
         this.loadSyncMepPR();
         this.loadSuiviMepPR();
         this.loadSyncPms();
+        this.loadSyncParcePms();
+        this.loadSyncCepPr();
       }
     });
   }
@@ -84,7 +91,7 @@ export class SynchroPage implements OnInit {
             id_parce: elem.id_parce, 
             id_var: elem.id_var,
             id_saison: elem.id_saison,
-            annee_du: elem.annee_du,
+            id_annee: elem.id_annee,
             ddp: elem.ddp,
             dt_creation: elem.dt_creation,
             dt_modification: moment().format("YYYY-MM-DD"),
@@ -122,7 +129,7 @@ export class SynchroPage implements OnInit {
     console.log(data_);
     this.data_culture = [];
     this.LoadTosync.loadSyncCulturePms(data_).then(res => {
-      console.log(res.values);
+      console.log("::::Culture:::", res.values);
       if (res.values.length > 0) {
         res.values.forEach((elem: Sync_culture_pms) => {
           this.data_culture.push({
@@ -130,7 +137,7 @@ export class SynchroPage implements OnInit {
               id_parce: elem.id_parce,
               id_var: elem.id_var,
               id_saison: elem.id_saison,
-              annee_du: elem.annee_du,
+              id_annee: elem.id_annee,
               ddp: elem.ddp,
               qsa: elem.qsa,
               img_fact: elem.img_fact,
@@ -198,7 +205,7 @@ export class SynchroPage implements OnInit {
     console.log(data_);
     this.data_suivi = [];
     this.LoadTosync.loadSyncSuivi(data_).then(res => {
-      console.log(res);
+      console.log(":::Suivi Pms::::", res);
       if (res.values.length > 0) {
         res.values.forEach((elem_suivi: Sync_suivi_pms, i) => {
           this.data_suivi.push({
@@ -390,6 +397,45 @@ export class SynchroPage implements OnInit {
       }
     });
   }
+  /**
+   * Load sync CEP
+   */
+  loadSyncCepPr() {
+    const data_ = {
+      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_projet: this.projet.code_proj
+    };
+    this.data_cep_pr = [];
+    this.LoadTosync.loadSyncCepPR(data_).then(res_cep => {
+      if (res_cep.values.length > 0) {
+        this.data_cep_pr = res_cep.values;
+      }
+    });
+  }
+  onSyncParcePr() {
+    const data_ = {
+      update_cep_pr : this.data_cep_pr
+    }
+    this.syncService.syncCepPR(data_).subscribe(res => {
+      if (res.response == 1) {
+         if (this.data_cep_pr.length > 0) {
+          this.data_cep_pr.forEach(elem_cep => {
+            let data_update_cep = {
+              isUpdateCepSync: true,
+              data_cep: {
+                code_parce: elem_cep.code_parce,
+                etat: elem_cep.etat  == SYNC? ISSYNC: ISUPDATE
+              }
+            }
+            this.crudDb.UpdateParcellePr(data_update_cep).then(res => {
+              console.log(":::::Cep Updated:::");
+              this.loadSyncCepPr();
+            });
+          });
+         }
+      }
+    });
+  }
   /********************
    * Animation Ve
    ***************/
@@ -516,6 +562,9 @@ export class SynchroPage implements OnInit {
       }
     });
   }
+  /**
+   * Pms
+   */
   loadSyncPms() {
     const data_ = {
       id_tech : this.users[this.users.length - 1].id_equipe,
@@ -600,6 +649,69 @@ export class SynchroPage implements OnInit {
           });
         })
       }
+    });
+  }
+  /**
+   * Parcelle Pms
+   */
+  loadSyncParcePms() {
+    const data_ = {
+      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_projet: this.projet.code_proj
+    };
+    this.data_parce_pms = [];
+    this.data_parceSaison_pms = [];
+    this.LoadTosync.loadSyncParcePms(data_).then(res_parce_pms => {
+      if (res_parce_pms.values.length > 0) {
+        this.data_parce_pms = res_parce_pms.values;
+        console.log(":::Data Parce Pms to sync::::", this.data_parce_pms);
+      }
+    });
+    this.LoadTosync.loadSyncParceSaisonPms(data_).then(res_parceSaison => {
+      if (res_parceSaison.values.length > 0) {
+        this.data_parceSaison_pms = res_parceSaison.values;
+        console.log(":::Data Parce Saison Pms to sync::::", this.data_parceSaison_pms);
+      }
+    });
+  }
+  onSyncParcePms() {
+    let data_ = {
+      update_parce_pms: this.data_parce_pms,
+      update_parceSaison_pms: this.data_parceSaison_pms
+    }
+    this.syncService.syncParcePms(data_).subscribe(res => {
+      if (res.response == 1) {
+        if (this.data_parce_pms.length > 0) {
+          this.data_parce_pms.forEach(elem_parce =>  {
+            let update_parce = {
+              isUpdateParcePmsSync: true,
+              data_parce: {
+                code_parce: elem_parce.code_parce,
+                etat: elem_parce.etat === SYNC?ISSYNC:ISUPDATE, 
+                status: elem_parce.status
+              }
+            }
+            this.crudDb.UpdateParcellePms(update_parce).then(res => {
+              console.log(":::Parcelle Pms Updated:::");
+            });
+          });
+        }
+        if (this.data_parceSaison_pms.length > 0) {
+          this.data_parceSaison_pms.forEach(elem_parceSaison => {
+            let update_parce = {
+              isUpdateParceSaisonSync: true,
+              data_parce_saison: {
+                code: elem_parceSaison.code,
+                etat: elem_parceSaison.etat === SYNC?ISSYNC:ISUPDATE
+              }
+            }
+            this.crudDb.UpdateParcelleSaisonPms(update_parce).then(res => {
+              console.log("Parcelle Saison Updated!");
+            });
+          });
+        }
+      }
+      this.loadSyncParcePms();
     });
   }
 }

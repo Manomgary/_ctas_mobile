@@ -18,6 +18,7 @@ export interface Update_FormModal_Suivi_Mep_Bloc {
   }
 export interface Update_infos_benef {
     association: Loc_association,
+    bloc: Loc_Bloc,
     collaborateur: Loc_Collabo_Activite,
     img_pr: LocalFile,
     nom: string,
@@ -43,6 +44,24 @@ export interface Loc_export_excel {
     data: any[],
     name_feuille: string,
     name_file: string
+}
+export interface Update_Form_ParceSaison {
+    annee: Loc_AnneeAgricole,
+    saison: Loc_saison,
+    parcelle: Loc_Parce_saison, //
+    isNewparce: boolean,
+    espece: Loc_Espece,
+    variette: Loc_variette,
+    objectif: number,
+    ref_gps: string,
+    latitude: number,
+    longitude: number,
+    superficie: number,
+    region: Loc_region,
+    district: Loc_district,
+    commune: Loc_Commune,
+    fokontany: Loc_Fokontany,
+    village: string
 }
 export interface Loc_projet {
     numero: number, 
@@ -102,6 +121,9 @@ export interface Loc_association {
     status: string
 }
 export interface Local_Parcelle {
+    id_annee: number, 
+    id_saison: string, 
+    id_pms: string,
     fkt_association: string,
     id_association: string,
     nom_ass: string,
@@ -119,7 +141,7 @@ export interface Local_Parcelle {
     status: string
 }
 export interface Loc_Parce_saison {
-    code_parce_saison: number,
+    code_parce_saison: string,
     id_annee: number,
     annee_du: number, 
     annee_au: number, 
@@ -132,6 +154,9 @@ export interface Loc_Parce_saison {
     dt_nais: string, 
     dt_nais_vers: string,
     id_parce: string,
+    ref_gps_saison: string, 
+    lat_saison: number, 
+    log_saison: number,
     id_var: string,
     code_espece: string,
     variette: string,
@@ -145,7 +170,7 @@ export interface Loc_Parce_saison {
     id_benef_prc: string, 
     ref_gps: string, 
     lat: number, 
-    log: number, 
+    logitude: number, 
     superficie: number, 
     id_fkt: string, 
     fokontany_prc: string,
@@ -154,10 +179,15 @@ export interface Loc_Parce_saison {
     nom_dist: string,
     code_commune: string,
     nom_commune: string,
+    village: string,
+    etat_parce: string,
     status_prc: string,
     indication: string
 }
 export interface Benef_activ_pms {
+    id_annee: number, 
+    id_saison: string, 
+    id_pms: string,
     id_activ: number,
     intitule: string,
     id_proj: string,
@@ -213,32 +243,47 @@ export interface Loc_Bloc {
     nb_fkt: string
 }
 export interface Local_benef_activ_bl {
-    code_benef_bl: string,
-    nom: string,
-    prenom: string,
-    sexe: string,
-    dt_nais: string,
-    surnom: string,
-    cin: string,
-    dt_delivrance: string,
-    lieu_delivrance: string,
-    img_cin: string,
-    contact: string,
-    nom_com: string,
-    id_fkt: string,
-    nom_fkt: string,
-    statut_benef: string,
-    id_proj: string,
-    id_activ: number,
-    id_benef: string,
-    code_achat: string,
-    id_bloc: string,
+    code_benef_bl: string, 
+    code_benef_bl_temp: string,
+    id_proj: string, 
+    id_activ: number, 
+    id_benef: string, 
+    id_bloc: string, 
     nom_bloc: string,
-    id_collaborateur: string,
-    nom_collab: string,
-    status: string,
-    nb_parce: number,
-    sum_superficie: number
+    code_achat: string, 
+    id_collaborateur: string, 
+    etat: string, 
+    status: string, 
+    code_benef: string, 
+    img_benef: string, 
+    nom: string, 
+    prenom: string, 
+    sexe: string, 
+    dt_nais: string, 
+    dt_nais_vers: string, 
+    surnom: string, 
+    cin: number, 
+    dt_delivrance: string, 
+    lieu_delivrance: string, 
+    img_cin: string, 
+    contact: string, 
+    id_fkt: string, 
+    id_commune: string, 
+    village: string, 
+    dt_insert_bnf: string, 
+    etat_bnf: string, 
+    status_bnf: string, 
+    nb_parce: number,  
+    sum_parce: number,
+    date_naissance: string,
+    code_reg: string,
+    code_dist: string,
+    nom_dist: string,
+    code_commune: string,
+    commune: string,
+    fokontany: string,
+    parcelle: Local_bloc_parce[],
+    isExpanded: boolean
 }
 export interface Local_bloc_zone {
     code: number,
@@ -263,7 +308,18 @@ export interface Local_bloc_parce {
     log: number,
     superficie: number,
     anne_adheran: string,
-    status: string
+    status: string,
+    id_fkt: string,
+    id_commune: string, 
+    village: string, 
+    indication: string, 
+    etat: string,
+    code_reg: string,
+    code_dist: string,
+    district: string,
+    code_commune: string,
+    commune: string,
+    fokontany: string
 }
 export interface Loc_saison {
     code_saison: string,
@@ -304,7 +360,9 @@ export interface Loc_culture_Pms {
     saison: string,
     code_ass: string,
     association: string,
-    annee_du: string,
+    id_annee: number,
+    annee_du: number,
+    annee_au: number,
     ddp: string,
     qsa: number,
     img_fact: Blob,
@@ -351,7 +409,9 @@ export interface Loc_all_suivi_mep {
     id_saison: string,
     saison: string,
     desc_saison: string,
-    annee_du: string,
+    id_annee: number, 
+    annee_du: number, 
+    annee_au: number,
     qsa: number,
     dds: string,
     sfce: number,
@@ -668,4 +728,10 @@ export interface Loc_Suivi_MepPR {
     etat_mep: string, 
     etat_cep: string, 
     etat_pr: string
+}
+export interface Loc_AnneeAgricole {
+    code: number, 
+    annee_du: number, 
+    annee_au: number, 
+    statut: number
 }

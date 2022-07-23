@@ -76,22 +76,21 @@
                   <div class="child-column-flex1" fxLayout="row">
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline" floatLabel="auto">
-                        <mat-label>saison</mat-label>
-                        <mat-select [(value)]="selected_saison">
-                          <mat-option>none</mat-option>
-                          <mat-option *ngFor="let saison of data_saison" [value]="saison">
-                            {{ saison.description }}
+                        <mat-label>Annee Agricole</mat-label>
+                        <mat-select [(value)]="selected_annee">
+                          <mat-option *ngFor="let annee of data_annee_agricole" (click)="onSelectAnneeAgricole()" [value]="annee">
+                            {{ annee.annee_du }}-{{ annee.annee_au }}
                           </mat-option>
                         </mat-select>
                       </mat-form-field>	
                     </div>
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline" floatLabel="auto">
-                        <mat-label>Annee_du</mat-label>
-                        <mat-select [(value)]="selected_annee">
+                        <mat-label>saison</mat-label>
+                        <mat-select [(value)]="selected_saison">
                           <mat-option>none</mat-option>
-                          <mat-option *ngFor="let annee of annee_du" [value]="annee">
-                            {{ annee }}
+                          <mat-option *ngFor="let saison of data_saison" (click)="onSelectSaison()" [value]="saison">
+                            {{ saison.description }}
                           </mat-option>
                         </mat-select>
                       </mat-form-field>	
@@ -111,7 +110,6 @@
                       <mat-form-field appearance="outline" floatLabel="auto">
                         <mat-label>Association</mat-label>
                         <mat-select [(value)]="selected_association" [compareWith]="compareObjectsAssoc">
-                          <mat-option>none</mat-option>
                           <mat-option (click)="onSelectAssoc()" *ngFor="let assoc of data_association" [value]="assoc">
                             {{ assoc.nom_ass }}
                           </mat-option>
@@ -122,7 +120,6 @@
                       <mat-form-field appearance="outline" floatLabel="auto">
                         <mat-label>pms</mat-label>
                         <mat-select [(value)]="selected_pms" [compareWith]="compareObjectsPms">
-                          <mat-option>none</mat-option>
                           <mat-option (click)="onSelectPms()" *ngFor="let pms of data_pms_filtre" [value]="pms">
                             {{ pms.nom_benef }}
                           </mat-option>
@@ -133,7 +130,6 @@
                       <mat-form-field appearance="outline" floatLabel="auto">
                         <mat-label>parcelle</mat-label>
                         <mat-select  [(value)]="selected_parcelle"><!-- [compareWith]="compareObjectsParce"-->
-                          <mat-option>none</mat-option>
                           <mat-option *ngFor="let parce of data_parcelle_Filtre" [value]="parce">
                             {{ parce.code_parce }}
                           </mat-option>

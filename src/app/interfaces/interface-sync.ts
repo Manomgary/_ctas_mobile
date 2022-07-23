@@ -3,7 +3,7 @@ export interface Sync_culture_pms {
     id_parce: string,
     id_var: string,
     id_saison: string,
-    annee_du: string,
+    id_annee: number,
     ddp: string,
     qsa: number,
     img_fact: string,
@@ -140,6 +140,22 @@ export interface Sync_activ_pr {
     etat: string, 
     status: string
 }
+export interface Sync_cep_pr {
+    code_parce: string, 
+    id_bloc: string, 
+    id_benef: string, 
+    ref_gps: string, 
+    lat: number, 
+    log: number, 
+    superficie: number, 
+    id_commune: string, 
+    id_fkt: string, 
+    village: string, 
+    anne_adheran: string, 
+    dt_creation: string, 
+    etat: string, 
+    status: string
+}
 export interface Sync_benef_activ_pms {
     code_benef: string,
     img_benef: string,
@@ -250,4 +266,34 @@ export interface Sync_Suivi_MepPr {
     dt_creation: string, 
     dt_modification: string, 
     etat: string
+}
+export interface Sync_parce_pms {
+    code_parce: string, 
+    id_assoc: string, 
+    id_benef: string, 
+    ref_gps: string, 
+    lat: number, 
+    log: number, 
+    superficie: number, 
+    id_fkt: string, 
+    id_commune: string, 
+    village: string, 
+    anne_adheran: string, 
+    indication: string, 
+    etat: string, 
+    status: string
+}
+export interface Sync_parceSaison_pms {
+    code: number,
+    id_annee: number,
+    id_saison: string,
+    id_pms: string,
+    id_parce: string,
+    ref_gps: string,
+    lat: number,
+    log: number,
+    id_var: string,
+    objectif: number,
+    etat: string,
+    commentaire: string
 }

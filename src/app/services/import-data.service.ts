@@ -774,8 +774,8 @@ export class ImportDataService implements OnInit, OnDestroy {
                 this.select("beneficiaire", data_benef);
     
                 data_benef.forEach((item, index) => {
-                  const insert_bl = `INSERT OR IGNORE INTO benef_activ_bl(code_benef_bl, id_proj, id_activ, id_benef, id_bloc, code_achat, id_collaborateur, status) 
-                                      VALUES ("${item.code_benef_bl}", "${item.id_proj}", ${item.id_activ}, "${item.id_benef}", "${item.id_bloc}", ${item.code_achat != null?`"${item.code_achat}"`:null}, "${item.id_collaborateur}","${item.status_benef_bloc}");`;
+                  const insert_bl = `INSERT OR IGNORE INTO benef_activ_bl(code_benef_bl, id_proj, id_activ, id_benef, id_bloc, code_achat, id_collaborateur, etat, status) 
+                                      VALUES ("${item.code_benef_bl}", "${item.id_proj}", ${item.id_activ}, "${item.id_benef}", "${item.id_bloc}", ${item.code_achat != null?`"${item.code_achat}"`:null}, "${item.id_collaborateur}", "${item.etat_benef_bloc}", "${item.status_benef_bloc}");`;
                   this.insertData(insert_bl);  
                   
                   if (index == (data_benef.length - 1)) {
@@ -940,9 +940,9 @@ export class ImportDataService implements OnInit, OnDestroy {
       data_parce_assocSaison = res_parce_saison;
       if (data_parce_assocSaison.length > 0) {
         data_parce_assocSaison.forEach((elem_saison_parce, ind_saison) => {
-          let value = [elem_saison_parce.code, elem_saison_parce.id_annee, elem_saison_parce.id_saison, elem_saison_parce.id_parce, elem_saison_parce.id_pms, elem_saison_parce.id_var, elem_saison_parce.objectif, elem_saison_parce.etat, elem_saison_parce.commentaire];
-          let state_add_mep = `INSERT OR IGNORE INTO assoc_parce_saison(code, id_annee, id_saison, id_parce, id_pms, id_var, objectif, etat, commentaire) 
-                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+          let value = [elem_saison_parce.code, elem_saison_parce.id_annee, elem_saison_parce.id_saison, elem_saison_parce.id_parce, elem_saison_parce.ref_gps, elem_saison_parce.lat, elem_saison_parce.log, elem_saison_parce.id_pms, elem_saison_parce.id_var, elem_saison_parce.objectif, elem_saison_parce.etat, elem_saison_parce.commentaire];
+          let state_add_mep = `INSERT OR IGNORE INTO assoc_parce_saison(code, id_annee, id_saison, id_parce, ref_gps, lat, log, id_pms, id_var, objectif, etat, commentaire) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
           let req = {
             state_: state_add_mep, 
             data_: value
@@ -966,8 +966,8 @@ export class ImportDataService implements OnInit, OnDestroy {
       data_culture = res;
       if (data_culture.length > 0) {
         data_culture.forEach((elem, i) => {
-          const insert = `INSERT OR IGNORE INTO cultures_pms(code_culture, id_parce, id_var, id_saison, annee_du, ddp, qsa, img_fact, dds, sfce, sc, ea_id_variette, ea_autres, dt_creation, dt_modification, statuts, Etat)
-                          VALUES ("${elem.code_culture}", "${elem.id_parce}", "${elem.id_var}", "${elem.id_saison}", "${elem.annee_du}", "${elem.ddp}", ${elem.qsa}, ${elem.img_fact != null? `"${elem.img_fact}"`: null}, "${elem.dds}", ${elem.sfce}, "${elem.sc}", ${elem.ea_id_variette != null? `"${elem.ea_id_variette}"`:null}, ${elem.ea_autres != null?`"${elem.ea_autres}"`: null}, "${elem.dt_creation}", "${elem.dt_modification}", "${elem.statuts}", "${elem.Etat}");`;
+          const insert = `INSERT OR IGNORE INTO cultures_pms(code_culture, id_parce, id_var, id_saison, id_annee, ddp, qsa, img_fact, dds, sfce, sc, ea_id_variette, ea_autres, dt_creation, dt_modification, statuts, Etat)
+                          VALUES ("${elem.code_culture}", "${elem.id_parce}", "${elem.id_var}", "${elem.id_saison}", ${elem.id_annee}, "${elem.ddp}", ${elem.qsa}, ${elem.img_fact != null? `"${elem.img_fact}"`: null}, "${elem.dds}", ${elem.sfce}, "${elem.sc}", ${elem.ea_id_variette != null? `"${elem.ea_id_variette}"`:null}, ${elem.ea_autres != null?`"${elem.ea_autres}"`: null}, "${elem.dt_creation}", "${elem.dt_modification}", "${elem.statuts}", "${elem.Etat}");`;
           this.insertData(insert);
           code_culture.push({
             code_culture: elem.code_culture
@@ -1034,8 +1034,9 @@ export class ImportDataService implements OnInit, OnDestroy {
       data_bloc_parce = res_bloc;
       if (data_bloc_parce.length > 0) {
         data_bloc_parce.forEach((elem_blparc, i) => {
-          const insert = `INSERT OR IGNORE INTO bloc_parce(code_parce, id_bloc, id_benef, ref_gps, lat, log, superficie, id_fkt, anne_adheran, status) 
-                          VALUES ("${elem_blparc.code_parce}","${elem_blparc.id_bloc}", "${elem_blparc.id_benef}", "${elem_blparc.ref_gps}", ${elem_blparc.lat}, ${elem_blparc.log}, ${elem_blparc.superficie}, "${elem_blparc.id_fkt}", ${elem_blparc.anne_adheran}, "${elem_blparc.status}");`;
+          const insert = `INSERT OR IGNORE INTO bloc_parce(code_parce, id_bloc, id_benef, ref_gps, lat, log, superficie, id_fkt, id_commune, village, anne_adheran, indication, etat, status) 
+                          VALUES ("${elem_blparc.code_parce}","${elem_blparc.id_bloc}", "${elem_blparc.id_benef}", "${elem_blparc.ref_gps}", ${elem_blparc.lat}, ${elem_blparc.log}, ${elem_blparc.superficie}, 
+                          ${elem_blparc.id_fkt != null?`"${elem_blparc.id_fkt}"`:null}, ${elem_blparc.id_commune != null?`"${elem_blparc.id_commune}"`:null}, ${elem_blparc.village != null?`"${elem_blparc.village}"`:null}, ${elem_blparc.anne_adheran}, ${elem_blparc.indication != null?`"${elem_blparc.indication}"`:null}, "${elem_blparc.etat}", "${elem_blparc.status}");`;
           this.insertData(insert);
           if (i == (data_bloc_parce.length - 1)) {
             console.log("==Fin du boucle assoc_parce==");

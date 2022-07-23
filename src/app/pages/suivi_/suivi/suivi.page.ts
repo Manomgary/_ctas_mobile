@@ -9,7 +9,7 @@ import { ModalPage } from '../../modal/modal.page';
 
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
-import { Benef_activ_pms, Local_Parcelle, Loc_all_suivi_mep, Loc_association, Loc_culture_Pms, Loc_Espece, Loc_projet, Loc_saison, Loc_suivi_mep, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { Benef_activ_pms, Local_Parcelle, Loc_all_suivi_mep, Loc_AnneeAgricole, Loc_association, Loc_culture_Pms, Loc_Espece, Loc_projet, Loc_saison, Loc_suivi_mep, Loc_variette } from 'src/app/interfaces/interfaces-local';
 import { Db_Culture_pms, Db_suivi_pms } from 'src/app/interfaces/interface-insertDb';
 
 // DATE IMPORT 
@@ -45,7 +45,7 @@ interface newCulture {
   sc: string,
   ea_id_variette: string,
   ea: string,
-  annee_du: string,
+  annee: Loc_AnneeAgricole,
   dateSemis: any,
   sfce: number,
   qsa: number,
@@ -136,7 +136,7 @@ export class SuiviPage implements OnInit, OnDestroy {
     sc: null,
     ea_id_variette: null,
     ea: null,
-    annee_du: null,
+    annee: null,
     dateSemis: null,
     sfce: null,
     qsa: null,
@@ -203,6 +203,8 @@ export class SuiviPage implements OnInit, OnDestroy {
   private suiviToExport: Suivi_export[] = [];
   private info_mep_select: Loc_culture_Pms;
 
+  private data_annee_agricole: Loc_AnneeAgricole[] = [];
+
   private controle_: any[] = CONTROLE_MEP;
   private declaration_: any[] = DECLARATION_MEP;
 
@@ -238,6 +240,7 @@ export class SuiviPage implements OnInit, OnDestroy {
       this.loadSaison();
       this.loadEspece();
       this.loadVariette();
+      this.loadAnneeAgricole();
 
     } else console.log("Router Suivi is not current");
   }
@@ -421,8 +424,8 @@ export class SuiviPage implements OnInit, OnDestroy {
                   code_assoc: elem_ass.code_ass,
                   nom_assoc : elem_ass.nom_ass
                   });
-                this.loadData.loadBeneficiairePms(elem_ass.code_ass).then(res_pms => {
-                  console.log("+++++ Response Beneficiaire PMS++++++++");
+                this.loadData.loadBeneficiairePmsSaison(elem_ass.code_ass).then(res_pms => {
+                  console.log("+++++ Response Beneficiaire PMS Saison++++++++");
                   console.log(res_pms);
                   res_pms.values.forEach((elem_pms: Benef_activ_pms) => {
                     this.data_pms.push(elem_pms);
@@ -510,7 +513,7 @@ export class SuiviPage implements OnInit, OnDestroy {
     mep_pms.forEach(item => {
       this.mepToExport.push({
         Saison: item.saison,
-        Annee_du: item.annee_du,
+        Annee_du: item.annee_du + '-' + item.annee_au,
         Association: item.association,
         Code_pms: item.code_benef_pms,
         code_achat: item.code_achat,
@@ -534,7 +537,7 @@ export class SuiviPage implements OnInit, OnDestroy {
     this.suiviToExport = [];
     dataToExport.forEach(elem => {
       this.suiviToExport.push({
-        Annee: elem.annee_du,
+        Annee: elem.annee_du + '-' + elem.annee_au,
         Saison: elem.saison,
         Association: elem.association,
         Code_pms: elem.code_pms,
@@ -590,6 +593,12 @@ export class SuiviPage implements OnInit, OnDestroy {
           this.data_var.push(elem_var);
         });
       }
+    });
+  }
+  // 
+  loadAnneeAgricole() {
+    this.loadData.loadAnneeAgricole().then(res => {
+      this.data_annee_agricole = res.values;
     });
   }
 
@@ -673,7 +682,7 @@ export class SuiviPage implements OnInit, OnDestroy {
         id_parce: this.new_culte.parcelle,
         id_var: this.new_culte.code_variette,
         id_saison: this.new_culte.code_saison,
-        annee_du: this.new_culte.annee_du,
+        id_annee: this.new_culte.annee != null?this.new_culte.annee.code:null,
         ddp: this.new_culte.ddp,
         dt_creation: row.dt_creation,
         dt_modification: moment().format("YYYY-MM-DD"),
@@ -684,8 +693,8 @@ export class SuiviPage implements OnInit, OnDestroy {
         sc: this.new_culte.sc,
         ea_id_variette: this.new_culte.ea_id_variette,
         ea_autres: this.new_culte.ea_id_variette !== null ? null : this.new_culte.ea,
-        statuts: 'EC',
-        Etat: row.Etat === "ToSync" ? 'ToSync':'ToUpdate',
+        statuts: EC,
+        Etat: row.Etat === SYNC ? SYNC:UPDATE,
       }
       this.crudDb.UpdatedCulture(editCulte).then(res => {
         console.log(res.changes);
@@ -701,11 +710,8 @@ export class SuiviPage implements OnInit, OnDestroy {
    }
    /** Add new Elem */
   onClickDoneAction() {
-    let nom_pr: string = this.projet.nom;
-    let nom_ass: string = this.new_culte.association;
     let data_culture_assoc: Loc_culture_Pms[] = [];
     let latestIdCulture: string;
-    let code_pr: string = '';
     let code_association: string = this.new_culte.ancronyme;
     let code_saison: string = '';
     let order: number = 1;
@@ -715,7 +721,7 @@ export class SuiviPage implements OnInit, OnDestroy {
 
     const id_ass = {
       code_ass: this.new_culte.code_ass,
-      annee_du: this.new_culte.annee_du
+      id_annee: this.new_culte.annee != null?this.new_culte.annee.code:null
     }
     this.loadData.loadCulturesPms(id_ass).then(res_cult => {
       console.log(res_cult);
@@ -753,7 +759,7 @@ export class SuiviPage implements OnInit, OnDestroy {
         console.log(elem);
         saison += elem.charAt(0).toUpperCase();
         if ((arr_saison.length - 1) === i) {
-          saison += this.new_culte.annee_du.charAt(2) + this.new_culte.annee_du.charAt(3);
+          saison +=  this.new_culte.annee != null?this.new_culte.annee.annee_du.toString().charAt(2) + this.new_culte.annee.annee_du.toString().charAt(3):null;
           code_saison = saison;
           console.log(code_saison);
         }
@@ -809,7 +815,7 @@ export class SuiviPage implements OnInit, OnDestroy {
         id_parce: this.new_culte.parcelle,
         id_var: this.new_culte.code_variette,
         id_saison: this.new_culte.code_saison,
-        annee_du: this.new_culte.annee_du,
+        id_annee: this.new_culte.annee != null?this.new_culte.annee.code:null,
         ddp: this.new_culte.ddp,
         dt_creation: moment().format("YYYY-MM-DD"),
         dt_modification: moment().format("YYYY-MM-DD"),
@@ -863,7 +869,8 @@ export class SuiviPage implements OnInit, OnDestroy {
           pms: this.data_pms,
           parcelle: this.data_parcelle_pms,
           espece: this.data_espece,
-          variette: this.data_var
+          variette: this.data_var,
+          annee_agricole: this.data_annee_agricole
         }
       })
     } else {
@@ -879,6 +886,7 @@ export class SuiviPage implements OnInit, OnDestroy {
           parcelle: this.data_parcelle_pms,
           espece: this.data_espece,
           variette: this.data_var,
+          annee_agricole: this.data_annee_agricole,
           data_edit: data_.data
         }
       })
@@ -889,8 +897,6 @@ export class SuiviPage implements OnInit, OnDestroy {
       console.log(data_modal);
       if (data_modal.data != undefined) {
         let res = data_modal.data;
-        /**let ddp: Moment = this.new_culte.ddp;
-        let dds: Moment = this.new_culte.dateSemis;*/
 
         this.new_culte = res.new_cult;
         this.new_culte.ddp = res.new_cult.ddp.format("YYYY-MM-DD");

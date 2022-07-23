@@ -6,7 +6,7 @@ export interface Db_Culture_pms {
     id_parce: string, 
     id_var: string,
     id_saison: string,
-    annee_du: string,
+    id_annee: number,
     ddp: string,
     dt_creation: string,
     dt_modification: string,
@@ -206,5 +206,65 @@ export interface UpdatedBenefActivPms {
     id_association: string, 
     id_collaborateur: string,
     etat: string,
+    status: string
+}
+export interface UpdateParcellePms {
+    code_parce: string, 
+    id_assoc: string, 
+    id_benef: string, 
+    ref_gps: string, 
+    lat: number, 
+    log: number, 
+    superficie: number, 
+    id_fkt: string, 
+    id_commune: string, 
+    village: string, 
+    anne_adheran: string, 
+    indication: string, 
+    etat: string, 
+    status: string
+}
+export interface UpdateParceSaisonPms {
+    code: string, 
+    id_annee: number, 
+    id_saison: string, 
+    id_pms: string, 
+    id_parce: string,
+    ref_gps: string, 
+    lat: number, 
+    log: number,
+    id_var: string, 
+    objectif: number, 
+    etat: string, 
+    commentaire: string
+}
+export interface UpdatedBenefBloc {
+    code_benef_bl: string, 
+    code_benef_bl_temp: string,
+    id_proj: string, 
+    id_activ: number, 
+    id_benef: string, 
+    id_bloc: string, 
+    code_achat: string, 
+    id_collaborateur: string, 
+    etat: string, 
+    status: string
+
+}
+export interface UpdateParceBloc {
+    code_parce: string, 
+    code_parce_temp: string, 
+    id_bloc: string, 
+    id_benef: string, 
+    ref_gps: string, 
+    lat: number, 
+    log: number, 
+    superficie: number, 
+    id_fkt: string, 
+    id_commune: string, 
+    village: string, 
+    anne_adheran: string, 
+    indication: string, 
+    etat: string, 
     status: string
 }

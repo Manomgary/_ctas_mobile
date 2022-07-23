@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { LoadingController, ModalController, NavParams } from '@ionic/angular';
-import { Benef_activ_pms, Local_Parcelle, Loc_activ_projet, Loc_association, Loc_Commune, Loc_culture_Pms, Loc_Espece, Loc_saison, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { Benef_activ_pms, Local_Parcelle, Loc_activ_projet, Loc_AnneeAgricole, Loc_association, Loc_Commune, Loc_culture_Pms, Loc_Espece, Loc_saison, Loc_variette } from 'src/app/interfaces/interfaces-local';
 import { ApiService } from 'src/app/services/api.service';
 import { ImportDataService } from 'src/app/services/import-data.service';
 import { Projet } from 'src/app/utils/interface-bd';
@@ -59,7 +59,7 @@ export class ModalPage implements OnInit {
   selected_commune: any;
   //suiviRp
   selected_saison: Loc_saison;
-  selected_annee: any;
+  selected_annee: Loc_AnneeAgricole;
   selected_association: Loc_association;//selected_association: any;
   selected_pms: Benef_activ_pms;// selected_pms: Benef_activ_pms;
   selected_parcelle: any;
@@ -93,7 +93,8 @@ export class ModalPage implements OnInit {
   isBloc: boolean = false;
   data_suivi_edit: Loc_culture_Pms;
 
-
+  data_annee_agricole: Loc_AnneeAgricole[] = [];
+  
   constructor(
               private modalCtrl: ModalController,
               private navParams: NavParams,
@@ -147,16 +148,18 @@ export class ModalPage implements OnInit {
       });
     } else if (this.navParams.get('isSuiviRp')) {
       let espece: Loc_Espece[] = [];
-      let variette: Loc_variette[] = [];
       this.isSuiviRp = this.navParams.get('isSuiviRp');
       this.data_association = this.navParams.get('association');
       this.data_pms = this.navParams.get('pms');
       this.data_saison = this.navParams.get('saison');
       this.data_parcelle = this.navParams.get('parcelle');
+      this.data_annee_agricole = this.navParams.get('annee_agricole');
+
       espece = this.navParams.get('espece');
       this.data_espece = espece.filter(item => {return item.id_categ === 1}); // semences en graine
       this.data_variette = this.navParams.get('variette');
       this.data_suivi_edit = this.navParams.get('data_edit') != undefined? this.navParams.get('data_edit'): undefined;
+
       if (this.data_suivi_edit != undefined) {
         console.log("is Mode Edition ::: ", this.navParams.get('data_edit'));
         console.log(this.data_suivi_edit);
@@ -226,9 +229,9 @@ export class ModalPage implements OnInit {
             this.selected_saison = item;
           }
         });
-        this.annee_du.filter(item => {
-          if (item === this.data_suivi_edit.annee_du) {
-            this.selected_annee = item;
+        this.data_annee_agricole.filter(item_annee => {
+          if (item_annee.code === this.data_suivi_edit.id_annee) {
+            this.selected_annee = item_annee;
           }
         });
       }
@@ -330,18 +333,12 @@ export class ModalPage implements OnInit {
 
   // Suivi Rp
   addCulture() {
-    console.log(this.dateSemis.toObject());
-    console.log(this.ddp.toObject());
-    console.log(this.dateSemis.toISOString());
-    console.log(this.dateSemis.format("DD/MM/YYYY"));
-    console.log(this.ddp.toISOString());
-    console.log(this.ddp.format("DD/MM/YYYY"));
     console.log(this.selected_variette_ea);
     const dataCulture = {
       code_saison: this.selected_saison.code_saison,
       saison: this.selected_saison.intitule,
       saison_descr: this.selected_saison.description,
-      annee_du: this.selected_annee,
+      annee: this.selected_annee,
       order_assoc: this.selected_association.numero,
       code_ass: this.selected_association.code_ass,
       association: this.selected_association.nom_ass,
@@ -408,14 +405,17 @@ export class ModalPage implements OnInit {
   onSelectAssoc() {
     console.log(this.selected_association);
     console.log(this.data_pms);
-    this.data_pms_filtre = this.data_pms.filter(elem =>{ return elem.id_association === this.selected_association.code_ass});
+    this.data_pms_filtre = [];
+    //this.data_pms_filtre = this.data_pms.filter(elem =>{ return elem.id_association === this.selected_association.code_ass});
+    this.data_pms_filtre = this.data_pms.filter(item => {return item.id_saison === this.selected_saison.code_saison && item.id_annee === this.selected_annee.code && item.id_association === this.selected_association.code_ass});
     console.log(this.data_pms_filtre);
   }
 
   onSelectPms() {
     console.log(this.selected_parcelle);
     console.log(this.data_parcelle);
-    this.data_parcelle_Filtre = this.data_parcelle.filter(elem => {return elem.code_benef_pms  === this.selected_pms.code_benef_pms});
+    //this.data_parcelle_Filtre = this.data_parcelle.filter(elem => {return elem.code_benef_pms  === this.selected_pms.code_benef_pms});
+    this.data_parcelle_Filtre = this.data_parcelle.filter(item => {return item.id_saison === this.selected_saison.code_saison && item.id_annee === this.selected_annee.code && item.code_benef_pms === this.selected_pms.code_benef_pms});
     console.log(this.data_parcelle_Filtre);
   }
 
@@ -459,6 +459,19 @@ export class ModalPage implements OnInit {
       this.isSelectedOtherCulte = false;
       this.data_variette_filter_ea = this.data_variette.filter(elem => {return elem.id_espece === this.selected_espece_ea.code_espece});
     }
+  }
+  // on select annee agricole 
+  onSelectAnneeAgricole() {
+    //this.selected_annee
+    console.log("Select Annnee", this.selected_annee);
+    this.data_pms_filtre = [];
+    this.data_parcelle_Filtre = [];
+  }
+  //onSelectSaison()
+  onSelectSaison() {
+    //this.selected_saison
+    this.data_pms_filtre = [];
+    this.data_parcelle_Filtre = [];
   }
 
   culturerEa() {

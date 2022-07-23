@@ -4,7 +4,7 @@ export const DB_NAME = 'ctas-db';
 export const FIRST_CONNECT_KEY = 'first_connection';
 //export const BASE_PATH = 'http://192.168.1.124:8080/api/';
 export const BASE_PATH = 'http://192.168.1.195:8080/api/';//prod server
-//export const BASE_PATH = 'http://192.168.43.115:8080/api/';192.168.1.132
+//export const BASE_PATH = 'http://192.168.43.115:8080/api/';
 // FOLDER IMAGE
 export const IMAGE_DIR = 'stored-images';
 // Bloc Suivi
@@ -16,6 +16,7 @@ export const SYNC = 'ToSync';
 export const ISSYNC = 'isSync';
 export const UPDATE = "ToUpdate";
 export const ISUPDATE = "isUpdate";
+export const VALIDE = "valide";
 //Statut MEP
 export const ACTIVE = 'active';
 export const EC = "EC"; // En Cours

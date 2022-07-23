@@ -43,6 +43,10 @@ export class SyncService {
   syncBenefPR(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'beneficiaire/update_pr', data, this.httpOptions);
   }
+  // Sync Cep PR
+  syncCepPR(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'parcelle/updateCepPr', data, this.httpOptions);
+  }
   // Sync Suivi Bloc
   syncAnimeVe(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'prBloc/updateAnimeVe', data, this.httpOptions);
@@ -57,5 +61,8 @@ export class SyncService {
   }
   syncBenefPms(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'beneficiaire/update_pms', data, this.httpOptions);
+  }
+  syncParcePms(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'parcelle/updateParcePms', data, this.httpOptions);
   }
 }

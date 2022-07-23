@@ -198,7 +198,11 @@ export interface bloc_Parcelle {
     log: number,
     superficie: number,
     id_fkt: string,
+    id_commune: string, 
+    village: string,
     anne_adheran: string,
+    etat: string,
+    indication: string,
     status: string
 }
 export interface Saison {
@@ -227,7 +231,7 @@ export interface Culture_pms {
     id_parce: string,
     id_var: string,
     id_saison: string,
-    annee_du: number,
+    id_annee: number,
     ddp: string,
     qsa: number,
     img_fact: string,
@@ -336,6 +340,7 @@ export interface Benef_Bloc {
     code_achat: string, 
     id_bloc: string, 
     id_collaborateur: string, 
+    etat_benef_bloc: string,
     status_benef_bloc: string,                  
     code_benef: string, 
     img_benef: string, 
@@ -475,10 +480,13 @@ export interface suiviMepPR {
     etat: string
 }
 export interface AssociationParceSaison {
-    code: number, 
+    code: string, 
     id_annee: number, 
     id_saison: string, 
     id_parce: string, 
+    ref_gps: string, 
+    lat: number, 
+    log: number,
     id_pms: string,
     id_var: string, 
     objectif: number, 

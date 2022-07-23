@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ModalController, NavParams, Platform } from '@ionic/angular';
-import { Benef_activ_pms, Loc_all_suivi_bloc, Loc_AnimationSpecu, Loc_AnimationVe, Loc_association, Loc_categEspece, Loc_cep_PR, Loc_Collabo_Activite, Loc_Commune, Loc_district, Loc_Espece, Loc_Fokontany, Loc_MepPR, Loc_mep_bloc, Loc_PR, Loc_region, Loc_saison, Loc_Suivi_MepPR, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { Benef_activ_pms, Local_benef_activ_bl, Local_bloc_parce, Loc_all_suivi_bloc, Loc_AnimationSpecu, Loc_AnimationVe, Loc_AnneeAgricole, Loc_association, Loc_Bloc, Loc_categEspece, Loc_cep_PR, Loc_Collabo_Activite, Loc_Commune, Loc_district, Loc_Espece, Loc_Fokontany, Loc_MepPR, Loc_mep_bloc, Loc_Parce_saison, Loc_PR, Loc_region, Loc_saison, Loc_Suivi_MepPR, Loc_variette } from 'src/app/interfaces/interfaces-local';
 import { CaptureImageService } from 'src/app/services/capture-image.service';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
-import { EC_CULTURAL, SC, SEXE, STC } from 'src/app/utils/global-variables';
+import { EC_CULTURAL, SC, SEXE, STC, SYNC, UPDATE, VALIDE } from 'src/app/utils/global-variables';
 
 import * as _moment from 'moment';
 const moment = _moment;
@@ -35,6 +35,7 @@ export class ModalPrPage implements OnInit {
   mepForm: FormGroup;
   suiviMepForm: FormGroup;
   cepForm: FormGroup;
+  parcePms: FormGroup;
   
 
   data_sexe: any[] = SEXE;
@@ -51,6 +52,7 @@ export class ModalPrPage implements OnInit {
 
   isBenefPr: boolean = false;
   isBenefPms: boolean = false;
+  isBenefBloc: boolean = false;
 
   // image
   fileImage_cin1: LocalFile = {
@@ -73,7 +75,7 @@ export class ModalPrPage implements OnInit {
   isAddBenef = false;
   isEditBenef = false;
   element_benef: Loc_PR;
-  element_pms: Benef_activ_pms;
+  element_pms: Benef_activ_pms = <Benef_activ_pms>{};
 
   isAddAnimeVe: boolean = false;
   isEditAnimeVe: boolean = false;
@@ -151,15 +153,31 @@ export class ModalPrPage implements OnInit {
   data_association: Loc_association[] = [];
   data_collaborateur: Loc_Collabo_Activite[] = [];
 
+  isParcePms: boolean = false;
+  isAddParcePms: boolean = false;
+  isEditParcePms: boolean = false;
+  elem_parce_pms: Loc_Parce_saison;
+
+  data_annee_agricole: Loc_AnneeAgricole[] = [];
+  parce_pms: Loc_Parce_saison[] = [];
+
+  isNewParcePms: boolean = false;
+  isExistParcePms: boolean = false;
+
+  data_bloc_benef: Loc_Bloc[] = [];
+  elem_benef_bl: Local_benef_activ_bl;
+
+  isParceBl: boolean = false;
+  elem_parce_bl: Local_bloc_parce;
+
   constructor(
     private modalCtrl: ModalController,
     private navParams: NavParams,
     private formBuilder: FormBuilder,
     private loadData: LoadDataService,
-    private captureImg: CaptureImageService,
-    private plt: Platform
+    private captureImg: CaptureImageService
   ) {
-    if (this.navParams.get('isBenefPr') || this.navParams.get('isPms')) {
+    if (this.navParams.get('isBenefPr') || this.navParams.get('isPms') || this.navParams.get('isBenefBloc')) {
       console.log(":::::::::Modal From PR element:::::::", this.navParams.get('element'));
       if (this.navParams.get('isBenefPr')) {
         this.isBenefPr = this.navParams.get('isBenefPr');
@@ -167,6 +185,10 @@ export class ModalPrPage implements OnInit {
         this.isBenefPms = this.navParams.get('isPms');
         this.data_association = this.navParams.get('association');
         this.data_collaborateur = this.navParams.get('collaborateur');
+      } else if (this.navParams.get('isBenefBloc')) {
+        this.isBenefBloc = this.navParams.get('isBenefBloc');
+        this.data_collaborateur = this.navParams.get('collaborateur');
+        this.data_bloc_benef = this.navParams.get('bloc');
       }
 
       let zone = this.navParams.get('zone');
@@ -187,6 +209,11 @@ export class ModalPrPage implements OnInit {
           this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_pms.code_region});
           this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_pms.code_district});
           this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.element_pms.code_commune});
+        } else if(this.isBenefBloc) {
+          this.elem_benef_bl = this.navParams.get('element');
+          this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.elem_benef_bl.code_reg});
+          this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.elem_benef_bl.code_dist});
+          this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.elem_benef_bl.code_commune});
         }
       } else if (this.navParams.get('isAdd')) {
         this.isAddBenef = this.navParams.get('isAdd');
@@ -194,27 +221,74 @@ export class ModalPrPage implements OnInit {
     }
 
     // get Parcelle PR
-    if (this.navParams.get('isCepPr')) {
-      this.isCepPr = this.navParams.get('isCepPr');
-      this.element_benef = this.navParams.get('elem_pr');
+    if (this.navParams.get('isCepPr') || this.navParams.get('isParceBl')) {
+      if (this.navParams.get('isCepPr')) {
+        this.isCepPr = this.navParams.get('isCepPr');
+        this.element_benef = this.navParams.get('elem_pr');
+        this.data_bloc = this.navParams.get('bloc');
+      } else if (this.navParams.get('isParceBl')) {
+        this.isParceBl = this.navParams.get('isParceBl');
+        this.elem_benef_bl = this.navParams.get('elem_benef');
+        this.data_bloc_benef = this.navParams.get('bloc');
+      }
       
       let zone = this.navParams.get('zone');
       this.data_region = zone.region;
       this.data_district = zone.district;
       this.data_commune = zone.commune;
       this.data_fokontany = zone.fokontany;
-      this.data_bloc = this.navParams.get('bloc');
 
       if (this.navParams.get('isAddCep')) {
         this.isAddCepPr = this.navParams.get('isAddCep');
       } else if (this.navParams.get('isEditCep')) {
         this.isEditCepPr = this.navParams.get('isEditCep');
-        this.element_cep = this.navParams.get('elem_cep');
+        if (this.isCepPr) {
+          this.element_cep = this.navParams.get('elem_cep');
 
-        this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_benef.code_region});
-        this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_benef.code_dist});
-        this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.element_benef.code_commune});
+          this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_cep.code_region});
+          this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_cep.code_district});
+          this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.element_cep.code_commune});
+        } else if (this.isParceBl) {
+          this.elem_parce_bl = this.navParams.get('elem_parce');
+          
+          this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.elem_parce_bl.code_reg});
+          this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.elem_parce_bl.code_dist});
+          this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.elem_parce_bl.code_commune});
+        }
       }
+    }
+
+    // get Parcelle Pms
+    if (this.navParams.get('isParcePms')) {
+      this.isParcePms = this.navParams.get('isParcePms');
+      this.element_pms = this.navParams.get('elem_pms');
+      let data_init = this.navParams.get('data_initial');
+
+      let zone = this.navParams.get('zone');
+      this.data_region = zone.region;
+      this.data_district = zone.district;
+      this.data_commune = zone.commune;
+      this.data_fokontany = zone.fokontany;
+
+      this.data_annee_agricole = data_init.annee_ag;
+      this.data_saison = data_init.saison;
+      this.data_espece = data_init.espece;
+      this.data_var = data_init.variette;
+      this.data_categ = data_init.categorie;
+      this.data_espece_filter = this.data_espece.filter(item => {return item.id_categ === 1});
+      this.parce_pms = this.element_pms.parcelle.filter(item_parce => {return item_parce.id_parce != null});
+
+      if (this.navParams.get('isAdd')) {
+        this.isAddParcePms = this.navParams.get('isAdd');
+      } else if (this.navParams.get('isEdit')) {
+        this.isEditParcePms = this.navParams.get('isEdit');
+        this.elem_parce_pms = this.navParams.get('elem_parce');
+
+        this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.elem_parce_pms.code_reg});
+        this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.elem_parce_pms.code_dist});
+        this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.elem_parce_pms.code_commune});
+      }
+
     }
 
     if (this.navParams.get('isAnimationVe')) {
@@ -333,7 +407,7 @@ export class ModalPrPage implements OnInit {
   }
 
   ngOnInit() {
-    if (this.isBenefPms || this.isBenefPr) {
+    if (this.isBenefPms || this.isBenefPr || this.isBenefBloc) {
       this.initFormInfosBenef();
     }
 
@@ -347,8 +421,13 @@ export class ModalPrPage implements OnInit {
       this.initFormSuiviMepPr();
     }
     //  
-    if (this.isCepPr) {
+    if (this.isCepPr || this.isParceBl) {
       this.initFormCepPr();
+    }
+
+    //
+    if (this.isParcePms) {
+      this.initFormParcePms();
     }
   }
 
@@ -408,8 +487,10 @@ export class ModalPrPage implements OnInit {
       reg = this.beneficiaireForm.value;
     } else if (this.isAddAnimeVe || this.isEditAnimeVe) {
       reg = this.animeVeForm.value;
-    } else if (this.isCepPr) {
+    } else if (this.isCepPr || this.isParceBl) {
       reg = this.cepForm.value;
+    } else if (this.isParcePms) {
+      reg = this.parcePms.value;
     }
     this.data_district_filter = this.data_district.filter(item => {return item.id_reg === reg.region.code_reg});
     // initialized
@@ -425,8 +506,14 @@ export class ModalPrPage implements OnInit {
         commune: null,
         fokontany: null
       });
-    } else if (this.isCepPr) {
+    } else if (this.isCepPr || this.isParceBl) {
       this.cepForm.patchValue({
+        district: null,
+        commune: null,
+        fokontany: null
+      });
+    } else if (this.isParcePms) {
+      this.parcePms.patchValue({
         district: null,
         commune: null,
         fokontany: null
@@ -442,8 +529,10 @@ export class ModalPrPage implements OnInit {
       dist = this.beneficiaireForm.value;
     } else if (this.isAddAnimeVe || this.isEditAnimeVe) {
       dist = this.animeVeForm.value;
-    } else if (this.isCepPr) {
+    } else if (this.isCepPr || this.isParceBl) {
       dist =  this.cepForm.value;
+    } else if (this.isParcePms) {
+      dist = this.parcePms.value;
     }
     this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === dist.district.code_dist});
     // initialized
@@ -457,8 +546,13 @@ export class ModalPrPage implements OnInit {
         commune: null,
         fokontany: null
       });
-    } else if (this.isCepPr) {
+    } else if (this.isCepPr || this.isParceBl) {
       this.cepForm.patchValue({
+        commune: null,
+        fokontany: null
+      });
+    } else if (this.isParcePms) {
+      this.parcePms.patchValue({
         commune: null,
         fokontany: null
       });
@@ -472,8 +566,10 @@ export class ModalPrPage implements OnInit {
       com = this.beneficiaireForm.value;
     } else if (this.isAddAnimeVe || this.isEditAnimeVe) {
       com = this.animeVeForm.value;
-    } else if (this.isCepPr) {
+    } else if (this.isCepPr || this.isParceBl) {
       com = this.cepForm.value;
+    } else if (this.isParcePms) {
+      com = this.parcePms.value;
     }
     this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com === com.commune.code_com});
     // initialized
@@ -485,13 +581,20 @@ export class ModalPrPage implements OnInit {
       this.animeVeForm.patchValue({
         fokontany: null
       });
-    } else if (this.isCepPr) {
+    } else if (this.isCepPr || this.isParceBl) {
       this.cepForm.patchValue({
+        fokontany: null
+      });
+    } else if (this.isParcePms) {
+      this.parcePms.patchValue({
         fokontany: null
       });
     }
   }
   onSelectFokontany(data: string) {
+    let controls_f: string[] = ['fokontany'];
+    let controls_v: string[] = ['village'];
+
     // Autres
     if (data === 'fokontany') {
       this.isAutresFkt = false;
@@ -503,10 +606,15 @@ export class ModalPrPage implements OnInit {
         this.animeVeForm.patchValue({
           village: null
         });
-      } else if (this.isCepPr) {
+      } else if (this.isCepPr || this.isParceBl) {
         this.cepForm.patchValue({
           village: null
         });
+      } else if (this.isParcePms) {
+        this.parcePms.patchValue({
+          village: null
+        });
+        this.removeValidators(controls_v);
       }
     } else if (data === 'autres') {
       this.isAutresFkt = true;
@@ -518,10 +626,15 @@ export class ModalPrPage implements OnInit {
         this.animeVeForm.patchValue({
           fokontany: null
         });
-      } else if (this.isCepPr) {
+      } else if (this.isCepPr || this.isParceBl) {
         this.cepForm.patchValue({
           fokontany: null
         });
+      } else if (this.isParcePms) {
+        this.parcePms.patchValue({
+          fokontany: null
+        });
+        this.removeValidators(controls_f);
       }
     }
   }
@@ -589,6 +702,14 @@ export class ModalPrPage implements OnInit {
           variette_ea: null
         });
       }
+    }
+    ///
+    if (this.isParcePms) {
+      let val_espece: Loc_Espece = this.parcePms.value.espece;
+      this.data_variette_filter = this.data_var.filter(item => {return item.id_espece === val_espece.code_espece});
+        this.parcePms.patchValue({
+          variette: null
+        });
     }
   }
   onSeletSc(data: any) {
@@ -781,6 +902,118 @@ export class ModalPrPage implements OnInit {
         quantite_specu: null,// local input
         specu_delete: null,
         specu_add_edit: null
+      });
+    }
+  }
+
+  // Initial FormGroup Pare Pms
+  initFormParcePms() {
+    if (this.isAddParcePms) {
+      this.parcePms = this.formBuilder.group({
+        annee: [null, Validators.required],
+        saison: [null, Validators.required],
+        parcelle: null,
+        isNewparce: null,
+        espece: [null, Validators.required],
+        variette: [null, Validators.required],
+        objectif: [null, Validators.required],
+        ref_gps: null,
+        latitude: null,
+        longitude: null,
+        superficie: null,
+        region: null,
+        district: null,
+        commune: null,
+        fokontany: null,
+        village: null
+      });
+    } else if (this.isEditParcePms) {
+      let annee: Loc_AnneeAgricole = null;
+      let saison: Loc_saison = null;
+      let parce: Loc_Parce_saison = null;
+      let espece_: Loc_Espece = null;
+      let var_: Loc_variette = null;
+
+      let fkt: Loc_Fokontany = null;
+      let commune: Loc_Commune = null;
+      let district: Loc_district = null;
+      let region: Loc_region = null;
+
+      this.data_annee_agricole.forEach(elem_annee => {
+        if (elem_annee.code === this.elem_parce_pms.id_annee) {
+          annee = elem_annee;
+        }
+      });
+      this.data_saison.forEach(elem_saison => {
+        if (elem_saison.code_saison === this.elem_parce_pms.id_saison) {
+          saison = elem_saison;
+        }
+      });
+      this.parce_pms.forEach(item_parce => {
+        if (item_parce.id_parce === this.elem_parce_pms.code_parce) {
+          parce = item_parce;
+        }
+      });
+      this.data_espece_filter.forEach(elem_espece => {
+        if (elem_espece.code_espece === this.elem_parce_pms.code_espece) {
+          espece_ = elem_espece;
+        }
+      });
+      this.data_variette_filter = this.data_var.filter(elem_var => {return elem_var.id_espece === this.elem_parce_pms.code_espece});
+      this.data_variette_filter.forEach(elem_var => {
+        if (elem_var.code_var === this.elem_parce_pms.id_var) {
+          var_= elem_var;
+        }
+      });
+
+      this.data_fokontany_filter.forEach(item => {
+        if (item.code_fkt === this.elem_parce_pms.id_fkt) {
+          fkt = item;
+        }
+      });
+      this.data_commune_filter.forEach(item => {
+        if (item.code_com === this.elem_parce_pms.code_commune) {
+          commune = item;
+        }
+      });
+      this.data_district_filter.forEach(item => {
+        if (item.code_dist === this.elem_parce_pms.code_dist) {
+          district = item;
+        }
+      });
+      this.data_region.forEach(item => {
+        if (item.code_reg === this.elem_parce_pms.code_reg) {
+          region = item
+        }
+      });
+
+      if (this.elem_parce_pms.id_parce != null) {
+        if (this.elem_parce_pms.etat_parce === SYNC) {
+          let controls: string[] = ['superficie', 'superficie', 'region', 'district', 'commune', 'village', 'fokontany'];
+          //this.addValidators(controls);
+          this.isNewParcePms = true;
+        } else if (this.elem_parce_pms.etat_parce === UPDATE || this.elem_parce_pms.etat_parce === VALIDE) {
+          this.isExistParcePms = true;
+        }
+      }
+
+      this.parcePms = this.formBuilder.group({
+        annee: [annee, Validators.required],
+        saison: [saison, Validators.required],
+        parcelle: parce,
+        isNewparce: null,
+        espece: [espece_, Validators.required],
+        variette: [var_, Validators.required],
+        objectif: [this.elem_parce_pms.objectif, Validators.required],
+        ref_gps: this.isExistParcePms?this.elem_parce_pms.ref_gps_saison:this.elem_parce_pms.ref_gps,
+        latitude: this.isExistParcePms?this.elem_parce_pms.lat_saison:this.elem_parce_pms.lat,
+        longitude: this.isExistParcePms?this.elem_parce_pms.log_saison:this.elem_parce_pms.logitude,
+        superficie: this.isNewParcePms?[this.elem_parce_pms.superficie, Validators.required]:this.elem_parce_pms.superficie,
+        region: this.isNewParcePms?[region, Validators.required]:region,
+        district: this.isNewParcePms?[district, Validators.required]:district,
+        commune: this.isNewParcePms?[commune, Validators.required]:commune,
+        fokontany: fkt,
+        village: this.elem_parce_pms.village
       });
     }
   }
@@ -1014,7 +1247,8 @@ export class ModalPrPage implements OnInit {
         district: [null, Validators.required],
         commune: [null, Validators.required],
         fokontany: null,
-        village: null
+        village: null,
+        indication: null
       });
     } else if (this.isEditCepPr) {
       console.log(":::Data Edit cep::", this.element_cep);
@@ -1023,37 +1257,71 @@ export class ModalPrPage implements OnInit {
       let district: Loc_district = null;
       let region: Loc_region = null;
       let bloc_equipe: BlocEquipe = null;
+      let bloc_benef: Loc_Bloc = null;
 
         // filtre
-      this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_cep.code_region});
+      /**this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_cep.code_region});
       this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_cep.code_district});
-      this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com === this.element_cep.code_commune});
+      this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com === this.element_cep.code_commune});*/
 
       this.data_fokontany_filter.forEach(item => {
-        if (item.code_fkt === this.element_cep.id_fkt) {
-          fkt = item;
+        if (this.isCepPr) {
+          if (item.code_fkt === this.element_cep.id_fkt) {
+            fkt = item;
+          }
+        } else if (this.isParceBl) {
+          if (item.code_fkt === this.elem_parce_bl.id_fkt) {
+            fkt = item;
+          }
         }
       });
       this.data_commune_filter.forEach(item => {
-        if (item.code_com === this.element_cep.code_commune) {
-          commune = item;
+        if (this.isCepPr) {
+          if (item.code_com === this.element_cep.code_commune) {
+            commune = item;
+          }
+        } else if (this.isParceBl) {
+          if (item.code_com === this.elem_parce_bl.code_commune) {
+            commune = item;
+          }
         }
       });
       this.data_district_filter.forEach(item => {
-        if (item.code_dist === this.element_cep.code_district) {
-          district = item;
+        if (this.isCepPr) {
+          if (item.code_dist === this.element_cep.code_district) {
+            district = item;
+          }
+        } else if (this.isParceBl) {
+          if (item.code_dist === this.elem_parce_bl.code_dist) {
+            district = item;
+          }
         }
       });
       this.data_region.forEach(item => {
         console.log(":::::id_reg:::", item.code_reg, "::::code_reg:::", this.element_cep.code_region);
-        if (item.code_reg === this.element_cep.code_region) {
-          region = item
+        if (this.isCepPr) {
+          if (item.code_reg === this.element_cep.code_region) {
+            region = item
+          }
+        } else if (this.isParceBl) {
+          if (item.code_reg === this.elem_parce_bl.code_reg) {
+            region = item
+          }
         }
       });
 
       this.data_bloc.forEach(elem => {
-        if (elem.code_bloc === this.element_cep.id_bloc) {
-          bloc_equipe = elem
+        if (this.isCepPr) {
+          if (elem.code_bloc === this.element_cep.id_bloc) {
+            bloc_equipe = elem
+          }
+        } 
+      });
+      this.data_bloc_benef.forEach(elem_bloc => {
+        if (this.isParceBl) {
+          if (elem_bloc.code_bloc === this.elem_parce_bl.id_bloc) {
+            bloc_benef = elem_bloc
+          }
         }
       });
       
@@ -1062,22 +1330,24 @@ export class ModalPrPage implements OnInit {
       }
       
       this.cepForm = this.formBuilder.group({
-        bloc: bloc_equipe,
-        ref_gps: this.element_cep.ref_gps,
-        latitude: this.element_cep.lat,
-        longitude: this.element_cep.log,
-        superficie: this.element_cep.superficie,
-        region: region,
-        district: district,
-        commune: commune,
+        bloc: this.isCepPr?bloc_equipe:bloc_benef,
+        ref_gps: this.isCepPr?this.element_cep.ref_gps:this.elem_parce_bl.ref_gps,
+        latitude: this.isCepPr?this.element_cep.lat:this.elem_parce_bl.lat,
+        longitude: this.isCepPr?this.element_cep.log:this.elem_parce_bl.log,
+        superficie: this.isCepPr?[this.element_cep.superficie, , Validators.required]:[this.elem_parce_bl.superficie, Validators.required],
+        region: [region, Validators.required],
+        district: [district, Validators.required],
+        commune: [commune, Validators.required],
         fokontany: fkt,
-        village: this.element_cep.village
+        village: this.isCepPr?this.element_cep.village:this.elem_parce_bl.village,
+        indication: this.isParceBl?this.elem_parce_bl.indication:null
       });
     }
   }
   initFormInfosBenef() {
     if (this.isAddBenef) {
       this.beneficiaireForm = this.formBuilder.group({
+        bloc: this.isBenefBloc?[null, Validators.required]:null,
         association: this.isBenefPms?[null, Validators.required]:null,
         collaborateur: this.isBenefPms?[null, Validators.required]:null,
         nom: [null, Validators.required],
@@ -1105,7 +1375,8 @@ export class ModalPrPage implements OnInit {
       let district: Loc_district = null;
       let region: Loc_region = null;
       let assoc: Loc_association = null;
-      let collabo_: Loc_Collabo_Activite
+      let collabo_: Loc_Collabo_Activite;
+      let bloc: Loc_Bloc = null;
 
       this.data_region.forEach(item => {
         if (this.isBenefPms) {
@@ -1114,6 +1385,10 @@ export class ModalPrPage implements OnInit {
           }
         } else if (this.isBenefPr) {
           if (item.code_reg === this.element_benef.code_region) {
+            region = item
+          }
+        } else if (this.isBenefBloc) {
+          if (item.code_reg === this.elem_benef_bl.code_reg) {
             region = item
           }
         }
@@ -1128,6 +1403,10 @@ export class ModalPrPage implements OnInit {
           if (item.code_fkt === this.element_benef.id_fkt) {
             fkt = item;
           }
+        } else if (this.isBenefBloc) {
+          if (item.code_fkt === this.elem_benef_bl.id_fkt) {
+            fkt = item;
+          }
         }
       });
       this.data_commune_filter.forEach(item => {
@@ -1139,6 +1418,10 @@ export class ModalPrPage implements OnInit {
           if (item.code_com === this.element_benef.code_commune) {
             commune = item;
           }
+        } else if (this.isBenefBloc) {
+          if (item.code_com === this.elem_benef_bl.code_commune) {
+            commune = item;
+          }
         }
       });
       this.data_district_filter.forEach(item => {
@@ -1148,6 +1431,10 @@ export class ModalPrPage implements OnInit {
           }
         } else if (this.isBenefPr) {
           if (item.code_dist === this.element_benef.code_dist) {
+            district = item;
+          }
+        } else if (this.isBenefBloc) {
+          if (item.code_dist === this.elem_benef_bl.code_dist) {
             district = item;
           }
         }
@@ -1201,27 +1488,80 @@ export class ModalPrPage implements OnInit {
         }
       }
 
-      this.beneficiaireForm = this.formBuilder.group({
-        association: this.isBenefPms?[assoc, Validators.required]:null,
-        collaborateur: this.isBenefPms?[collabo_, Validators.required]:null,
-        nom: this.isBenefPr?[this.element_benef.nom, Validators.required]:[this.element_pms.nom_benef, Validators.required],
-        prenom: this.isBenefPr?this.element_benef.prenom:this.element_pms.prenom,
-        surnom: this.isBenefPr?this.element_benef.surnom:this.element_pms.surnom,
-        sexe: this.isBenefPr?[this.element_benef.sexe, Validators.required]:this.element_pms.sexe,
-        isDtVers: this.isBenefPr?this.element_benef.dt_nais_vers != null?true:false:this.element_pms.dt_nais_vers != null?true:false,
-        dt_naissance: this.isBenefPr?this.element_benef.dt_nais != null? moment(this.element_benef.dt_nais, "YYYY-MM-DD"):null:this.element_pms.dt_nais != null? moment(this.element_pms.dt_nais, "YYYY-MM-DD"):null,
-        dt_naissance_vers: this.isBenefPr?this.element_benef.dt_nais_vers:this.element_pms.dt_nais_vers,
-        cin: this.isBenefPr?this.element_benef.cin:this.element_pms.cin,
-        dt_delivrance: this.isBenefPr?this.element_benef.dt_delivrance != null?moment(this.element_benef.dt_delivrance, "YYYY-MM-DD"):null:this.element_pms.dt_delivrance != null?moment(this.element_pms.dt_delivrance, "YYYY-MM-DD"):null,
-        lieu_delivrance: this.isBenefPr?this.element_benef.lieu_delivrance:this.element_pms.lieu_delivrance,
-        code_achat: this.isBenefPr?this.element_benef.code_achat:this.element_pms.code_achat,
-        contact: this.isBenefPr?this.element_benef.contact:this.element_pms.contact,
-        region: region,
-        district: district,
-        commune: commune,
-        fokontany: fkt,
-        village: this.isBenefPr?this.element_benef.village:this.element_pms.village
-      });
+      if (this.isBenefBloc) {
+        this.data_bloc_benef.forEach(elem_bl => {
+          if (elem_bl.code_bloc === this.elem_benef_bl.id_bloc) {
+            bloc = elem_bl;
+          }
+        });
+        this.data_collaborateur.forEach(item_collabo => {
+          if (item_collabo.id_col === this.elem_benef_bl.id_collaborateur) {
+            collabo_ = item_collabo;
+          }
+        });
+        if (this.elem_benef_bl.village != null) {
+          this.isAutresFkt = true;
+        }
+        if (this.elem_benef_bl.img_benef != null) {
+          this.fileImage_pr.data = this.elem_benef_bl.img_benef;
+        }
+        if (this.elem_benef_bl.img_cin != null) {
+          let parse_img_cin = JSON.parse(this.elem_benef_bl.img_cin);
+          let img_cins = parse_img_cin.split('-');
+          img_cins.forEach((item, inde) =>  {
+            if (inde == 0) {
+              this.fileImage_cin1.data = item;
+            } else if (inde == 1) {
+              this.fileImage_cin2.data = item;
+            }
+          });
+        }
+        this.beneficiaireForm = this.formBuilder.group({
+          bloc: [bloc, Validators.required],
+          association: null,
+          collaborateur: [collabo_, Validators.required],
+          nom: [this.elem_benef_bl.nom, Validators.required],
+          prenom: this.elem_benef_bl.prenom,
+          surnom: this.elem_benef_bl.surnom,
+          sexe: [this.elem_benef_bl.sexe, Validators.required],
+          isDtVers: this.elem_benef_bl.dt_nais_vers != null?true:false,
+          dt_naissance: this.elem_benef_bl.dt_nais != null?moment(this.elem_benef_bl.dt_nais, "YYYY-MM-DD"):null,
+          dt_naissance_vers: this.elem_benef_bl.dt_nais_vers,
+          cin: this.elem_benef_bl.cin,
+          dt_delivrance: this.elem_benef_bl.dt_delivrance != null?moment(this.elem_benef_bl.dt_delivrance, "YYYY-MM-DD"):null,
+          lieu_delivrance: this.elem_benef_bl.lieu_delivrance,
+          code_achat: this.elem_benef_bl.code_achat,
+          contact: this.elem_benef_bl.contact,
+          region: region,
+          district: district,
+          commune: commune,
+          fokontany: fkt,
+          village: this.elem_benef_bl.village
+        });
+      }
+      if (this.isBenefPr || this.isBenefPms) {
+        this.beneficiaireForm = this.formBuilder.group({
+          association: this.isBenefPms?[assoc, Validators.required]:null,
+          collaborateur: this.isBenefPms?[collabo_, Validators.required]:null,
+          nom: this.isBenefPr?[this.element_benef.nom, Validators.required]:[this.element_pms.nom_benef, Validators.required],
+          prenom: this.isBenefPr?this.element_benef.prenom:this.element_pms.prenom,
+          surnom: this.isBenefPr?this.element_benef.surnom:this.element_pms.surnom,
+          sexe: this.isBenefPr?[this.element_benef.sexe, Validators.required]:this.element_pms.sexe,
+          isDtVers: this.isBenefPr?this.element_benef.dt_nais_vers != null?true:false:this.element_pms.dt_nais_vers != null?true:false,
+          dt_naissance: this.isBenefPr?this.element_benef.dt_nais != null? moment(this.element_benef.dt_nais, "YYYY-MM-DD"):null:this.element_pms.dt_nais != null? moment(this.element_pms.dt_nais, "YYYY-MM-DD"):null,
+          dt_naissance_vers: this.isBenefPr?this.element_benef.dt_nais_vers:this.element_pms.dt_nais_vers,
+          cin: this.isBenefPr?this.element_benef.cin:this.element_pms.cin,
+          dt_delivrance: this.isBenefPr?this.element_benef.dt_delivrance != null?moment(this.element_benef.dt_delivrance, "YYYY-MM-DD"):null:this.element_pms.dt_delivrance != null?moment(this.element_pms.dt_delivrance, "YYYY-MM-DD"):null,
+          lieu_delivrance: this.isBenefPr?this.element_benef.lieu_delivrance:this.element_pms.lieu_delivrance,
+          code_achat: this.isBenefPr?this.element_benef.code_achat:this.element_pms.code_achat,
+          contact: this.isBenefPr?this.element_benef.contact:this.element_pms.contact,
+          region: region,
+          district: district,
+          commune: commune,
+          fokontany: fkt,
+          village: this.isBenefPr?this.element_benef.village:this.element_pms.village
+        });
+      }
     }
   }
   // Image
@@ -1288,6 +1628,53 @@ export class ModalPrPage implements OnInit {
       quantite_specu: null
     });
   }
+  //
+  onSelectParcePms(data: any) {
+    let controls: string[] = ['superficie', 'superficie', 'region', 'district', 'commune', 'village', 'fokontany'];
+    if (data === 'existe') {
+      this.isNewParcePms = false;
+      this.isExistParcePms = true;
+      this.parcePms.patchValue({
+        isNewparce: null,
+        ref_gps: null,
+        latitude: null,
+        longitude: null,
+        superficie: null,
+        region: null,
+        district: null,
+        commune: null,
+        fokontany: null,
+        village: null
+      });
+      this.removeValidators(controls);
+    } else if (data === 'definir' || data === 'nouveau') {
+      this.parcePms.patchValue({
+        parcelle: null,
+        isNewparce: null,
+        ref_gps: null,
+        latitude: null,
+        longitude: null,
+        superficie: null,
+        region: null,
+        district: null,
+        commune: null,
+        fokontany: null,
+        village: null
+      });
+      if (data === 'definir') {
+        this.isNewParcePms = false;
+        this.isExistParcePms = false;
+        this.removeValidators(controls);
+      } else if (data === 'nouveau') {
+        this.isNewParcePms = true;
+        this.isExistParcePms = false;
+        this.parcePms.patchValue({
+          isNewparce: true
+        });
+        this.addValidators(controls);
+      }
+    }
+  }
   // Delete Speculation
   onDeleteSpecu(elem: any) {
     let ind_ = this.data_speculation.indexOf(elem);
@@ -1324,6 +1711,7 @@ export class ModalPrPage implements OnInit {
       let val = this.beneficiaireForm.value;
       dismiss = {
         association: val.association,
+        bloc: val.bloc,
         collaborateur: val.collaborateur,
         img_pr: this.fileImage_pr,
         nom: val.nom,
@@ -1387,7 +1775,38 @@ export class ModalPrPage implements OnInit {
   }
 
   onSaveCep() {
-    let dismiss = this.cepForm.value;
+    let dismiss: any;
+    if (this.isCepPr || this.isParceBl) {
+      dismiss = this.cepForm.value;
+    } else if (this.isParcePms) {
+      dismiss = this.parcePms.value;
+    }
+    console.log(":::Data dismissed Modal:::", dismiss);
     this.modalCtrl.dismiss(dismiss);
+  }
+
+  onSaveBenefBloc() {
+    let dismiss = {
+      data: 'bonjour'
+    }
+    this.modalCtrl.dismiss(dismiss);
+  }
+  /**
+   * 
+   */
+   addValidators(controls : string[]){
+    controls.forEach(c => {
+        if (this.isParcePms) {
+          this.parcePms.get(c).setValidators(Validators.required);
+          this.parcePms.get(c).updateValueAndValidity();
+        }
+    });
+  }
+
+  removeValidators(controls : string[]){
+      controls.forEach(c => {
+        this.parcePms.get(c).clearValidators();
+        this.parcePms.get(c).updateValueAndValidity();
+      });
   }
 }

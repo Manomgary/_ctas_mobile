@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
-import { AddMepBloc, Db_Culture_pms, Db_suivi_pms, UpdateAnimationVe, UpdateAnimeSpecu, UpdateBenef, UpdateBenefActivPr, UpdatedBenefActivPms, UpdateMepPR, UpdateParcePr, UpdateSuiviBloc, UpdateSuiviMepPR } from 'src/app/interfaces/interface-insertDb';
+import { AddMepBloc, Db_Culture_pms, Db_suivi_pms, UpdateAnimationVe, UpdateAnimeSpecu, UpdateBenef, UpdateBenefActivPr, UpdatedBenefActivPms, UpdatedBenefBloc, UpdateMepPR, UpdateParceBloc, UpdateParcellePms, UpdateParcePr, UpdateParceSaisonPms, UpdateSuiviBloc, UpdateSuiviMepPR } from 'src/app/interfaces/interface-insertDb';
 import { Loc_AnimationSpecu } from 'src/app/interfaces/interfaces-local';
 import { DB_NAME } from 'src/app/utils/global-variables';
 import { DatabaseService } from '../database.service';
@@ -21,9 +21,9 @@ export class CrudDbService {
    */
   async AddNewCulture(data: Db_Culture_pms) {
     if (this.db_ready.dbReady.value) {
-      const state = `INSERT INTO cultures_pms(code_culture, id_parce, id_var, id_saison, annee_du, ddp, dt_creation, dt_modification, qsa, img_fact, 
+      const state = `INSERT INTO cultures_pms(code_culture, id_parce, id_var, id_saison, id_annee, ddp, dt_creation, dt_modification, qsa, img_fact, 
                       dds, sfce, sc, ea_id_variette, ea_autres, statuts, Etat) 
-                    VALUES ("${data.code_culture}", "${data.id_parce}", "${data.id_var}", "${data.id_saison}", "${data.annee_du}", "${data.ddp}", "${data.dt_creation}", "${data.dt_modification}", ${data.qsa}, ${data.img_fact != null? `'${data.img_fact}'`:null}, 
+                    VALUES ("${data.code_culture}", "${data.id_parce}", "${data.id_var}", "${data.id_saison}", ${data.id_annee}, "${data.ddp}", "${data.dt_creation}", "${data.dt_modification}", ${data.qsa}, ${data.img_fact != null? `'${data.img_fact}'`:null}, 
                     "${data.dds}", ${data.sfce}, "${data.sc}", ${data.ea_id_variette != null? `"${data.ea_id_variette}"`:null}, ${data.ea_autres != null? `"${data.ea_autres}"`:null}, "${data.statuts}", "${data.Etat}");`;
       return await this.db.execute(state);
     }
@@ -31,7 +31,7 @@ export class CrudDbService {
   async UpdatedCulture(data: Db_Culture_pms) {
     if (this.db_ready.dbReady.value) {
       const state = `UPDATE cultures_pms SET id_parce = "${data.id_parce}", id_var = "${data.id_var}", 
-                    id_saison = "${data.id_saison}", annee_du = "${data.annee_du}", ddp = "${data.ddp}", 
+                    id_saison = "${data.id_saison}", id_annee = ${data.id_annee}, ddp = "${data.ddp}", 
                     dt_creation = "${data.dt_creation}", dt_modification = "${data.dt_modification}", 
                     qsa = ${data.qsa}, img_fact = ${data.img_fact != null? `'${data.img_fact}'`:null}, dds = "${data.dds}", 
                     sfce = ${data.sfce}, sc = "${data.sc}", 
@@ -174,10 +174,20 @@ export class CrudDbService {
     }
   }
   // Update parcelle
-  async UpdateParcellePr(data: UpdateParcePr) {
+  async UpdateParcellePr(data: any) {
     if (this.db_ready.dbReady.value) {
-      let data_ = [data.id_bloc, data.id_benef, data.ref_gps, data.lat, data.log, data.superficie, data.id_commune, data.id_fkt, data.village, data.anne_adheran, data.dt_creation, data.etat, data.status];
-      const state_ = `UPDATE cep_parce SET id_bloc = ?, id_benef= ?, ref_gps=?, lat=?, log=?, superficie=?, id_commune=?, id_fkt=?, village=?, anne_adheran=?, dt_creation=?, etat=?, status=? WHERE code_parce = "${data.code_parce}"`;
+      let data_: any;
+      let state_: any;
+      if (data.isUpdateCep) {
+        let data_cep: UpdateParcePr = data.data_cep;
+        data_ = [data_cep.id_bloc, data_cep.id_benef, data_cep.ref_gps, data_cep.lat, data_cep.log, data_cep.superficie, data_cep.id_commune, data_cep.id_fkt, data_cep.village, data_cep.anne_adheran, data_cep.dt_creation, data_cep.etat, data_cep.status];
+        state_ = `UPDATE cep_parce SET id_bloc = ?, id_benef= ?, ref_gps=?, lat=?, log=?, superficie=?, id_commune=?, id_fkt=?, village=?, anne_adheran=?, dt_creation=?, etat=?, status=? WHERE code_parce = "${data_cep.code_parce}"`;
+      }
+      if (data.isUpdateCepSync) {
+        let data_cep_sync: any = data.data_cep;
+        data_ = [data_cep_sync.etat];
+        state_ = `UPDATE cep_parce SET etat=? WHERE code_parce = "${data_cep_sync.code_parce}"`;
+      }
       return await this.db.query(state_, data_);
     }
   }
@@ -285,6 +295,62 @@ export class CrudDbService {
       return await this.db.query(state_, data_);
     }
   }
+    /******************
+   * Updated Pms
+   ******************/
+  async AddBenefBl(data: UpdatedBenefBloc) {
+    if (this.db_ready.dbReady.value) {
+      let data_to_add = [data.code_benef_bl, data.code_benef_bl_temp, data.code_achat, data.id_proj, data.id_benef, data.id_activ, data.id_bloc, data.id_collaborateur, data.etat, data.status];
+      let state_ = `INSERT INTO benef_activ_bl(code_benef_bl, code_benef_bl_temp, code_achat, id_proj, id_benef, id_activ, id_bloc, id_collaborateur, etat, status) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      return await this.db.query(state_, data_to_add);
+    }
+  }
+  async UpdateBenefBl(data: any) {
+    if (this.db_ready.dbReady.value) {
+      let data_update: any;
+      let state_: any;
+      if (data.isUpdateBenefBloc) {
+        let data_benef: UpdatedBenefBloc = data.data_benef_bl;
+        data_update = [data_benef.code_achat, data_benef.id_proj, data_benef.id_activ, data_benef.id_benef, data_benef.id_bloc, data_benef.id_collaborateur, data_benef.etat, data_benef.status];
+        state_ = `UPDATE benef_activ_bl SET code_achat= ?, id_proj= ?, id_activ= ?, id_benef= ?, id_bloc= ?, id_collaborateur= ?, etat= ?, status= ?  WHERE code_benef_bl = "${data_benef.code_benef_bl}"`;
+      }
+      if (data.isUpdateBenefBlocSync) {
+        let data_benef: any = data.data_benef_bl;
+        data_update = [data_benef.etat, data_benef.status];
+        state_ = `UPDATE benef_activ_bl SET etat= ?, status= ?  WHERE code_benef_bl = "${data_benef.code_benef_bl}"`;
+      }
+      return await this.db.query(state_, data_update);
+    }
+  }
+  async AddParceBloc(data: UpdateParceBloc) {
+    if (this.db_ready.dbReady.value) {
+      let data_to_add = [data.code_parce, data.code_parce_temp, data.id_bloc, data.id_benef, data.ref_gps, data.lat, data.log, data.superficie, data.id_fkt, data.id_commune, data.village, data.anne_adheran, data.indication, data.etat, data.status];
+      let state_ = `INSERT INTO bloc_parce(code_parce, code_parce_temp, id_bloc, id_benef, ref_gps, lat, log, superficie, id_fkt, id_commune, village, anne_adheran, indication, etat, status) 
+                    VALUES(?, ? ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,? ,?)`;
+      return await this.db.query(state_, data_to_add);
+    }
+  }
+  async UpdateParceBl(data: any) {
+    if (this.db_ready.dbReady.value) {
+      let data_update: any;
+      let state_: any;
+      if (data.isUpdateParceBl) {
+        let data_parce: UpdateParceBloc = data.data_parce_bl;
+        data_update = [data_parce.code_parce_temp, data_parce.id_bloc, data_parce.id_benef, data_parce.ref_gps, data_parce.lat, data_parce.log, data_parce.superficie, data_parce.id_fkt, data_parce.id_commune, data_parce.village, data_parce.anne_adheran, data_parce.indication, data_parce.etat, data_parce.status];
+        state_ = `UPDATE bloc_parce SET code_parce_temp = ?, id_bloc = ?, id_benef = ?, ref_gps = ?, lat = ?, log = ?, superficie = ?, id_fkt = ?, id_commune = ?, village = ?, anne_adheran = ?, indication = ?, etat = ?, status = ? WHERE code_parce = "${data_parce.code_parce}"`;
+      }
+      if (data.isUpdateParceBlSync) {
+        let data_parce: any = data.data_parce_bl;
+        data_update = [data_parce.etat, data_parce.status];
+        state_ = `UPDATE bloc_parce SET etat = ?, status = ? WHERE code_parce = "${data_parce.code_parce}"`;
+      }
+      return await this.db.query(state_, data_update);
+    }
+  }
+  /******************
+   * Updated Pms
+   ******************/
   async AddPms(data: UpdatedBenefActivPms) {
     if (this.db_ready.dbReady.value) {
       let data_to_add = [data.code_benef_pms, data.code_achat, data.id_proj, data.id_benef, data.id_activ, data.id_association, data.id_collaborateur, data.etat, data.status];
@@ -299,7 +365,7 @@ export class CrudDbService {
       let state_: any;
       if (data.isUpdatePms) {
         let data_pms: UpdatedBenefActivPms = data.data_pms;
-        data_update = [data_pms.code_achat, data_pms.id_proj, data_pms.id_benef, data_pms.id_activ, data_pms.id_association, data_pms.id_collaborateur, data.etat, data_pms.status];
+        data_update = [data_pms.code_achat, data_pms.id_proj, data_pms.id_benef, data_pms.id_activ, data_pms.id_association, data_pms.id_collaborateur, data_pms.etat, data_pms.status];
         state_ = `UPDATE benef_activ_pms SET code_achat=?, id_proj=?, id_benef=?, id_activ=?, id_association=?, id_collaborateur=?, etat =?, status=? WHERE code_benef_pms = "${data_pms.code_benef_pms}"`;
       }
       if (data.isUpdatePmsSync) {
@@ -308,6 +374,60 @@ export class CrudDbService {
         state_ = `UPDATE benef_activ_pms SET etat =?, status=? WHERE code_benef_pms = "${data_pms_sync.code_benef_pms}"`;
       }
       return await this.db.query(state_, data_update);
+    }
+  }
+  /*************************
+   * Parcelle Pms
+   *************************/
+  async AddParcellePms(data: UpdateParcellePms) {
+    if (this.db_ready.dbReady.value) {
+      let data_parce = [data.code_parce, data.id_assoc, data.id_benef, data.ref_gps, data.lat, data.log, data.superficie, data.id_fkt, data.id_commune, data.village, data.anne_adheran, data.indication, data.etat, data.status];
+      let state_ = `INSERT INTO assoc_parce(code_parce, id_assoc, id_benef, ref_gps, lat, log, superficie, id_fkt, id_commune, village, anne_adheran, indication, etat, status) 
+                  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,? ,?)`;
+      return await this.db.query(state_, data_parce);
+    }
+  }
+  async UpdateParcellePms(data: any) {
+    if (this.db_ready.dbReady.value) {
+      let data_parce: any;
+      let state_: any;
+      if (data.isUpdateParcePms) {
+        let data_parce_pms: UpdateParcellePms = data.data_parce;
+        data_parce = [data_parce_pms.id_assoc, data_parce_pms.id_benef, data_parce_pms.ref_gps, data_parce_pms.lat, data_parce_pms.log, data_parce_pms.superficie, data_parce_pms.id_fkt, data_parce_pms.id_commune, data_parce_pms.village, data_parce_pms.anne_adheran, data_parce_pms.indication, data_parce_pms.etat, data_parce_pms.status];
+        state_ = `UPDATE assoc_parce SET id_assoc= ?, id_benef= ?, ref_gps= ?, lat= ?, log= ?, superficie= ?, id_fkt= ?, id_commune= ?, village= ?, anne_adheran= ?, indication= ?, etat= ?, status= ? 
+                  WHERE code_parce= "${data_parce_pms.code_parce}"`;
+      }
+      if (data.isUpdateParcePmsSync) {
+        let data_parce_update: any = data.data_parce;
+        data_parce = [data_parce_update.etat, data_parce_update.status];
+        state_ = `UPDATE assoc_parce SET etat= ?, status= ? WHERE code_parce= "${data_parce_update.code_parce}"`;
+      }
+      return await this.db.query(state_, data_parce);
+    }
+  }
+  async AddParcelleSaisonPms(data: UpdateParceSaisonPms) {
+    if (this.db_ready.dbReady.value) {
+      let data_parce_saison = [data.code, data.id_annee, data.id_saison, data.id_pms, data.id_parce, data.id_var, data.objectif, data.etat, data.commentaire];
+      let state_ = `INSERT INTO assoc_parce_saison(code, id_annee, id_saison, id_pms, id_parce, id_var, objectif, etat, commentaire) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) `;
+      return await this.db.query(state_, data_parce_saison);
+    }
+  }
+  async UpdateParcelleSaisonPms(data: any) {
+    if (this.db_ready.dbReady.value) {
+      let data_parce_saison: any;
+      let state_: any;
+      if (data.isUpdateParceSaison) {
+        let data_update: UpdateParceSaisonPms = data.data_parce_saison
+        data_parce_saison = [data_update.id_annee, data_update.id_saison, data_update.id_pms, data_update.id_parce, data_update.ref_gps, data_update.lat, data_update.log, data_update.id_var, data_update.objectif, data_update.etat, data_update.commentaire];
+        state_ = `UPDATE assoc_parce_saison SET id_annee = ?, id_saison = ?, id_pms = ?, id_parce = ?, ref_gps = ?, lat = ?, log = ?, id_var = ?, objectif = ?, etat = ?, commentaire = ?  WHERE code = "${data_update.code}"`;
+      }
+      if (data.isUpdateParceSaisonSync) {
+        let data_update: any = data.data_parce_saison
+        data_parce_saison = [data_update.etat];
+        state_ = `UPDATE assoc_parce_saison SET etat = ? WHERE code = "${data_update.code}"`;
+      }
+      return await this.db.query(state_, data_parce_saison);
     }
   }
 }

@@ -33,8 +33,14 @@
     </button>
   </p>
   <p>
-    Beneficiaire Activiter PR: {{data_benef_activ_pr.length}}
+    Paysan Relai identifier: {{data_benef_activ_pr.length}}
     <button mat-raised-button (click)="onSyncBenefeActivePr()" class="demo-button" [disabled] = "data_benef_activ_pr.length === 0">
+      Sync
+    </button>
+  </p>
+  <p>
+    Parcelle PR: {{data_cep_pr.length}}
+    <button mat-raised-button (click)="onSyncParcePr()" class="demo-button" [disabled] = "data_cep_pr.length === 0">
       Sync
     </button>
   </p>
@@ -59,6 +65,13 @@
   <p>
     PMS à Synchroniser: {{data_benef_activ_pms.length}}
     <button mat-raised-button (click)="onSyncBenefeActivePms()" class="demo-button" [disabled] = "data_benef_activ_pms.length === 0">
+      Sync
+    </button>
+  </p>
+  <p>
+    Parcelle Pms à Synchroniser: {{data_parce_pms.length}}
+    Parcelle Saison Pms à Synchroniser: {{data_parceSaison_pms.length}}
+    <button mat-raised-button (click)="onSyncParcePms()" class="demo-button" [disabled] = "data_parceSaison_pms.length === 0">
       Sync
     </button>
   </p>

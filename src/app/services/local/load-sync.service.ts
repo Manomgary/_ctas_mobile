@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { DB_NAME, SYNC, UPDATE } from 'src/app/utils/global-variables';
+import { DB_NAME, EC, SYNC, UPDATE } from 'src/app/utils/global-variables';
 import { DatabaseService } from '../database.service';
 
 @Injectable({
@@ -12,26 +12,82 @@ export class LoadSyncService {
 
   constructor(private dbService: DatabaseService) {}
 
+    /*******************************
+     * Sync Volet Reseau paysan 
+     ************************************/
+  async loadSyncBenefActivPms(data: any) {
+    const state = `SELECT BNF.code_benef, BNF.img_benef, BNF.nom, BNF.prenom, BNF.sexe, BNF.dt_nais, BNF.dt_nais_vers, BNF.surnom, BNF.cin, BNF.dt_delivrance, BNF.lieu_delivrance, BNF.img_cin, BNF.contact, BNF.id_fkt, BNF.id_commune, BNF.village, BNF.dt_Insert, BNF.etat AS etat_benf, BNF.statut AS statut_benef, BPMS.code_benef_pms, BPMS.code_achat, id_proj, BPMS.id_benef, BPMS.id_activ, BPMS.id_association, BPMS.id_collaborateur, BPMS.status AS status_pms, BPMS.etat AS etat_pms
+              FROM benef_activ_pms BPMS
+              INNER JOIN beneficiaire BNF ON BNF.code_benef = BPMS.id_benef AND BNF.statut = "active"
+              INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association AND ASS.id_prjt = "${data.id_projet}" AND ASS.id_tech = ${data.id_tech} AND  ASS.status = "active"
+              INNER JOIN projet PRJ ON PRJ.code_proj = ASS.id_prjt AND PRJ.statuts = "activer"
+              INNER JOIN equipe EQ ON EQ.code_equipe = ASS.id_tech AND EQ.statuts = "active"
+              INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND EQ.code_equipe = PE.id_equipe AND PE.status_pe = "active"
+              WHERE BPMS.etat IN("${SYNC}", "${UPDATE}") AND BPMS.status = "active" AND BPMS.id_proj = "${data.id_projet}";`;
+    return await this.db.query(state);
+  }
+  async loadSyncParcePms(data: any) {
+    const state = `SELECT DISTINCT ASS_PRC.code_parce, ASS_PRC.id_assoc, ASS_PRC.id_benef, ASS_PRC.ref_gps, ASS_PRC.lat, ASS_PRC.log, ASS_PRC.superficie, ASS_PRC.id_fkt, ASS_PRC.id_commune, ASS_PRC.village, ASS_PRC.anne_adheran, ASS_PRC.indication, ASS_PRC.etat, ASS_PRC.status
+                  FROM assoc_parce ASS_PRC
+                  INNER JOIN association ASS ON ASS.code_ass = ASS_PRC.id_assoc AND ASS.id_tech = ${data.id_tech} AND ASS.status = "active"
+                  INNER JOIN beneficiaire BNF ON BNF.code_benef = ASS_PRC.id_benef AND BNF.statut = "active"
+                  INNER JOIN benef_activ_pms BPMS_ASS ON BPMS_ASS.id_association = ASS.code_ass AND BPMS_ASS.id_benef = BNF.code_benef AND BPMS_ASS.id_proj = "${data.id_projet}" AND BPMS_ASS.status = "active"
+                  INNER JOIN assoc_parce_saison PRC_SS ON PRC_SS.id_parce = ASS_PRC.code_parce
+                  INNER JOIN benef_activ_pms BPMS ON BPMS.code_benef_pms = PRC_SS.id_pms AND BPMS.status = "active"
+                  INNER JOIN association ASS_SS ON ASS_SS.code_ass = BPMS.id_association AND ASS_SS.id_prjt = "${data.id_projet}" AND ASS_SS.id_tech = ${data.id_tech} AND ASS_SS.status = "active"
+                  INNER JOIN beneficiaire BNF_SS ON BNF_SS.code_benef = BPMS.id_benef AND BNF_SS.statut = "active"
+                  INNER JOIN projet_equipe PE ON PE.id_projet = "${data.id_projet}" AND PE.id_equipe = ${data.id_tech} AND PE.status_pe = "active"
+                  WHERE ASS_PRC.etat IN("${SYNC}", "${UPDATE}") AND ASS_PRC.status = "active"`;
+    return await this.db.query(state);
+  }
+  async loadSyncParceSaisonPms(data: any) {
+    const state = `SELECT SS_PRC.code, SS_PRC.id_annee, SS_PRC.id_saison, SS_PRC.id_pms, SS_PRC.id_parce, SS_PRC.ref_gps, SS_PRC.lat, SS_PRC.log, SS_PRC.id_var, SS_PRC.objectif, SS_PRC.etat, SS_PRC.commentaire
+                FROM assoc_parce_saison SS_PRC
+                INNER JOIN benef_activ_pms BPMS ON BPMS.code_benef_pms = SS_PRC.id_pms AND BPMS.status = "active"
+                INNER JOIN beneficiaire BNF ON BNF.code_benef = BPMS.id_benef AND BNF.statut = "active"
+                INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association AND ASS.id_prjt = BPMS.id_proj AND ASS.id_tech = ${data.id_tech} AND ASS.status = "active"
+                INNER JOIN projet PRJ ON PRJ.code_proj = BPMS.id_proj AND PRJ.statuts = "activer"
+                INNER JOIN equipe EQ ON EQ.code_equipe = ${data.id_tech} AND EQ.statuts = "active"
+                INNER JOIN projet_equipe PE ON PE.id_projet = BPMS.id_proj AND EQ.code_equipe = PE.id_equipe AND PE.status_pe = "active"
+                INNER JOIN assoc_parce ASS_PRC ON ASS_PRC.code_parce = SS_PRC.id_parce AND ASS_PRC.status = "active"
+                INNER JOIN beneficiaire BNF_PRC ON BNF_PRC.code_benef = ASS_PRC.id_benef AND BNF_PRC.statut = "active"
+                INNER JOIN association ASS_ ON ASS_.code_ass = ASS_PRC.id_assoc AND ASS_.id_prjt = "${data.id_projet}" AND ASS_.id_tech = ${data.id_tech} AND ASS_.status = "active"
+                WHERE SS_PRC.etat IN("${SYNC}", "${UPDATE}") AND PRJ.code_proj = "${data.id_projet}" AND SS_PRC.id_parce IS NOT NULL
+                UNION
+                SELECT SS_PRC.code, SS_PRC.id_annee, SS_PRC.id_saison, SS_PRC.id_pms, SS_PRC.id_parce, SS_PRC.ref_gps, SS_PRC.lat, SS_PRC.log, SS_PRC.id_var, SS_PRC.objectif, SS_PRC.etat, SS_PRC.commentaire
+                FROM assoc_parce_saison SS_PRC
+                INNER JOIN benef_activ_pms BPMS ON BPMS.code_benef_pms = SS_PRC.id_pms AND BPMS.status = "active"
+                INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association AND ASS.id_prjt = "${data.id_projet}" AND ASS.id_tech = ${data.id_tech} AND ASS.status = "active"
+                INNER JOIN equipe EQ ON EQ.code_equipe = ${data.id_tech} AND EQ.statuts = "active"
+                INNER JOIN projet_equipe PE ON PE.id_projet = BPMS.id_proj AND EQ.code_equipe = PE.id_equipe AND PE.status_pe = "active"
+                WHERE SS_PRC.etat IN("${SYNC}", "${UPDATE}") AND ASS.id_prjt = "${data.id_projet}" AND SS_PRC.id_parce IS NULL`;
+    return await this.db.query(state);
+  }
+
   async loadSyncCulturePms(data: any) {
     
     if (this.dbService.dbReady.value) {
-      const statement = `SELECT ASS.nom as nom_ass, CL.code_culture, CL.id_parce, CL.id_var, CL.id_saison, CL.annee_du, CL.ddp, CL.qsa, CL.img_fact, CL.dds, CL.sfce, CL.sc, CL.ea_id_variette, CL.ea_autres, CL.dt_creation, CL.dt_modification, CL.statuts, CL.Etat 
-      FROM cultures_pms CL
-      INNER JOIN assoc_parce AS_PRC ON AS_PRC.code_parce = CL.id_parce
-      INNER JOIN association ASS ON ASS.code_ass = AS_PRC.id_assoc
-      WHERE ASS.id_tech = "${data.id_tech}" AND ASS.id_prjt  = "${data.id_projet}" AND CL.Etat IN ("ToSync", "ToUpdate");`;
+      const statement = `SELECT ASS.nom as nom_ass, CL.code_culture, CL.id_parce, CL.id_var, CL.id_saison, CL.id_annee, CL.ddp, CL.qsa, CL.img_fact, CL.dds, CL.sfce, CL.sc, CL.ea_id_variette, CL.ea_autres, CL.dt_creation, CL.dt_modification, CL.statuts, CL.Etat 
+                        FROM cultures_pms CL
+                        INNER JOIN assoc_parce AS_PRC ON AS_PRC.code_parce = CL.id_parce AND AS_PRC.status = "active"
+                        INNER JOIN association ASS ON ASS.code_ass = AS_PRC.id_assoc  AND ASS.id_prjt = "${data.id_projet}" AND ASS.id_tech = ${data.id_tech} AND ASS.status = "active"
+                        INNER JOIN beneficiaire BNF ON BNF.code_benef = AS_PRC.id_benef AND BNF.statut = "active"
+                        INNER JOIN benef_activ_pms BPMS ON BPMS.id_association = ASS.code_ass AND BNF.code_benef = BPMS.id_benef AND BPMS.id_proj = "${data.id_projet}" AND BPMS.status = "active"
+                        WHERE ASS.id_tech = ${data.id_tech} AND ASS.id_prjt  = "${data.id_projet}" AND CL.Etat IN ("${SYNC}", "${UPDATE}");`;
       return await this.db.query(statement);
     }
   }
 
   async loadSyncSuivi(data: any) {
-    if (this.dbService.dbReady.value) {
+    if (this.dbService.dbReady.value) {//  AND CPMS.statuts IN("${EC}")
       const statement = `SELECT ASS.nom AS nom_ass, SPMS.id, SPMS.id_culture, SPMS.ddp, SPMS.stc, SPMS.ec, SPMS.pb, SPMS.ex, SPMS.img_cult, SPMS.name, SPMS.controle, SPMS.declaration, SPMS.etat 
                         FROM suivi_pms SPMS
                         INNER JOIN cultures_pms CPMS ON CPMS.code_culture = SPMS.id_culture
-                        INNER JOIN assoc_parce ASSP ON ASSP.code_parce = CPMS.id_parce
-                        INNER JOIN association ASS ON ASS.code_ass = ASSP.id_assoc
-                        WHERE ASS.id_tech = ${data.id_tech} AND ASS.id_prjt = "${data.id_projet}" AND SPMS.etat IN ("ToSync", "ToUpdate")`;
+                        INNER JOIN assoc_parce AS_PRC ON AS_PRC.code_parce = CPMS.id_parce AND AS_PRC.status = "active"
+                        INNER JOIN beneficiaire BNF ON BNF.code_benef = AS_PRC.id_benef AND BNF.statut = "active"
+                        INNER JOIN association ASS ON ASS.code_ass = AS_PRC.id_assoc AND ASS.id_prjt = "${data.id_projet}" AND ASS.id_tech = ${data.id_tech} AND ASS.status = "active"
+                        INNER JOIN benef_activ_pms BPMS ON BPMS.id_association = ASS.code_ass AND BNF.code_benef = BPMS.id_benef AND BPMS.id_proj = "${data.id_projet}" AND BPMS.status = "active"
+                        WHERE ASS.id_tech = ${data.id_tech} AND ASS.id_prjt = "${data.id_projet}" AND SPMS.etat IN ("${SYNC}", "${UPDATE}")`;
       return await this.db.query(statement);
     }
   }
@@ -62,10 +118,20 @@ export class LoadSyncService {
    */
   async loadSyncBenefActivPR(data: any) {
     const state = `SELECT BNF.code_benef, BNF.img_benef, BNF.nom, BNF.prenom, BNF.sexe, BNF.dt_nais, BNF.dt_nais_vers, BNF.surnom, BNF.cin, BNF.dt_delivrance, BNF.lieu_delivrance, BNF.img_cin, BNF.contact, BNF.id_fkt, BNF.id_commune, BNF.village, BNF.dt_Insert, BNF.etat AS etat_benf, BNF.statut AS statut_benef, 
-                  BAPR.code_pr, BAPR.id_proj, BAPR.id_activ, BAPR.id_benef, BAPR.id_bloc, BAPR.code_achat, BAPR.id_collaborateur, BAPR.id_tech, BAPR.etat AS etat_pr, BAPR.status AS status_pr
-                  FROM beneficiaire BNF
-                  INNER JOIN benef_activ_pr BAPR ON BAPR.id_benef = BNF.code_benef AND BAPR.status = "active" AND BAPR.etat IN("${SYNC}", "${UPDATE}")
-                  WHERE BAPR.id_tech = ${data.id_tech} AND BAPR.id_proj = "${data.id_projet}" AND BNF.statut = "active" AND BNF.etat IN("${SYNC}", "${UPDATE}");`;
+                BAPR.code_pr, BAPR.id_proj, BAPR.id_activ, BAPR.id_benef, BAPR.id_bloc, BAPR.code_achat, BAPR.id_collaborateur, BAPR.id_tech, BAPR.etat AS etat_pr, BAPR.status AS status_pr
+                FROM beneficiaire BNF
+                INNER JOIN benef_activ_pr BAPR ON BAPR.id_benef = BNF.code_benef AND BAPR.id_tech = ${data.id_tech} AND BAPR.id_proj = "${data.id_projet}" AND BAPR.status = "active" AND BAPR.etat IN("${SYNC}", "${UPDATE}")
+                INNER JOIN projet_equipe PE ON PE.id_projet = "${data.id_projet}" AND PE.id_equipe = ${data.id_tech} AND PE.status_pe = "active"
+                WHERE BNF.statut = "active" AND BNF.etat IN("${SYNC}", "${UPDATE}");`;
+    return await this.db.query(state);
+  }
+  //
+  async loadSyncCepPR(data: any) {
+    const state = `SELECT CEP.code_parce, CEP.id_bloc, CEP.id_benef, CEP.ref_gps, CEP.lat, CEP.log, CEP.superficie, CEP.id_commune, CEP.id_fkt, CEP.village, CEP.anne_adheran, CEP.dt_creation, CEP.etat, CEP.status 
+                  FROM cep_parce CEP
+                  INNER JOIN beneficiaire BNF ON BNF.code_benef = CEP.id_benef AND BNF.statut = "active"
+                  INNER JOIN benef_activ_pr BAPR ON BAPR.id_benef = BNF.code_benef AND BAPR.id_proj = "${data.id_projet}" AND BAPR.id_tech = ${data.id_tech} AND BAPR.status = "active"
+                  WHERE CEP.etat IN("${SYNC}", "${UPDATE}") AND CEP.status = "active"`;
     return await this.db.query(state);
   }
   /**
@@ -107,18 +173,4 @@ export class LoadSyncService {
                 WHERE SV.etat IN("${SYNC}", "${UPDATE}")`;
     return await this.db.query(state);
   }
-  /**
-   * Load sync pms
-   */
-  async loadSyncBenefActivPms(data: any) {
-  const state = `SELECT BNF.code_benef, BNF.img_benef, BNF.nom, BNF.prenom, BNF.sexe, BNF.dt_nais, BNF.dt_nais_vers, BNF.surnom, BNF.cin, BNF.dt_delivrance, BNF.lieu_delivrance, BNF.img_cin, BNF.contact, BNF.id_fkt, BNF.id_commune, BNF.village, BNF.dt_Insert, BNF.etat AS etat_benf, BNF.statut AS statut_benef, BPMS.code_benef_pms, BPMS.code_achat, id_proj, BPMS.id_benef, BPMS.id_activ, BPMS.id_association, BPMS.id_collaborateur, BPMS.status AS status_pms, BPMS.etat AS etat_pms
-                FROM benef_activ_pms BPMS
-                INNER JOIN beneficiaire BNF ON BNF.code_benef = BPMS.id_benef AND BNF.statut = "active"
-                INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association AND ASS.id_prjt = "${data.id_projet}" AND ASS.id_tech = ${data.id_tech} AND  ASS.status = "active"
-                INNER JOIN projet PRJ ON PRJ.code_proj = ASS.id_prjt AND PRJ.statuts = "activer"
-                INNER JOIN equipe EQ ON EQ.code_equipe = ASS.id_tech AND EQ.statuts = "active"
-                INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND EQ.code_equipe = PE.id_equipe AND PE.status_pe = "active"
-                WHERE BPMS.etat IN("${SYNC}", "${UPDATE}") AND BPMS.status = "active" AND BPMS.id_proj = "${data.id_projet}";`;
-  return await this.db.query(state);
-}
 }

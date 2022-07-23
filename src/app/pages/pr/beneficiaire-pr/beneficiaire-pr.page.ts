@@ -74,7 +74,8 @@ export class BeneficiairePrPage implements OnInit {
     fokontany: null,
     village: null,
     association: null,
-    collaborateur: null
+    collaborateur: null,
+    bloc: null
   };
 
   private projet: Loc_projet;
@@ -496,8 +497,12 @@ export class BeneficiairePrPage implements OnInit {
       etat: element.etat === SYNC?SYNC:UPDATE,
       status: ACTIVE
     }
+    let data_update_cep = {
+      isUpdateCep: true,
+      data_cep: update_cep
+    }
     console.log("Champ Ecole To Update:::", update_cep);
-    this.crudService.UpdateParcellePr(update_cep).then(res => {
+    this.crudService.UpdateParcellePr(data_update_cep).then(res => {
       console.log(res);
       this.loadPRBloc();
       this.cepForm.reset();
@@ -722,7 +727,8 @@ export class BeneficiairePrPage implements OnInit {
       lieu_delivrance: null,
       code_achat: null,
       association: null,
-      collaborateur: null
+      collaborateur: null,
+      bloc: null
     }
   }
 

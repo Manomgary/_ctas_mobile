@@ -10,8 +10,8 @@
     <form [formGroup]="beneficiaireForm" class="contonair-flex">
       <div fxLayout="column width100">
         <!--Column 0-->
-        <div class="child-column-flex" fxLayout="row" *ngIf="isBenefPms">
-          <div class="child-column">
+        <div class="child-column-flex" fxLayout="row" *ngIf="isBenefPms || isBenefBloc">
+          <div class="child-column" *ngIf="isBenefPms">
             <mat-form-field>
               <mat-label>Association</mat-label>
               <mat-select formControlName="association">
@@ -21,12 +21,22 @@
               </mat-select>
             </mat-form-field>
           </div>
+          <div class="child-column" *ngIf="isBenefBloc">
+            <mat-form-field>
+              <mat-label>Bloc</mat-label>
+              <mat-select formControlName="bloc">
+                <mat-option *ngFor="let bloc_ of data_bloc_benef" [value]="bloc_">
+                  {{ bloc_.nom_bloc }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
           <div class="child-column">
             <mat-form-field>
               <mat-label>Type</mat-label>
               <mat-select formControlName="collaborateur">
                 <mat-option *ngFor="let collab of data_collaborateur" [value]="collab">
-                  {{ collab.description }}
+                  {{ collab.nom }}
                 </mat-option>
               </mat-select>
             </mat-form-field>
@@ -233,18 +243,105 @@
       </div>
     </form>
   </div>
-  <!--CEP PR-->
-  <div [formGroup]="cepForm" *ngIf="isCepPr">
+
+  <!--CEP PR et PMS-->
+  <div [formGroup]="isCepPr || isParceBl?cepForm:parcePms" *ngIf="isCepPr || isParceBl || isParcePms">
     <div class="content-flex" fxLayout="column">
-      <!--Column Bloc, Ref_gps, Latitude-->
-      <div class="child-column" fxLayout="row">
-        <div class="child-row">
+      <div class="child-flex" fxLayout="row" *ngIf="isParcePms">
+        <div class="hild-row">
           <mat-form-field appearance="outline" floatLabel="auto">
+            <mat-select formControlName="annee">
+              <mat-option *ngFor="let annee of data_annee_agricole" [value]="annee">
+                {{ annee.annee_du }}-{{ annee.annee_au }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="hild-row">
+          <mat-form-field appearance="outline" floatLabel="auto">
+            <mat-label>Saison</mat-label>
+            <mat-select formControlName="saison">
+              <mat-option></mat-option>
+              <mat-option *ngFor="let saison of data_saison" [value]="saison">
+                {{ saison.description }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>	
+        </div>
+        <div class="hild-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Espece</mat-label>
+            <mat-select formControlName="espece">
+              <mat-option (click)="onSelectEspece('espece')" *ngFor="let espece of data_espece_filter" [value]="espece">
+                {{ espece.nom_espece }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="child-row" fxLayout="row" *ngIf="isParcePms">
+        <div class="child-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Variette</mat-label>
+            <mat-select formControlName="variette">
+              <mat-option *ngFor="let variette of data_variette_filter" [value]="variette">
+                {{ variette.nom_var }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="child-row">
+          <mat-form-field appearance="outline">
+            <input matInput type="number" placeholder="Objectif" formControlName="objectif">
+          </mat-form-field>
+        </div>
+        <div class="child-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Parcelle</mat-label>
+            <mat-select formControlName="parcelle">
+              <mat-option (click)="onSelectParcePms('definir')" *ngIf="isParcePms" [value]="'definir'">A définir</mat-option>
+              <mat-option (click)="onSelectParcePms('nouveau')" *ngIf="isParcePms" [value]="'nouveau'">Nouveau Parce</mat-option>
+              <mat-option *ngFor="let parce of parce_pms" (click)="onSelectParcePms('existe')" [value]="parce">
+                {{ parce.id_parce }}::{{parce.annee_du}}-{{parce.annee_au}}_{{parce.saison}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <!--Column pour Parcelle exister dans la bdd-->
+      <div class="child-column" fxLayout="row" *ngIf="isParcePms && isExistParcePms">
+        <div class="child-row">
+          <mat-form-field appearance="outline">
+            <input matInput type="text" placeholder="Ref_gps!" formControlName="ref_gps">
+          </mat-form-field>
+        </div>
+        <div class="child-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Latitude</mat-label>
+            <input matInput type="number" placeholder="Merci de saisissez!" formControlName="latitude">
+          </mat-form-field>
+        </div>
+        <div class="child-row">
+          <mat-form-field appearance="outline">
+            <input matInput type="number" placeholder="longitude!" formControlName="longitude">
+          </mat-form-field>
+        </div>
+      </div>
+      <!--Column Bloc, Ref_gps, Latitude-->
+      <div class="child-column" fxLayout="row" *ngIf="isCepPr || isParceBl || (isParcePms && isNewParcePms)">
+        <div class="child-row" *ngIf="isCepPr || isParceBl">
+          <mat-form-field appearance="outline" floatLabel="auto" *ngIf="isCepPr">
             <mat-select formControlName="bloc">
               <mat-option (click)="onSelectNone('bloc-cep')">Aucune</mat-option>
               <mat-option *ngFor="let bloc of data_bloc" [value]="bloc">
                 {{ bloc.nom }}
               </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" floatLabel="auto" *ngIf="isParceBl">
+            <mat-select formControlName="bloc">
+              <mat-option (click)="onSelectNone('bloc-cep')">Aucune</mat-option>
+              <mat-option *ngFor="let bloc of data_bloc_benef" [value]="bloc">{{ bloc.nom_bloc }}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
@@ -261,7 +358,7 @@
         </div>
       </div>
       <!--column Long, Superficie, Region-->
-      <div class="child-column" fxLayout="row">
+      <div class="child-column" fxLayout="row" *ngIf="isCepPr || isParceBl || (isParcePms && isNewParcePms)">
         <div class="child-row">
           <mat-form-field appearance="outline">
             <input matInput type="number" placeholder="longitude!" formControlName="longitude">
@@ -283,7 +380,7 @@
         </div>
       </div>
       <!--column District, Commune, Fokontanu, village-->
-      <div class="child-column" fxLayout="row">
+      <div class="child-column" fxLayout="row" *ngIf="isCepPr || isParceBl || (isParcePms && isNewParcePms)">
         <div class="child-row">
           <mat-form-field appearance="outline" floatLabel="auto">
             <mat-select formControlName="district">
@@ -306,20 +403,29 @@
           <div class="child-row-flex">
             <mat-form-field appearance="outline" floatLabel="auto">
               <mat-select formControlName="fokontany">
-                <mat-option (click)="onSelectFokontany('autres')" *ngIf="data_fokontany_filter.length !== 0">Autres</mat-option>
+                <mat-option (click)="onSelectFokontany('autres')">Autres</mat-option>
                 <mat-option (click)="onSelectFokontany('fokontany')" *ngFor="let fkt of data_fokontany_filter" [value]="fkt">
                   {{ fkt.nom_fkt }}
                 </mat-option>
               </mat-select>
             </mat-form-field>
           </div>
-          <!--Formulaire Village-->
-          <div class="child-row-flex" *ngIf="isAutresFkt">
-            <mat-form-field appearance="outline">
-              <mat-label>Village</mat-label>
-              <input matInput type="text" placeholder="Merci de saisissez!" formControlName="village">
-            </mat-form-field>
-          </div>
+        </div>
+      </div>
+      <!--Column Village et indication-->
+      <div class="child-row" fxLayout="row">
+        <!--Formulaire Village-->
+        <div class="child-row-flex" *ngIf="isAutresFkt">
+          <mat-form-field appearance="outline">
+            <mat-label>Village</mat-label>
+            <input matInput type="text" placeholder="Merci de saisissez!" formControlName="village">
+          </mat-form-field>
+        </div>
+        <div class="child-row-flex" *ngIf="isParceBl">
+          <mat-form-field appearance="outline">
+            <mat-label>Indication</mat-label>
+            <input matInput type="text" placeholder="indication du parcelle ou surnom!" formControlName="indication">
+          </mat-form-field>
         </div>
       </div>
       <!--Bouton-->
@@ -328,7 +434,7 @@
           <button mat-raised-button (click)="onDismiss()" color="danger">Annuller</button>         
         </div>
         <div class="child-row">
-          <button mat-raised-button (click)="onSaveCep()" color="primary">Valider</button>
+          <button mat-raised-button (click)="onSaveCep()" color="primary" [disabled]="isCepPr || isParceBl?(!cepForm.valid):(!parcePms.valid)">Valider</button>
         </div>
       </div>
     </div>

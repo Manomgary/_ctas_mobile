@@ -6,7 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 // Imports 
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController, ModalController } from '@ionic/angular';
-import { Loc_association, Benef_activ_pms, Local_Parcelle, Loc_projet, Loc_district, Loc_Commune, Loc_Fokontany, Loc_region, Update_infos_benef, Loc_activ_projet, Loc_Collabo_Activite, Loc_Parce_saison } from 'src/app/interfaces/interfaces-local';
+import { Loc_association, Benef_activ_pms, Local_Parcelle, Loc_projet, Loc_district, Loc_Commune, Loc_Fokontany, Loc_region, Update_infos_benef, Loc_activ_projet, Loc_Collabo_Activite, Loc_Parce_saison, Loc_AnneeAgricole, Loc_saison, Loc_Espece, Loc_variette, Loc_categEspece, Update_Form_ParceSaison } from 'src/app/interfaces/interfaces-local';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { SharedService } from 'src/app/services/shared.service';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
@@ -15,7 +15,7 @@ import { ModalPrPage } from '../modals/modal-pr/modal-pr.page';
 
 import * as _moment from 'moment';
 import { ACTIVE, SYNC, UPDATE} from 'src/app/utils/global-variables';
-import { UpdateBenef, UpdatedBenefActivPms } from 'src/app/interfaces/interface-insertDb';
+import { UpdateBenef, UpdatedBenefActivPms, UpdateParcellePms, UpdateParceSaisonPms } from 'src/app/interfaces/interface-insertDb';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 const moment = _moment;
 
@@ -43,7 +43,8 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
   displayedColumnsAddBenef: string[] = ['new_association', 'new_fokontany', 'new_code_pms', 'new_code_ahat', 'new_pms', 'new_sexe', 'new_age', 'new_cin', 'new_village', 'new_collaborateur', 'new_action'];
   displayedColumns: string[] = ['fokontany', 'association', 'nb_pms', 'code_benef', 'pa', 'sexe', 'cin', 'surnom', 'technicien'];
   displayedColumnsParce: string[] = ['code_parce', 'code_pms', 'code_ahat', 'nom', 'ref_gps', 'lat', 'log', 'superficie', 'nb_cultures', 'cultures'];
-  displayedColumnsParcePms: string[] = ['annee', 'saison', 'variette', 'objectif', 'code_parce', 'ref_gps', 'lat', 'log', 'superficie', 'adresse', 'indication', 'action'];
+  displayedColumnsParcePms: string[] = ['annee', 'saison', 'variette', 'objectif', 'code_parce', 'ref_gps', 'lat', 'log', 'superficie', 'adresse', 'indication'];
+  displayedColumnsAddParcePms: string[] = ['new_annee', 'new_saison', 'new_variette', 'new_objectif', 'new_code_parce', 'new_ref_gps', 'new_lat', 'new_log', 'new_superficie', 'new_adresse', 'new_indication', 'new_action'];
 
   filterDataAssoc: string[] = [];
   filterData: Loc_association[] = [];
@@ -83,8 +84,11 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
     fokontany: null,
     village: null,
     association: null,
-    collaborateur: null
+    collaborateur: null,
+    bloc: null
   };
+
+  private update_parce_pms: Update_Form_ParceSaison = <Update_Form_ParceSaison>{}
 
   isUpdate: boolean = false;
   isAddPms: boolean = false;
@@ -93,12 +97,21 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
   indexEditRowPms: number;
   isTablePRExpanded: boolean = false;
 
+  isAddParce: boolean = false;
+  isRowEditParce: boolean = false;
+  indexEditRowParce: number;
+
   data_region: Loc_region[] = [];
   data_district: Loc_district[] = [];
   data_commune: Loc_Commune[] = [];
   data_fokontany: Loc_Fokontany[] = [];
 
   data_collaborateur: Loc_Collabo_Activite[] = [];
+  data_annee_agricole: Loc_AnneeAgricole[] = [];
+  data_saison: Loc_saison[]  = [];
+  data_espece: Loc_Espece[] = [];
+  data_var: Loc_variette[] = [];
+  data_categ: Loc_categEspece[] = [];
 
   // Association Paginator
   @ViewChild('assocPaginator') assocPaginator: MatPaginator;
@@ -168,6 +181,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.loadZone();
     this.loadCollaborateur();
+    this.loadDataInitial();
   }
 
   ngAfterViewInit() {
@@ -434,16 +448,26 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
     const loading = await this.loadingCtrl.create();
     await loading.present();
     this.loadPmsAsso();
+    this.isUpdate = false;
+    //
+    this.isAddPms = false;
+    this.isEditRowPms = false;
+    this.indexEditRowPms = null;
+    this.update_pms = <Update_infos_benef>{};
+    //
+    this.isAddParce = false;
+    this.isRowEditParce = false;
+    this.indexEditRowParce = null;
+    this.displayedColumnsParcePms.pop();
     setTimeout(() => {
       this.refreshDataSource();
       this.loadingCtrl.dismiss();
     }, 500);
-    this.isUpdate = false;
-    
   }
   // Update
   onUpdate() {
     this.isUpdate = true;
+    this.displayedColumnsParcePms.push('action');
   }
 
   onAddPms() {
@@ -531,6 +555,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
     } else if (data.src === 'edit') {
       let element_pms: Benef_activ_pms = data.elem_pms;
       data_to_add.code_benef = element_pms.code_benef;
+      data_to_add.dt_Insert = moment().format("YYYY-MM-DD");
       data_to_add.etat = element_pms.etat_benef === SYNC?SYNC:UPDATE;
       data_to_add.statut = ACTIVE;
       console.log(":::Data info to Edit:::", data_to_add);
@@ -545,21 +570,239 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
         }
         console.log(":::Data Pms to Edit:::", add_pms);
         this.crudService.UpdatePms(update_data).then(res => {
-          this.loadData.loadBeneficiairePms({code_benef_pms: element_pms.code_benef_pms}).then((res_pms) => {
-            let parce_pms = element_pms.parcelle;
-            console.log("::::::::Response edit pms:::::::::", res_pms);
-            this.dataSourceBenef.data.forEach(elem_src => {
-              if (elem_src.code_benef_pms === res_pms.values[0].code_benef_pms) {
-                elem_src = res_pms.values[0];
-                elem_src.parcelle = parce_pms;
-              }
-            });
-          });
+          this.loadPmsAsso();
           this.isEditRowPms = false;
           this.update_pms = <Update_infos_benef>{};
           this.indexEditRowPms = null;
         });
       });
+    }
+  }
+  onCancelParce(data: any) {
+    if (data.src === 'add') {
+      this.isAddParce = false;
+      this.indexEditRowPms = null;
+    } else if (data.src === 'edit') {
+      this.isRowEditParce = false;
+      this.indexEditRowPms = null;
+      this.indexEditRowParce = null;
+    }
+  }
+  // Update Pms
+  onSaveParce(data: any) {
+    console.log(":::Data Parce to Update:::", this.update_parce_pms);
+    let elem_pms: Benef_activ_pms = data.elem_pms;
+    let data_To_add_parce: UpdateParcellePms = {
+      code_parce: null,
+      id_assoc: elem_pms.id_association,
+      id_benef: elem_pms.code_benef,
+      ref_gps: this.update_parce_pms.ref_gps,
+      lat: this.update_parce_pms.latitude,
+      log: this.update_parce_pms.longitude,
+      superficie: this.update_parce_pms.superficie,
+      id_fkt: this.update_parce_pms.fokontany != null?this.update_parce_pms.fokontany.code_fkt:null,
+      id_commune: this.update_parce_pms.village != null && this.update_parce_pms.fokontany == null?this.update_parce_pms.commune.code_com:null,
+      village: this.update_parce_pms.village,
+      anne_adheran: null,
+      indication: null,
+      etat: null,
+      status: null
+    }
+    let data_To_add_parceSaison: UpdateParceSaisonPms = {
+      code: null,
+      id_annee: this.update_parce_pms.annee != null ? this.update_parce_pms.annee.code : null,
+      id_saison: this.update_parce_pms.saison != null ? this.update_parce_pms.saison.code_saison : null,
+      id_pms: elem_pms.code_benef_pms,
+      id_parce: null,
+      ref_gps: this.update_parce_pms.ref_gps,
+      lat: this.update_parce_pms.latitude,
+      log: this.update_parce_pms.longitude,
+      id_var: this.update_parce_pms.variette != null ? this.update_parce_pms.variette.code_var : null,
+      objectif: this.update_parce_pms.objectif,
+      etat: null,
+      commentaire: null
+    }
+    if (data.src === 'add') {
+      if (this.update_parce_pms.isNewparce != null) {
+        if (this.update_parce_pms.isNewparce) {
+          let association: Loc_association;
+          this.association.forEach(elem_association => {
+            if (elem_association.code_ass === elem_pms.id_association) {
+              association = elem_association;
+            }
+          });
+          let code_parce = association.numero + association.ancronyme + '-' + moment().format('YYYYMMDD-HHmmss');
+          data_To_add_parce.code_parce = code_parce;
+          data_To_add_parce.etat = SYNC;
+          data_To_add_parce.status = ACTIVE;
+          console.log("::::Data Parcelle Association:::::", data_To_add_parce);
+          this.crudService.AddParcellePms(data_To_add_parce).then(res => {
+            console.log("::::Added Parcelle Association:::::");
+            data_To_add_parceSaison.code = 'PSS' + '-' + moment().format('YYYYMMDD-HHmmss');
+            data_To_add_parceSaison.id_parce = code_parce;
+            data_To_add_parceSaison.etat = SYNC;
+            console.log("::::Data Parcelle Saison:::::", data_To_add_parceSaison);
+            this.crudService.AddParcelleSaisonPms(data_To_add_parceSaison).then(res => {
+              console.log("::::Added Parcelle Saison:::");
+              // refresh dataSource
+              const data_parce = {
+                code_ass: elem_pms.id_association,
+                code_prj: this.projet.code_proj,
+                code_pms: elem_pms.code_benef_pms
+              }
+              this.loadData.loadParcelleSaison(data_parce).then(parce_ss => {
+                this.dataSourceBenef.data.forEach(res_src => {
+                  if (res_src.code_benef_pms === elem_pms.code_benef_pms) {
+                    res_src.parcelle = parce_ss.values;
+                  }
+                });
+              });
+              this.isAddParce = false;
+              this.indexEditRowPms = null;
+            });
+          });
+        }
+      } else {
+        data_To_add_parceSaison.code = 'PSS' + '-' + moment().format('YYYYMMDD-HHmmss');
+        data_To_add_parceSaison.id_parce = this.update_parce_pms.parcelle != null?this.update_parce_pms.parcelle.code_parce:null;
+        data_To_add_parceSaison.etat = SYNC;
+        console.log("::::Data Parcelle Saison:::::", data_To_add_parceSaison);
+        this.crudService.AddParcelleSaisonPms(data_To_add_parceSaison).then(res => {
+          console.log("::::Added Parcelle Saison:::");
+          // refresh data source
+          const data_parce = {
+            code_ass: elem_pms.id_association,
+            code_prj: this.projet.code_proj,
+            code_pms: elem_pms.code_benef_pms
+          }
+          this.loadData.loadParcelleSaison(data_parce).then(parce_ss => {
+            this.dataSourceBenef.data.forEach(res_src => {
+              if (res_src.code_benef_pms === elem_pms.code_benef_pms) {
+                res_src.parcelle = parce_ss.values;
+              }
+            });
+          });
+          this.isAddParce = false;
+          this.indexEditRowPms = null;
+        });
+      }
+    } else if (data.src === 'edit') {
+      // Edit
+      let elem_parce: Loc_Parce_saison = data.elem_parce;
+      if (this.update_parce_pms.isNewparce != null) {
+        // Ajouter nouveau parcelle
+        if (this.update_parce_pms.isNewparce) {
+          console.log("::::Edit:::::Ajout Nouvelle Parcelle:::");
+          let association: Loc_association;
+          this.association.forEach(elem_association => {
+            if (elem_association.code_ass === elem_pms.id_association) {
+              association = elem_association;
+            }
+          });
+          let code_parce = association.numero + association.ancronyme + '-' + moment().format('YYYYMMDD-HHmmss');
+          data_To_add_parce.code_parce = code_parce;
+          data_To_add_parce.etat = SYNC;
+          data_To_add_parce.status = ACTIVE;
+          console.log("::::Data Parcelle Edit Association:::::", data_To_add_parce);
+          this.crudService.AddParcellePms(data_To_add_parce).then(res => {
+            console.log("::::Updated Parcelle Association:::::");
+            data_To_add_parceSaison.code = elem_parce.code_parce_saison;
+            data_To_add_parceSaison.id_parce = code_parce;
+            data_To_add_parceSaison.etat = elem_parce.etat === SYNC?SYNC:UPDATE;
+            console.log("::::Data Parcelle Saison:::::", data_To_add_parceSaison);
+            let data_to_update = {
+              isUpdateParceSaison: true,
+              data_parce_saison: data_To_add_parceSaison
+            }
+            this.crudService.UpdateParcelleSaisonPms(data_to_update).then(res => {
+              console.log("::::Updated Parcelle Saison:::");
+              const data_parce = {
+                code_ass: elem_pms.id_association,
+                code_prj: this.projet.code_proj,
+                code_pms: elem_pms.code_benef_pms
+              }
+              this.loadData.loadParcelleSaison(data_parce).then(parce_ss => {
+                this.dataSourceBenef.data.forEach(res_src => {
+                  if (res_src.code_benef_pms === elem_pms.code_benef_pms) {
+                    res_src.parcelle = parce_ss.values;
+                  }
+                });
+              });
+              this.isRowEditParce = false;
+              this.indexEditRowPms = null;
+              this.indexEditRowParce = null;
+            });
+          });
+        }
+      } else {
+        if (this.update_parce_pms.parcelle != null && this.update_parce_pms.parcelle.etat_parce === SYNC) {
+          console.log("::::Edit:::::Parcelle n'est encore synchroniser:::");
+          data_To_add_parce.code_parce = elem_parce.code_parce;
+          data_To_add_parce.etat = elem_parce.etat_parce;
+          data_To_add_parce.status = ACTIVE;
+          let data_update_parce = {
+            isUpdateParcePms: true,
+            data_parce: data_To_add_parce
+          }
+          console.log("::::Data Edit Parcelle Association:::::", data_To_add_parce);
+          this.crudService.UpdateParcellePms(data_update_parce).then(res => {
+            data_To_add_parceSaison.code = elem_parce.code_parce_saison;
+            data_To_add_parceSaison.id_parce = this.update_parce_pms.parcelle != null?this.update_parce_pms.parcelle.code_parce:null;
+            data_To_add_parceSaison.etat = elem_parce.etat === SYNC?SYNC:UPDATE;
+            console.log("::::Data Parcelle Edit Saison:::::", data_To_add_parceSaison);
+            let data_to_update = {
+              isUpdateParceSaison: true,
+              data_parce_saison: data_To_add_parceSaison
+            }
+            this.crudService.UpdateParcelleSaisonPms(data_to_update).then(res => {
+              console.log("::::Updated Parcelle Saison:::");
+              const data_parce = {
+                code_ass: elem_pms.id_association,
+                code_prj: this.projet.code_proj,
+                code_pms: elem_pms.code_benef_pms
+              }
+              this.loadData.loadParcelleSaison(data_parce).then(parce_ss => {
+                this.dataSourceBenef.data.forEach(res_src => {
+                  if (res_src.code_benef_pms === elem_pms.code_benef_pms) {
+                    res_src.parcelle = parce_ss.values;
+                  }
+                });
+              });
+              this.isRowEditParce = false;
+              this.indexEditRowPms = null;
+              this.indexEditRowParce = null;
+            });
+          });
+        } else {
+          // A definir ou parcelle déjà enregistrer
+          data_To_add_parceSaison.code = elem_parce.code_parce_saison;
+          data_To_add_parceSaison.id_parce = this.update_parce_pms.parcelle != null?this.update_parce_pms.parcelle.code_parce:null;
+          data_To_add_parceSaison.etat = elem_parce.etat === SYNC?SYNC:UPDATE;
+          console.log("::::Data Parcellev Edit Saison:::::", data_To_add_parceSaison);
+          let data_to_update = {
+            isUpdateParceSaison: true,
+            data_parce_saison: data_To_add_parceSaison
+          }
+          this.crudService.UpdateParcelleSaisonPms(data_to_update).then(res => {
+            console.log("::::Updated Parcelle Saison:::");
+            const data_parce = {
+              code_ass: elem_pms.id_association,
+              code_prj: this.projet.code_proj,
+              code_pms: elem_pms.code_benef_pms
+            }
+            this.loadData.loadParcelleSaison(data_parce).then(parce_ss => {
+              this.dataSourceBenef.data.forEach(res_src => {
+                if (res_src.code_benef_pms === elem_pms.code_benef_pms) {
+                  res_src.parcelle = parce_ss.values;
+                }
+              });
+            });
+            this.isRowEditParce = false;
+            this.indexEditRowPms = null;
+            this.indexEditRowParce = null;
+          });
+        }
+      }
     }
   }
   // Update Pms
@@ -612,6 +855,76 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
         } else if (data.src === 'edit') {
           this.isEditRowPms = true;
           this.indexEditRowPms = data.ind_pms;
+        }
+      }
+    });
+    await modal.present();
+  }
+
+  // Updated Parcelle
+  async onUpdatedParce(data: any) {
+    let data_: any;
+    if (data.src === 'add') {
+      //{src: 'add', data_pms: element, index_pms: i}
+      data_ = {
+        isParcePms: true,
+        isAdd: true,
+        zone: {
+          region: this.data_region,
+          district: this.data_district,
+          commune: this.data_commune,
+          fokontany: this.data_fokontany
+        },
+        data_initial: {
+          annee_ag: this.data_annee_agricole,
+          saison: this.data_saison,
+          categorie: this.data_categ,
+          espece: this.data_espece,
+          variette: this.data_var
+        },
+        elem_pms: data.data_pms
+      }
+    } else if (data.src === 'edit') {
+      //{src: 'edit', data_pms: element, data_parce: row, index_parce: ind_parce, index_pms: i}
+      data_ = { 
+        isParcePms: true,
+        isEdit: true,
+        zone: {
+          region: this.data_region,
+          district: this.data_district,
+          commune: this.data_commune,
+          fokontany: this.data_fokontany
+        },
+        data_initial: {
+          annee_ag: this.data_annee_agricole,
+          saison: this.data_saison,
+          categorie: this.data_categ,
+          espece: this.data_espece,
+          variette: this.data_var
+        },
+        elem_pms: data.data_pms,
+        elem_parce: data.data_parce
+      }
+    }
+    let modal = await this.modalCtrl.create({
+      component: ModalPrPage,
+      cssClass: 'modal-custum-parcelle',
+      backdropDismiss: true,
+      componentProps: data_
+    });
+    modal.onDidDismiss().then(data_modal => {
+      console.log("Modal Dismissed!!");
+      if (data_modal.data != undefined) {
+        console.log("Modal Data with data", data_modal.data);
+        this.update_parce_pms = data_modal.data;
+        
+        if (data.src === 'add') {
+          this.isAddParce = true;
+          this.indexEditRowPms = data.index_pms;
+        } else if (data.src === 'edit') {
+          this.isRowEditParce = true;
+          this.indexEditRowPms = data.index_pms;
+          this.indexEditRowParce = data.index_parce;
         }
       }
     });
@@ -707,11 +1020,10 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
 
   onAddShowPms(data: any) {
     //let data_ = {data: row, index_: i}
+    this.isTablePRExpanded = !this.isTablePRExpanded;
     console.log(data);
     this.dataSourceBenef.data.forEach((row, ind) => {
-      if (ind === data.index_) {
-        row.isExpanded = true;
-      }
+      row.isExpanded = this.isTablePRExpanded;
     });
   }
   // loadZone
@@ -744,6 +1056,47 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
       if (fkt.length > 0) {
         fkt.forEach(elem => {
           this.data_fokontany.push(elem);
+        });
+      }
+    });
+  }
+  //
+  loadDataInitial() {
+    this.loadData.loadAnneeAgricole().then(res => {
+      this.data_annee_agricole = res.values;
+    });
+    this.loadData.loadSaison().then(res_saison => {
+      console.log(res_saison);
+      if (res_saison.values.length > 0) {
+        res_saison.values.forEach(elem_s => {
+          this.data_saison.push(elem_s);
+        });
+      }
+    });
+    // load Categorie Espece
+    this.loadData.loadCategEspece().then(res_categorie => {
+      console.log(res_categorie);
+      if (res_categorie.values.length > 0) {
+        res_categorie.values.forEach(elem => {
+          this.data_categ.push(elem);
+        });
+      }
+    });
+    // load Espece
+    this.loadData.loadEspece().then(res_Espec => {
+      console.log(res_Espec);
+      if (res_Espec.values.length > 0) {
+        res_Espec.values.forEach(elem_esp => {
+          this.data_espece.push(elem_esp);
+        });
+      }
+    });
+    // load variette
+    this.loadData.loadVariette().then(res_var => {
+      console.log(res_var);
+      if (res_var.values.length > 0) {
+        res_var.values.forEach(elem_var => {
+          this.data_var.push(elem_var);
         });
       }
     });

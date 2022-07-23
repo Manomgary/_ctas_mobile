@@ -216,12 +216,14 @@ CREATE TABLE IF NOT EXISTS benef_activ_pms (
 );
 CREATE TABLE IF NOT EXISTS benef_activ_bl (
     code_benef_bl TEXT PRIMARY KEY NOT NULL, 
+    code_benef_bl_temp TEXT,
     id_proj TEXT NOT NULL, 
     id_activ INTEGER NOT NULL, 
     id_benef TEXT NOT NULL, 
     code_achat TEXT,
     id_bloc TEXT NOT NULL, 
-    id_collaborateur INTEGER NOT NULL, 
+    id_collaborateur INTEGER NOT NULL,
+    etat TEXT NOT NULL,
     status TEXT NOT NULL,
     FOREIGN KEY (id_proj) REFERENCES projet(code_proj) ON DELETE SET DEFAULT,
     FOREIGN KEY (id_activ) REFERENCES activite(code_act) ON DELETE SET DEFAULT,
@@ -280,11 +282,14 @@ CREATE TABLE IF NOT EXISTS assoc_parce (
     FOREIGN KEY (id_commune) REFERENCES zone_commune(code_com) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS assoc_parce_saison (
-    code INTEGER PRIMARY KEY AUTOINCREMENT, 
+    code TEXT PRIMARY KEY NOT NULL, 
     id_annee INTEGER, 
     id_saison TEXT NOT NULL, 
     id_pms TEXT NOT NULL,
     id_parce TEXT, 
+    ref_gps  TEXT, 
+    lat  INTEGER, 
+    log INTEGER,
     id_var TEXT, 
     objectif INTEGER, 
     etat TEXT NOT NULL, 
@@ -296,19 +301,25 @@ CREATE TABLE IF NOT EXISTS assoc_parce_saison (
     FOREIGN KEY (id_pms) REFERENCES benef_activ_pms(code_benef_pms) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS bloc_parce (
-    code_parce TEXT PRIMARY KEY NOT NULL, 
+    code_parce TEXT PRIMARY KEY NOT NULL,
+    code_parce_temp TEXT,
     id_bloc TEXT NOT NULL, 
     id_benef TEXT NOT NULL, 
     ref_gps TEXT, 
     lat DOUBLE, 
     log DOUBLE, 
     superficie INTEGER, 
-    id_fkt TEXT NOT NULL, 
+    id_fkt TEXT,
+    id_commune TEXT, 
+    village TEXT,
     anne_adheran INTEGER, 
+    indication TEXT, 
+    etat TEXT NOT NULL,
     status TEXT NOT NULL,
     FOREIGN KEY (id_bloc) REFERENCES bloc(code_bloc) ON DELETE SET DEFAULT,
     FOREIGN KEY (id_fkt) REFERENCES zone_fonkotany(code_fkt) ON DELETE SET DEFAULT,
-    FOREIGN KEY (id_benef) REFERENCES beneficiaire(code_benef) ON DELETE SET DEFAULT
+    FOREIGN KEY (id_benef) REFERENCES beneficiaire(code_benef) ON DELETE SET DEFAULT,
+    FOREIGN KEY (id_commune) REFERENCES zone_commune(code_com) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS cep_parce (
     code_parce TEXT PRIMARY KEY NOT NULL, 
@@ -355,7 +366,7 @@ CREATE TABLE IF NOT EXISTS cultures_pms (
     id_parce TEXT NOT NULL, 
     id_var TEXT NOT NULL,
     id_saison TEXT NOT NULL,
-    annee_du TEXT NOT NULL,
+    id_annee INTEGER NOT NULL,
     ddp TEXT NOT NULL,
     qsa INTEGER NOT NULL,
     img_fact Blob,
@@ -370,7 +381,8 @@ CREATE TABLE IF NOT EXISTS cultures_pms (
     Etat TEXT NOT NULL,
     FOREIGN KEY(id_parce) REFERENCES assoc_parce(code_parce) ON DELETE SET DEFAULT,
     FOREIGN KEY(id_saison) REFERENCES saison(code_saison) ON DELETE SET DEFAULT,
-    FOREIGN KEY(id_var) REFERENCES variette(code_var) ON DELETE SET DEFAULT
+    FOREIGN KEY(id_var) REFERENCES variette(code_var) ON DELETE SET DEFAULT,
+    FOREIGN KEY(id_annee) REFERENCES annee_agricole(code) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS suivi_pms (
     id TEXT PRIMARY KEY, 
