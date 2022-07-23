@@ -237,7 +237,8 @@ CREATE TABLE IF NOT EXISTS benef_activ_pr (
     FOREIGN KEY (id_activ) REFERENCES activite(code_act) ON DELETE SET DEFAULT,
     FOREIGN KEY (id_benef) REFERENCES beneficiaire(code_benef) ON DELETE SET DEFAULT,
     FOREIGN KEY (id_tech) REFERENCES equipe(code_equipe) ON DELETE SET DEFAULT,
-    FOREIGN KEY (id_collaborateur) REFERENCES collaborateur(code_col) ON DELETE SET DEFAULT
+    FOREIGN KEY (id_collaborateur) REFERENCES collaborateur(code_col) ON DELETE SET DEFAULT,
+    FOREIGN KEY (id_bloc) REFERENCES bloc(code_bloc) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS parcelle (
     code_parce TEXT PRIMARY KEY NOT NULL, 
@@ -441,7 +442,7 @@ CREATE TABLE IF NOT EXISTS animation_ve(
     status TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS animation_ve_specu(
-    code_specu INTEGER PRIMARY KEY,
+    code_specu INTEGER PRIMARY KEY AUTOINCREMENT,
     id_anime_ve TEXT NOT NULL,
     id_var TEXT,
     id_espece TEXT,

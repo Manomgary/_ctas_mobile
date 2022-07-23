@@ -3,6 +3,11 @@ export interface LocalFile {
     date: string;
     data: string;
   }
+export interface Loc_export_excel {
+    data: any[],
+    name_feuille: string,
+    name_file: string
+}
 export interface Loc_projet {
     numero: number, 
     code_proj: string, 

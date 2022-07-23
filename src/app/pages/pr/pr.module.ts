@@ -19,6 +19,7 @@ import { SuiviPrPage } from './suivi-pr/suivi-pr.page';
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     IonicModule,
     AngularMaterialModule,
     FlexLayoutModule

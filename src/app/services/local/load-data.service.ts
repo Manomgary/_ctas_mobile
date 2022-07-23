@@ -935,9 +935,9 @@ export class LoadDataService {
                 WHEN ANIM.id_fkt IS NULL AND ANIM.village IS NOT NULL AND ANIM.id_commune IS NOT NULL THEN ANIM.village
                 ELSE NULL END AS fokontany
                 FROM animation_ve ANIM
-                INNER JOIN benef_activ_pr PR ON PR.code_pr = ANIM.id_pr AND PR.status = "active" AND PR.etat = "valide"
+                INNER JOIN benef_activ_pr PR ON PR.code_pr = ANIM.id_pr AND PR.status = "active"
                 INNER JOIN activite A ON A.code_act = PR.id_activ
-                INNER JOIN beneficiaire BNF ON BNF.code_benef = PR.id_benef AND BNF.etat = "valide" AND BNF.statut = "active"
+                INNER JOIN beneficiaire BNF ON BNF.code_benef = PR.id_benef AND BNF.statut = "active"
                 INNER JOIN equipe EQ ON EQ.code_equipe = PR.id_tech AND EQ.statuts = "active"
                 INNER JOIN projet PRJ ON PRJ.code_proj = PR.id_proj AND PRJ.statuts = "activer"
                 INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND EQ.code_equipe = PE.id_equipe AND PE.status_pe = "active"
@@ -957,7 +957,7 @@ export class LoadDataService {
             INNER JOIN equipe EQ ON EQ.code_equipe = BAPR.id_tech AND EQ.statuts = "active"
             INNER JOIN projet PRJ ON PRJ.code_proj = BAPR.id_proj AND PRJ.statuts = "activer"
             INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND PE.id_equipe = EQ.code_equipe AND PE.status_pe = "active"
-            WHERE SPECU.etat = "valide" AND SPECU.status = "active" AND PRJ.code_proj = "${data.code_projet}" AND EQ.code_equipe = ${data.code_equipe}`;
+            WHERE SPECU.status = "active" AND PRJ.code_proj = "${data.code_projet}" AND EQ.code_equipe = ${data.code_equipe}`;
     return await this.db.query(req);
   }
 
@@ -969,6 +969,14 @@ export class LoadDataService {
                 INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND PE.id_equipe = EQ.code_equipe AND PE.status_pe = "active"
                 WHERE BAPR.etat == "${SYNC}" AND BAPR.status = "active" AND EQ.code_equipe = ${data.code_equipe} AND PRJ.code_proj = "${data.code_projet}"`;
     return await this.db.query(req);
+  }
+
+  async  loadBlocEquipe(data: any) {
+    const req = `SELECT B.code_bloc, B.nom, B.ancronyme, B.id_prjt, B.id_tech, B.status 
+                FROM bloc B
+                INNER JOIN projet_equipe PE ON PE.id_projet = B.id_prjt AND PE.id_equipe = B.id_tech AND PE.status_pe = "active"
+                WHERE B.id_prjt = "${data.code_projet}" AND B.id_tech = ${data.id_tech} AND B.status = "active"`;
+    return this.db.query(req);
   }
 
    async loadAllTable(table: string) {

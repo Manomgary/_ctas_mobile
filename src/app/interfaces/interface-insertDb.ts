@@ -112,3 +112,45 @@ export interface UpdateBenefActivPr {
     etat: string,
     status: string
 }
+export interface UpdateParcePr {
+    code_parce: string, 
+    id_bloc: string, 
+    id_benef: string, 
+    ref_gps: number, 
+    lat: number, 
+    log: number, 
+    superficie: number, 
+    id_commune: string, 
+    id_fkt: string, 
+    village: string, 
+    anne_adheran: number, 
+    dt_creation: string, 
+    etat: string, 
+    status: string
+}
+export interface UpdateAnimationVe {
+    code: string,
+    id_pr: string,
+    id_fkt: string,
+    id_commune: string, village: string,
+    date_anim: string,
+    nb_participant: number,
+    nb_h: number,
+    nb_f: number,
+    nb_inf_25: number,
+    type: string,
+    img_piece: string,
+    img_group_particip: string,
+    id_tech_recenseur: number,
+    etat: string,
+    status: string
+}
+export interface UpdateAnimeSpecu {
+    code_specu: number,
+    id_anime_ve: string, 
+    id_var: string, 
+    id_espece: string, 
+    quantite: number, 
+    etat: string, 
+    status: string
+}

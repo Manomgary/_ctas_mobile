@@ -705,7 +705,7 @@ export class ImportDataService implements OnInit, OnDestroy {
         data_benef.forEach((elem, i) => {
           const insert = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, dt_nais_vers, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, id_commune, village, dt_Insert, etat, statut) 
                           VALUES ("${elem.code_benef}", ${elem.img_benef != null? `"${elem.img_benef}"`: null},"${elem.nom}", ${elem.prenom != null? `"${elem.prenom}"`:null}, "${elem.sexe}", ${elem.dt_nais != null? `"${elem.dt_nais}"` : null}, ${elem.dt_nais_vers != null? `"${elem.dt_nais_vers}"` : null}, ${elem.surnom != null?`"${elem.surnom}"`:null}, ${elem.cin}, ${elem.dt_delivrance != null?`"${elem.dt_delivrance}"`:null}, 
-                          "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.contact}", ${elem.id_fkt != null? `"${elem.id_fkt}"`:null}, ${elem.id_commune != null? `"${elem.id_commune}"`:null}, ${elem.village != null? `"${elem.village}"`:null}, "${elem.dt_Insert}", "${elem.etat_benef}", "${elem.status_benef}");`;
+                          "${elem.lieu_delivrance}", ${elem.img_cin != null?`"${elem.img_cin}"`:null}, "${elem.contact}", ${elem.id_fkt != null? `"${elem.id_fkt}"`:null}, ${elem.id_commune != null? `"${elem.id_commune}"`:null}, ${elem.village != null? `"${elem.village}"`:null}, "${elem.dt_Insert}", "${elem.etat_benef}", "${elem.status_benef}");`;
           console.log(elem);
           this.insertData(insert);
           if (i == (data_benef.length - 1)) {
@@ -745,7 +745,7 @@ export class ImportDataService implements OnInit, OnDestroy {
             data_benef.forEach((elem, i) => {
               const insert = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, dt_nais_vers, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, id_commune, village, dt_Insert, etat, statut) 
                       VALUES ("${elem.code_benef}", ${elem.img_benef != null? `"${elem.img_benef}"`: null},"${elem.nom}", ${elem.prenom != null? `"${elem.prenom}"`:null}, "${elem.sexe}", ${elem.dt_nais != null? `"${elem.dt_nais}"` : null}, ${elem.dt_nais_vers != null? `"${elem.dt_nais_vers}"` : null}, ${elem.surnom != null?`"${elem.surnom}"`:null}, ${elem.cin}, ${elem.dt_delivrance != null?`"${elem.dt_delivrance}"`:null}, 
-                      "${elem.lieu_delivrance}", "${elem.img_cin}", "${elem.contact}", ${elem.id_fkt != null? `"${elem.id_fkt}"`:null}, ${elem.id_commune != null? `"${elem.id_commune}"`:null}, ${elem.village != null? `"${elem.village}"`:null}, "${elem.dt_Insert}", "${elem.etat_benef}", "${elem.status_benef}");`;
+                      "${elem.lieu_delivrance}", ${elem.img_cin != null?`"${elem.img_cin}"`:null}, "${elem.contact}", ${elem.id_fkt != null? `"${elem.id_fkt}"`:null}, ${elem.id_commune != null? `"${elem.id_commune}"`:null}, ${elem.village != null? `"${elem.village}"`:null}, "${elem.dt_Insert}", "${elem.etat_benef}", "${elem.status_benef}");`;
               console.log(elem);
               this.insertData(insert);
               if (i == (data_benef.length - 1)) {
@@ -784,7 +784,7 @@ export class ImportDataService implements OnInit, OnDestroy {
           // Inserer l'information des beneficiaires
           const state_info_benef = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, dt_nais_vers, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, id_commune, village, dt_Insert, etat, statut) 
                       VALUES ("${elem_info_bnf.code_benef}", ${elem_info_bnf.img_benef != null? `"${elem_info_bnf.img_benef}"`: null},"${elem_info_bnf.nom}", ${elem_info_bnf.prenom != null? `"${elem_info_bnf.prenom}"`:null}, "${elem_info_bnf.sexe}", ${elem_info_bnf.dt_nais != null? `"${elem_info_bnf.dt_nais}"` : null}, ${elem_info_bnf.dt_nais_vers != null? `"${elem_info_bnf.dt_nais_vers}"` : null}, ${elem_info_bnf.surnom != null?`"${elem_info_bnf.surnom}"`:null}, ${elem_info_bnf.cin}, ${elem_info_bnf.dt_delivrance != null?`"${elem_info_bnf.dt_delivrance}"`:null}, 
-                      "${elem_info_bnf.lieu_delivrance}", "${elem_info_bnf.img_cin}", "${elem_info_bnf.contact}", ${elem_info_bnf.id_fkt != null? `"${elem_info_bnf.id_fkt}"`:null}, ${elem_info_bnf.id_commune != null? `"${elem_info_bnf.id_commune}"`:null}, ${elem_info_bnf.village != null? `"${elem_info_bnf.village}"`:null}, "${elem_info_bnf.dt_Insert}", "${elem_info_bnf.etat_benef}", "${elem_info_bnf.statut_benef}");`;
+                      "${elem_info_bnf.lieu_delivrance}", ${elem_info_bnf.img_cin != null?`"${elem_info_bnf.img_cin}"`:null}, "${elem_info_bnf.contact}", ${elem_info_bnf.id_fkt != null? `"${elem_info_bnf.id_fkt}"`:null}, ${elem_info_bnf.id_commune != null? `"${elem_info_bnf.id_commune}"`:null}, ${elem_info_bnf.village != null? `"${elem_info_bnf.village}"`:null}, "${elem_info_bnf.dt_Insert}", "${elem_info_bnf.etat_benef}", "${elem_info_bnf.statut_benef}");`;
 
           this.insertData(state_info_benef);
           if ((benef_pr.length - 1) === ind) {

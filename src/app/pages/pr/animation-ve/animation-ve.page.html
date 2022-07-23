@@ -34,135 +34,213 @@
 </ion-header>
 
 <ion-content>
-  <div class="container">
-    <h5>Animation-VE</h5>
-    <button mat-raised-button (click)="toggleTableRows()" color="primary">Afficher Tout</button>
-    <div class="table-container">
-        <table mat-table [dataSource]="dataSourceAnimationVe" class="example-table" multiTemplateDataRows>
-          <!--Column code_pr-->
-          <ng-container matColumnDef="code_pr">
-            <th mat-header-cell *matHeaderCellDef>Code Pr</th>
-            <td mat-cell *matCellDef="let row">{{row.code_pr}}</td>
-          </ng-container>
-
-          <!--Column Nom-->
-          <ng-container matColumnDef="nom">
-            <th mat-header-cell *matHeaderCellDef>Nom</th>
-            <td mat-cell *matCellDef="let row">{{row.nom}} {{row.prenom}}</td>
-          </ng-container>
-
-          <!--Column Code_anime-->
-          <ng-container matColumnDef="code_anime">
-            <th mat-header-cell *matHeaderCellDef>Code_anime</th>
-            <td mat-cell *matCellDef="let row">{{row.code_anime}}</td>
-          </ng-container>
-
-          <!--Column date_anime-->
-          <ng-container matColumnDef="date_anime">
-            <th mat-header-cell *matHeaderCellDef>Date anime</th>
-            <td mat-cell *matCellDef="let row">{{row.date_anim}}</td>
-          </ng-container>
-
-          <!--Column commune-->
-          <ng-container matColumnDef="commune">
-            <th mat-header-cell *matHeaderCellDef>Commune</th>
-            <td mat-cell *matCellDef="let row">{{row.commune}}</td>
-          </ng-container>
-
-          <!--Column fokontany-->
-          <ng-container matColumnDef="fokontany">
-            <th mat-header-cell *matHeaderCellDef>Fokontany</th>
-            <td mat-cell *matCellDef="let row">{{row.fokontany}}</td>
-          </ng-container>
-
-          <!--Column nb_participant-->
-          <ng-container matColumnDef="nb_participant">
-            <th mat-header-cell *matHeaderCellDef>Nb participant</th>
-            <td mat-cell *matCellDef="let row">{{row.nb_participant}}</td>
-          </ng-container>
-
-          <!--Column nb_f-->
-          <ng-container matColumnDef="nb_f">
-            <th mat-header-cell *matHeaderCellDef>Nb F</th>
-            <td mat-cell *matCellDef="let row">{{row.nb_f}}</td>
-          </ng-container>
-
-          <!--Column nb_f-->
-          <ng-container matColumnDef="nb_h">
-            <th mat-header-cell *matHeaderCellDef>Nb H</th>
-            <td mat-cell *matCellDef="let row">{{row.nb_h}}</td>
-          </ng-container>
-
-          <!--Column nb-25-->
-          <ng-container matColumnDef="nb-25">
-            <th mat-header-cell *matHeaderCellDef>Nb-25</th>
-            <td mat-cell *matCellDef="let row">{{row.nb_inf_25}}</td>
-          </ng-container>
-
-          <!--Column nb_specu-->
-          <ng-container matColumnDef="nb_specu">
-            <th mat-header-cell *matHeaderCellDef>Nb specu</th>
-            <td mat-cell *matCellDef="let row">{{row.nb_specu}}</td>
-          </ng-container>
-
-          <!--Column quantite-->
-          <ng-container matColumnDef="quantite">
-            <th mat-header-cell *matHeaderCellDef>Quantite</th>
-            <td mat-cell *matCellDef="let row">{{row.somme_specu}}</td>
-          </ng-container>
-
-          <!--Column img_pièce-->
-          <ng-container matColumnDef="img_pièce">
-            <th mat-header-cell *matHeaderCellDef>Img pièce</th>
-            <td mat-cell *matCellDef="let row">{{row.img_piece}}</td>
-          </ng-container>
-
-          <!--Column Action-->
-          <ng-container matColumnDef="action">
-            <th mat-header-cell *matHeaderCellDef> Action </th>
-            <td mat-cell *matCellDef="let element">
-              <button mat-flat-button class="btn-info btn-dimension" (click)="element.isExpanded = !element.isExpanded">Afficher</button>
-            </td>
-          </ng-container>
-
-           <!-- Template for details row -->
-           <ng-container matColumnDef="expandedDetail">
-            <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumnsAnimeVe.length">
-  
-              <div class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.specu_animation.length > 0? 'expanded' : 'collapsed'">
-                <table mat-table [dataSource]="element.specu_animation">
-                  <!--Column code_parce-->
-                  <ng-container matColumnDef="speculation">
-                    <th mat-header-cell *matHeaderCellDef>Speculation</th>
-                    <td mat-cell *matCellDef="let row">{{row.speculation}}</td>
-                  </ng-container>
-                  <!--Column bloc-->
-                  <ng-container matColumnDef="quantite">
-                    <th mat-header-cell *matHeaderCellDef>Quantite</th>
-                    <td mat-cell *matCellDef="let row">{{row.quantite}}</td>
-                  </ng-container>
-                
-                  <tr mat-header-row *matHeaderRowDef="displayedColumnsSpecu" class="hg-header-row-2"></tr>
-                  <tr mat-row *matRowDef="let row; columns: displayedColumnsSpecu;" class="hg-element-row"></tr>
-                </table>
-              </div>
-              <div class="row sv-element-detail-vide" [@detailExpand]="element.isExpanded && element.specu_animation.length == 0? 'expanded' : 'collapsed'">
-                <div mat-line>Aucun champs Ecole Enregistrer pour PR {{element.code_pr}}</div>
-              </div>
-  
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumnsAnimeVe" class="hg-header-row-1"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumnsAnimeVe;" class="sv-element-row hg-element-row" [class.sv-expanded-row]="row.isExpanded" [class.sv-row-vide]="row.specu_animation.length == 0"></tr>
-          <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
-  
-          <!-- Row shown when there is no matching data. -->
-          <tr class="mat-row" *matNoDataRow>
-            <td class="mat-cell" [attr.colspan]="displayedColumnsAnimeVe.length">Aucun enregistrement</td>
-          </tr>
-
-        </table>
+  <mat-tab-group mat-align-tabs="start">
+    <mat-tab label="Animation">
+      <div class="container">
+        <h5>Animation-VE</h5>
+        <button mat-raised-button (click)="toggleTableRows()" color="primary">Afficher Tout</button>
+        <button mat-raised-button (click)="onUpdate()" color="primary" *ngIf="!isUpdate">Modifier</button>
+        <button mat-raised-button (click)="onFinish()" color="primary" *ngIf="isUpdate">Terminer</button>
+        <button mat-raised-button (click)="onAdd()" color="primary" *ngIf="isUpdate">Ajouter</button>
+        <div class="table-container">
+          <table mat-table [dataSource]="dataSourceAnimationVe" class="example-table" multiTemplateDataRows>
+            <!--Column code_pr-->
+            <ng-container matColumnDef="code_pr">
+              <th mat-header-cell *matHeaderCellDef>Code Pr</th>
+              <td mat-cell *matCellDef="let row">{{row.code_pr}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_code_pr">
+              <th mat-header-cell *matHeaderCellDef>
+                --
+              </th>
+            </ng-container>
+    
+            <!--Column Nom-->
+            <ng-container matColumnDef="nom">
+              <th mat-header-cell *matHeaderCellDef>Nom</th>
+              <td mat-cell *matCellDef="let row">{{row.nom}} {{row.prenom}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_nom">
+              <th mat-header-cell *matHeaderCellDef>
+                --
+              </th>
+            </ng-container>
+    
+            <!--Column Code_anime-->
+            <ng-container matColumnDef="code_anime">
+              <th mat-header-cell *matHeaderCellDef>Code_anime</th>
+              <td mat-cell *matCellDef="let row">{{row.code_anime}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_code_anime">
+              <th mat-header-cell *matHeaderCellDef>
+                --
+              </th>
+            </ng-container>
+    
+            <!--Column date_anime-->
+            <ng-container matColumnDef="date_anime">
+              <th mat-header-cell *matHeaderCellDef>Date anime</th>
+              <td mat-cell *matCellDef="let row">{{row.date_anim}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_date_anime">
+              <th mat-header-cell *matHeaderCellDef>
+                --
+              </th>
+            </ng-container>
+    
+            <!--Column commune-->
+            <ng-container matColumnDef="commune">
+              <th mat-header-cell *matHeaderCellDef>Commune</th>
+              <td mat-cell *matCellDef="let row">{{row.commune}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_commune">
+              <th mat-header-cell *matHeaderCellDef>
+                --
+              </th>
+            </ng-container>
+    
+            <!--Column fokontany-->
+            <ng-container matColumnDef="fokontany">
+              <th mat-header-cell *matHeaderCellDef>Fokontany</th>
+              <td mat-cell *matCellDef="let row">{{row.fokontany}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_fokontany">
+              <th mat-header-cell *matHeaderCellDef>--</th>
+            </ng-container>
+    
+            <!--Column nb_participant-->
+            <ng-container matColumnDef="nb_participant">
+              <th mat-header-cell *matHeaderCellDef>Nb participant</th>
+              <td mat-cell *matCellDef="let row">{{row.nb_participant}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_nb_participant">
+              <th mat-header-cell *matHeaderCellDef>--</th>
+            </ng-container>
+    
+            <!--Column nb_f-->
+            <ng-container matColumnDef="nb_f">
+              <th mat-header-cell *matHeaderCellDef>Nb F</th>
+              <td mat-cell *matCellDef="let row">{{row.nb_f}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_nb_f">
+              <th mat-header-cell *matHeaderCellDef>--</th>
+            </ng-container>
+    
+            <!--Column nb_f-->
+            <ng-container matColumnDef="nb_h">
+              <th mat-header-cell *matHeaderCellDef>Nb H</th>
+              <td mat-cell *matCellDef="let row">{{row.nb_h}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_nb_h">
+              <th mat-header-cell *matHeaderCellDef>--</th>
+            </ng-container>
+    
+            <!--Column nb-25-->
+            <ng-container matColumnDef="nb-25">
+              <th mat-header-cell *matHeaderCellDef>Nb-25</th>
+              <td mat-cell *matCellDef="let row">{{row.nb_inf_25}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_nb-25">
+              <th mat-header-cell *matHeaderCellDef>--</th>
+            </ng-container>
+    
+            <!--Column nb_specu-->
+            <ng-container matColumnDef="nb_specu">
+              <th mat-header-cell *matHeaderCellDef>Nb specu</th>
+              <td mat-cell *matCellDef="let row">{{row.nb_specu}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_nb_specu">
+              <th mat-header-cell *matHeaderCellDef>--</th>
+            </ng-container>
+    
+            <!--Column quantite-->
+            <ng-container matColumnDef="quantite">
+              <th mat-header-cell *matHeaderCellDef>Quantite</th>
+              <td mat-cell *matCellDef="let row">{{row.somme_specu}}</td>
+            </ng-container>
+            <ng-container matColumnDef="new_quantite">
+              <th mat-header-cell *matHeaderCellDef>--</th>
+            </ng-container>
+    
+            <!--Column img_pièce-->
+            <ng-container matColumnDef="img_pièce">
+              <th mat-header-cell *matHeaderCellDef>Img pièce</th>
+              <td mat-cell *matCellDef="let row"></td>
+              <!--<td mat-cell *matCellDef="let row">{{row.img_piece}}</td>-->
+            </ng-container>
+            <ng-container matColumnDef="new_img_pièce">
+              <th mat-header-cell *matHeaderCellDef>--</th>
+            </ng-container>
+    
+            <!--Column Action-->
+            <ng-container matColumnDef="action">
+              <th mat-header-cell *matHeaderCellDef> Action </th>
+              <td mat-cell *matCellDef="let element; dataIndex as i">
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  <a (click)="onCancelEdit()">cancel</a>
+                  <a (click)="onSaveEdit(element)">Done</a>
+                </span>
+                <span *ngIf="!isAddAnimation && !isUpdate && !isRowEditAnimation">
+                  <button mat-flat-button class="btn-info btn-dimension" (click)="element.isExpanded = !element.isExpanded">Afficher</button>
+                </span>
+                <span *ngIf="isUpdate && !isRowEditAnimation && !isAddAnimation">
+                  <button mat-flat-button class="btn-info btn-dimension" (click)="onEditElement({src: 'edit', data: element, index: i})">Edite</button>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_action">
+              <th mat-header-cell *matHeaderCellDef> 
+                <span>
+                  <a (click)="onCancelAnime()">annuler</a>
+                  <a (click)="onSaveAnime()">Done</a>
+                </span>
+              </th>
+            </ng-container>
+    
+              <!-- Template for details row -->
+              <ng-container matColumnDef="expandedDetail">
+              <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumnsAnimeVe.length">
+    
+                <div class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.specu_animation.length > 0? 'expanded' : 'collapsed'">
+                  <table mat-table [dataSource]="element.specu_animation">
+                    <!--Column code_parce-->
+                    <ng-container matColumnDef="speculation">
+                      <th mat-header-cell *matHeaderCellDef>Speculation</th>
+                      <td mat-cell *matCellDef="let row">{{row.speculation}}</td>
+                    </ng-container>
+                    <!--Column bloc-->
+                    <ng-container matColumnDef="quantite">
+                      <th mat-header-cell *matHeaderCellDef>Quantite</th>
+                      <td mat-cell *matCellDef="let row">{{row.quantite}}</td>
+                    </ng-container>
+                  
+                    <tr mat-header-row *matHeaderRowDef="displayedColumnsSpecu" class="hg-header-row-2"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumnsSpecu;" class="hg-element-row"></tr>
+                  </table>
+                </div>
+                <div class="row sv-element-detail-vide" [@detailExpand]="element.isExpanded && element.specu_animation.length == 0? 'expanded' : 'collapsed'">
+                  <div mat-line>Aucun champs Ecole Enregistrer pour PR {{element.code_pr}}</div>
+                </div>
+    
+              </td>
+            </ng-container>
+    
+            <tr mat-header-row *matHeaderRowDef="displayedColumnsAnimeVe" class="hg-header-row-1"></tr>
+            <tr [hidden]="!isAddAnimation" mat-header-row *matHeaderRowDef="displayedColumnsAddAnimeVe; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumnsAnimeVe;" class="sv-element-row hg-element-row" [class.sv-expanded-row]="row.isExpanded" [class.sv-row-vide]="row.specu_animation.length == 0"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+    
+            <!-- Row shown when there is no matching data. -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell" [attr.colspan]="displayedColumnsAnimeVe.length">Aucun enregistrement</td>
+            </tr>
+    
+          </table>
+        </div>
       </div>
-    </div>
+    </mat-tab>
+    <mat-tab label="Vise Echange">
+      <p>Visite Echange</p>
+    </mat-tab>
+  </mat-tab-group>
 </ion-content>

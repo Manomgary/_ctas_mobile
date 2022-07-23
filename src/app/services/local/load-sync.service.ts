@@ -57,5 +57,33 @@ export class LoadSyncService {
                   WHERE BL.id_tech = ${data.id_tech} AND BL.id_prjt = "${data.id_projet}" AND SBL.etat IN("${SYNC}", "${UPDATE}")`;
     return await this.db.query(state);
   }
-  
+  /**
+   * LOAD SYNC BENEF  PR
+   */
+  async loadSyncBenefActivPR(data: any) {
+    const state = `SELECT BNF.code_benef, BNF.img_benef, BNF.nom, BNF.prenom, BNF.sexe, BNF.dt_nais, BNF.dt_nais_vers, BNF.surnom, BNF.cin, BNF.dt_delivrance, BNF.lieu_delivrance, BNF.img_cin, BNF.contact, BNF.id_fkt, BNF.id_commune, BNF.village, BNF.dt_Insert, BNF.etat AS etat_benf, BNF.statut AS statut_benef, 
+                  BAPR.code_pr, BAPR.id_proj, BAPR.id_activ, BAPR.id_benef, BAPR.id_bloc, BAPR.code_achat, BAPR.id_collaborateur, BAPR.id_tech, BAPR.etat AS etat_pr, BAPR.status AS status_pr
+                  FROM beneficiaire BNF
+                  INNER JOIN benef_activ_pr BAPR ON BAPR.id_benef = BNF.code_benef AND BAPR.status = "active" AND BAPR.etat IN("${SYNC}", "${UPDATE}")
+                  WHERE BAPR.id_tech = ${data.id_tech} AND BAPR.id_proj = "${data.id_projet}" AND BNF.statut = "active" AND BNF.etat IN("${SYNC}", "${UPDATE}");`;
+    return await this.db.query(state);
+  }
+  /**
+   * Load Sync PR
+   */
+  async loadSyncAnimationVe(data: any) {
+    const state = `SELECT ANIMVE.code, ANIMVE.id_pr, ANIMVE.id_fkt, ANIMVE.id_commune, ANIMVE.village, ANIMVE.date_anim, ANIMVE.nb_participant, ANIMVE.nb_h, ANIMVE.nb_f, ANIMVE.nb_inf_25, ANIMVE.type, ANIMVE.img_piece, ANIMVE.img_group_particip, ANIMVE.id_tech_recenseur, ANIMVE.etat, ANIMVE.status 
+                  FROM animation_ve ANIMVE
+                  INNER JOIN benef_activ_pr BAPR ON BAPR.code_pr = ANIMVE.id_pr AND ANIMVE.status = "active"
+                  WHERE BAPR.id_tech = ${data.id_tech} AND BAPR.id_proj = "${data.id_projet}" AND ANIMVE.etat IN("${SYNC}", "${UPDATE}") AND ANIMVE.status = "active"`;
+    return await this.db.query(state);
+  }
+  async loadSyncSpecuAnime(data: any) {
+    const state = `SELECT SPECU.code_specu, SPECU.id_anime_ve, SPECU.id_var, SPECU.id_espece, SPECU.quantite, SPECU.etat, SPECU.status 
+                  FROM animation_ve_specu SPECU
+                  INNER JOIN animation_ve ANIME ON ANIME.code = SPECU.id_anime_ve AND SPECU.status = "active"
+                  INNER JOIN benef_activ_pr BAPR ON BAPR.code_pr = ANIME.id_pr AND BAPR.status = "active"
+                  WHERE BAPR.id_tech = ${data.id_tech} AND BAPR.id_proj = "${data.id_projet}" AND SPECU.etat IN("${SYNC}", "${UPDATE}") AND SPECU.status = "active"`;
+    return await this.db.query(state);
+  }
 }

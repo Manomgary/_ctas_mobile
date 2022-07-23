@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import * as moment from 'moment';
 import { BehaviorSubject } from 'rxjs';
 import { Db_Culture_pms } from 'src/app/interfaces/interface-insertDb';
-import { Sync_culture_pms, Sync_mep_bl, Sync_suivi_bl, Sync_suivi_pms } from 'src/app/interfaces/interface-sync';
+import { Sync_activ_pr, Sync_anime_specu, Sync_anime_ve, Sync_benef_activ_pr, Sync_culture_pms, Sync_info_benef, Sync_mep_bl, Sync_suivi_bl, Sync_suivi_pms } from 'src/app/interfaces/interface-sync';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 import { LoadSyncService } from 'src/app/services/local/load-sync.service';
 import { SyncService } from 'src/app/services/sync.service';
@@ -25,6 +25,11 @@ export class SynchroPage implements OnInit {
 
   private data_mep_bloc: Sync_mep_bl[] = [];
   private data_suivi_bloc: Sync_suivi_bl[] = [];
+  private data_benef_activ_pr: Sync_benef_activ_pr[] = [];
+  private data_info_benf_pr: Sync_info_benef[] = [];
+  private data_benef_pr: Sync_activ_pr[] = [];
+  private data_anime_ve: Sync_anime_ve[] = [];
+  private data_anime_specu: Sync_anime_specu[] = [];
 
   constructor(private router: Router,
               private LoadTosync: LoadSyncService,
@@ -42,7 +47,9 @@ export class SynchroPage implements OnInit {
         this.loadCulture();
         this.loadSuiviPms();
         this.loadMepBloc();
-        this.loadSvBloc()
+        this.loadSvBloc();
+        this.loadBenefeActivePr();
+        this.loadAnimationVe();
       }
     });
   }
@@ -190,7 +197,7 @@ export class SynchroPage implements OnInit {
             id_culture: elem_suivi.id_culture,
             ddp: elem_suivi.ddp,
             stc: elem_suivi.stc,
-            ec: elem_suivi.ec,
+            ec: elem_suivi.ec, 
             pb: elem_suivi.pb,
             ex: elem_suivi.ex,
             img_cult: elem_suivi.img_cult,
@@ -287,5 +294,111 @@ export class SynchroPage implements OnInit {
       }
       console.log("Response suivi data bloc::::", this.data_suivi_bloc);
     });
+  }
+  /**
+   * Sync Paysant relais
+   */
+  loadBenefeActivePr() {
+    const data_ = {
+      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_projet: this.projet.code_proj
+    };
+    this.LoadTosync.loadSyncBenefActivPR(data_).then(res_ => {
+      this.data_benef_activ_pr = res_.values;
+      if (this.data_benef_activ_pr.length > 0) {
+        this.data_benef_activ_pr.forEach(elem_pr => {
+          this.data_info_benf_pr.push({
+            code_benef: elem_pr.code_benef,
+            img_benef: elem_pr.img_benef,
+            nom: elem_pr.nom,
+            prenom: elem_pr.prenom,
+            sexe: elem_pr.sexe,
+            dt_nais: elem_pr.dt_nais,
+            dt_nais_vers: elem_pr.dt_nais_vers,
+            surnom: elem_pr.surnom,
+            cin: elem_pr.cin,
+            dt_delivrance: elem_pr.dt_delivrance,
+            lieu_delivrance: elem_pr.lieu_delivrance,
+            img_cin: elem_pr.img_cin,
+            contact: elem_pr.contact,
+            id_fkt: elem_pr.id_fkt,
+            id_commune: elem_pr.id_commune,
+            village: elem_pr.village,
+            dt_Insert: elem_pr.dt_Insert,
+            etat: elem_pr.etat_benf,
+            statut: elem_pr.statut_benef
+          });
+          this.data_benef_pr.push({
+            code_pr: elem_pr.code_pr, 
+            id_proj: elem_pr.id_proj, 
+            id_activ: elem_pr.id_activ,
+            id_benef: elem_pr.id_benef, 
+            id_bloc: elem_pr.id_bloc, 
+            code_achat: elem_pr.code_achat, 
+            id_collaborateur: elem_pr.id_collaborateur, 
+            id_tech: elem_pr.id_tech, 
+            etat: elem_pr.etat_pr, 
+            status: elem_pr.status_pr
+          });
+        });
+      }
+    });
+  }
+  onSyncBenefeActivePr() {
+    console.log(":::Data PR:::", this.data_benef_activ_pr);
+    let data_ = {
+      update_info_benef: this.data_info_benf_pr,
+      update_activ_pr: this.data_benef_pr
+    }
+    this.syncService.syncBenefPR(data_).subscribe(res => {
+      console.log(":::Response sync:::", res);
+      if (res.response == 1) {
+        this.data_info_benf_pr.forEach((elem_info, ind_info) => {
+          // update data
+          let updated_etat_benef = {
+            code_benef: elem_info.code_benef,
+            etat: elem_info.etat === SYNC? ISSYNC: ISUPDATE
+          }
+          this.crudDb.UpdateBenefSync(updated_etat_benef).then(res => {
+            console.log(":::Benef info Updated::::");
+            if ((this.data_info_benf_pr.length - 1) === ind_info) {
+              this.data_benef_pr.forEach((elem_pr, ind_pr) => {
+                let update_etat_pr = {
+                  code_pr: elem_pr.code_pr,
+                  etat: elem_pr.etat === SYNC? ISSYNC: ISUPDATE
+                }
+                this.crudDb.UpdatePrBenefSync(update_etat_pr).then(res => {console.log(":::::PR updated::::")});
+              });
+            }
+          });
+        })
+      }
+    });
+  }
+  /**
+   * 
+   */
+  loadAnimationVe() {
+    const data_ = {
+      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_projet: this.projet.code_proj
+    };
+    this.LoadTosync.loadSyncAnimationVe(data_).then(res => {
+      this.data_anime_ve = res.values;
+      this.LoadTosync.loadSyncSpecuAnime(data_).then(res => {
+        this.data_anime_specu = res.values;
+      });
+    });
+  }
+  onSyncAnimationVe() {
+    const data_ = {
+      updtate_anime_ve: this.data_anime_ve,
+      update_anime_specu: this.data_anime_specu
+    }
+    this.syncService.syncAnimeVe(data_).subscribe(res => {
+      console.log(":::Res sync Animation::::", res);
+    });
+    console.log("Animation Ve::::", this.data_anime_ve);
+    console.log("Animaton Speculation::::", this.data_anime_specu);
   }
 }

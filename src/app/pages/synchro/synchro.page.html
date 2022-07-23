@@ -32,4 +32,16 @@
       Sync
     </button>
   </p>
+  <p>
+    Beneficiaire Activiter PR: {{data_benef_activ_pr.length}}
+    <button mat-raised-button (click)="onSyncBenefeActivePr()" class="demo-button" [disabled] = "data_benef_activ_pr.length === 0">
+      Sync
+    </button>
+  </p>
+  <p>
+    Animation PR : {{data_anime_ve.length}}
+    <button mat-raised-button (click)="onSyncAnimationVe()" class="demo-button" [disabled] = "data_anime_ve.length === 0">
+      Sync
+    </button>
+  </p>
 </ion-content>

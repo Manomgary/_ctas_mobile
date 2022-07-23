@@ -76,3 +76,94 @@ export interface Sync_suivi_bl {
     dt_modification: string,
     etat: string
 }
+export interface Sync_benef_activ_pr {
+    code_benef: string,
+    img_benef: string,
+    nom: string,
+    prenom: string,
+    sexe: string,
+    dt_nais: string,
+    dt_nais_vers: string,
+    surnom: string,
+    cin: number,
+    dt_delivrance: string,
+    lieu_delivrance: string,
+    img_cin: string,
+    contact: string,
+    id_fkt: string,
+    id_commune: string,
+    village: string,
+    dt_Insert: string,
+    etat_benf: string,
+    statut_benef: string,
+    code_pr: string, //Table Active Pr
+    id_proj: string, 
+    id_activ: number,
+    id_benef: string,
+    id_bloc: string,
+    code_achat: string,
+    id_collaborateur: string,
+    id_tech: number,
+    etat_pr: string,
+    status_pr: string
+}
+export interface Sync_info_benef {
+    code_benef: string, 
+    img_benef: string, 
+    nom: string, 
+    prenom: string, 
+    sexe: string, 
+    dt_nais: string, 
+    dt_nais_vers: string, 
+    surnom: string, 
+    cin: number, 
+    dt_delivrance: string, 
+    lieu_delivrance: string, 
+    img_cin: string, 
+    contact: string, 
+    id_fkt: string, 
+    id_commune: string, 
+    village: string, 
+    dt_Insert: string, 
+    etat: string, 
+    statut: string
+}
+export interface Sync_activ_pr {
+    code_pr: string, 
+    id_proj: string, 
+    id_activ: number,
+    id_benef: string, 
+    id_bloc: string, 
+    code_achat: string, 
+    id_collaborateur: string, 
+    id_tech: number, 
+    etat: string, 
+    status: string
+}
+export interface Sync_anime_ve {
+    code: string, 
+    id_pr: string, 
+    id_fkt: string, 
+    id_commune: string, 
+    village: string, 
+    date_anim: string, 
+    nb_participant: number, 
+    nb_h: number, 
+    nb_f: number, 
+    nb_inf_25: number, 
+    type: string, 
+    img_piece: string, 
+    img_group_particip: string, 
+    id_tech_recenseur: number, 
+    etat: string, 
+    status: string
+}
+export interface Sync_anime_specu {
+    code_specu: string, 
+    id_anime_ve: string, 
+    id_var: string, 
+    id_espece: string, 
+    quantite: string, 
+    etat: string, 
+    status: string
+}

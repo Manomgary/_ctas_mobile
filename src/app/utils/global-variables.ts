@@ -3,7 +3,7 @@ export const DB_NAME_KEY = 'db_name';
 export const DB_NAME = 'ctas-db';
 export const FIRST_CONNECT_KEY = 'first_connection';
 //export const BASE_PATH = 'http://192.168.1.163:8080/api/';
-export const BASE_PATH = 'http://192.168.1.172:8080/api/';
+export const BASE_PATH = 'http://192.168.1.124:8080/api/';
 //export const BASE_PATH = 'http://192.168.43.115:8080/api/';192.168.1.132
 // FOLDER IMAGE
 export const IMAGE_DIR = 'stored-images';
@@ -68,4 +68,7 @@ export const ROLE_CACT_INERME  = [
 export const SEXE = [
   {value: 'H', description: 'Homme'},
   {value: 'F', description: 'Femme'}
-]
+];
+// Type Animation
+export const ANIMATION = "animation";
+export const VE = "ve";

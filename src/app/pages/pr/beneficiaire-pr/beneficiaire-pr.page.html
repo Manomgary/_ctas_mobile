@@ -47,13 +47,14 @@
       <div class="contonair-flex">
         <div fxLayout="column width100">
           <div class="child-column-flex" fxLayout="row">
+            <ion-button (click)="onExport()" [disabled]="isUpdate || data_pr.length == 0">Exporte</ion-button>
             <button mat-raised-button (click)="onUpdate()" color="primary" *ngIf="!isUpdate">Modifier</button>
             <button mat-raised-button (click)="onFinish()" color="primary" *ngIf="isUpdate">Terminer</button>
           </div>
         </div>
         <h5>PR</h5>
         <button mat-raised-button (click)="onToggleTableRows()" color="primary">Tout Afficher</button>
-        <button mat-raised-button (click)="onPresentModal({src: 'add'})" color="primary" *ngIf="isUpdate">Ajouter</button>
+        <button mat-raised-button (click)="onPresentModal({src: 'add'})" color="primary" *ngIf="!isAddPr && !isRowEdit && !isAddCep && isUpdate">Ajouter</button>
         <div class="table-container">
           <!--If multiTemplateDataRows property of mat-table to true, you can't use index. Instead you have use either dataIndex-->
           <table mat-table [dataSource]="dataSourcePR" class="example-table" multiTemplateDataRows>
@@ -91,7 +92,7 @@
               <th mat-header-cell *matHeaderCellDef>Code Pr</th>
               <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
-                  {{row.code_pr}}-{{i}}
+                  {{row.code_pr}}
                 </span>
                 <span *ngIf="indeRowEdit == i  && isRowEdit">
                   {{row.code_pr}}
@@ -108,7 +109,7 @@
               <th mat-header-cell *matHeaderCellDef>Code achat</th>
               <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
-                  {{row.code_achat}}-{{i}}
+                  {{row.code_achat}}
                 </span>
                 <span *ngIf="indeRowEdit == i  && isRowEdit">
                   {{update_benef.code_achat}}
@@ -125,7 +126,7 @@
               <th mat-header-cell *matHeaderCellDef>Nom</th>
               <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="!isRowEdit || indeRowEdit != i">
-                  {{row.nom}} {{row.prenom}}-{{i}}
+                  {{row.nom}} {{row.prenom}}
                 </span>
                 <span *ngIf="indeRowEdit == i  && isRowEdit">
                   {{update_benef.nom}} {{update_benef.prenom}}
@@ -171,6 +172,23 @@
               <th mat-header-cell *matHeaderCellDef>{{update_benef.surnom}}</th>
             </ng-container>
 
+            <!--Column surnom-->
+            <ng-container matColumnDef="dt_nais">
+              <th mat-header-cell *matHeaderCellDef>Dt_nais</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i;">
+                <span *ngIf="!isRowEdit || indeRowEdit != i">
+                  {{row.date_naissance}}
+                </span>
+                <span *ngIf="indeRowEdit == i  && isRowEdit">
+                  {{update_benef.dt_naissance != null?update_benef.dt_naissance:update_benef.dt_naissance_vers}}
+                </span>
+              </td>
+            </ng-container>
+            <!--Column New surnom-->
+            <ng-container matColumnDef="new_dt_nais">
+              <th mat-header-cell *matHeaderCellDef>{{update_benef.dt_naissance != null?update_benef.dt_naissance:update_benef.dt_naissance_vers}}</th>
+            </ng-container>
+
             <!--Column cin-->
             <ng-container matColumnDef="cin">
               <th mat-header-cell *matHeaderCellDef>CIN</th>
@@ -213,7 +231,7 @@
                   {{row.fokontany}}
                 </span>
                 <span *ngIf="indeRowEdit == i  && isRowEdit">
-                  {{update_benef.fokontany.nom_fkt}}
+                  {{update_benef.fokontany !== null?update_benef.fokontany.nom_fkt:update_benef.village}}
                 </span>
               </td>
             </ng-container>
@@ -227,14 +245,21 @@
               <th mat-header-cell *matHeaderCellDef> Action </th>
               <td mat-cell *matCellDef="let row; dataIndex as i;">
                 <span *ngIf="indeRowEdit == i  && isRowEdit && isUpdate">
-                  <a (click)="onClickSaveEdit({data: row})">modifier</a> |
-                  <a (click)="onClickCancelEdit()">Annuler</a>
+                  <a (click)="onSaveEdit({data: row})">modifier</a> |
+                  <a (click)="onCancelEdit()">Annuler</a>
                 </span>
-                <span *ngIf="!isAddPr && !isUpdate && !isRowEdit">
+                <span *ngIf="!isAddPr && !isUpdate && !isRowEdit && !isRowEditCep">
                   <button mat-flat-button class="btn-info btn-dimension" (click)="row.isExpanded = !row.isExpanded">afficher</button>
                 </span>
-                <span *ngIf="!isAddPr && !isRowEdit && isUpdate">
-                  <button mat-flat-button class="btn-info btn-dimension" (click)="onEdit({data: row, index_: i})">Editer</button>
+                <span *ngIf="!isAddPr && !isRowEdit && !isRowEditCep && !isAddCep && isUpdate">
+                  <div fxLayout="column width100">
+                    <div class="child-column-flex">
+                      <button mat-flat-button class="btn-info btn-dimension" (click)="onEdit({data: row, index_: i})">Editer</button>
+                    </div>
+                    <div class="child-column-flex">
+                      <button mat-flat-button class="btn-info btn-dimension" (click)="onAddCep({data: row, index_: i})">Ajouter</button>
+                    </div>
+                  </div>
                 </span>
               </td>
             </ng-container>
@@ -250,55 +275,325 @@
 
             <!-- Template for details row -->
             <ng-container matColumnDef="expandedDetail">
-              <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumnsPR.length">
-    
-                <div class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.cep_pr.length > 0? 'expanded' : 'collapsed'">
+              <td mat-cell *matCellDef="let element; dataIndex as i;" [attr.colspan]="displayedColumnsPR.length">
+                <form [formGroup]="cepForm" class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.cep_pr.length > 0 || isUpdate && element.isExpanded? 'expanded' : 'collapsed'">
                   <table mat-table [dataSource]="element.cep_pr">
                     <!--Column code_parce-->
                     <ng-container matColumnDef="code_parce">
                       <th mat-header-cell *matHeaderCellDef>Code parce</th>
                       <td mat-cell *matCellDef="let row">{{row.code_parce}}</td>
                     </ng-container>
+                    <ng-container matColumnDef="new_code_parce">
+                      <th mat-header-cell *matHeaderCellDef></th>
+                    </ng-container>
+
                     <!--Column bloc-->
                     <ng-container matColumnDef="bloc">
                       <th mat-header-cell *matHeaderCellDef>Bloc</th>
-                      <td mat-cell *matCellDef="let row">{{row.bloc_cep}}</td>
+                      <td mat-cell *matCellDef="let row; index as inde;">
+                        <span *ngIf="!isRowEditCep || indeRowEditCep != inde && indeRowEdit == i || indeRowEdit != i">
+                          {{row.bloc_cep}}
+                        </span>
+                        <span *ngIf="indeRowEditCep == inde && indeRowEdit == i && isRowEditCep">
+                          <mat-form-field appearance="outline" floatLabel="auto">
+                            <mat-select formControlName="bloc">
+                              <mat-option (click)="onNoneBloc()">Aucune</mat-option>
+                              <mat-option *ngFor="let bloc of data_bloc" [value]="bloc">
+                                {{ bloc.nom }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </span>
+                      </td>
                     </ng-container>
+                    <ng-container matColumnDef="new_bloc">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <mat-form-field appearance="outline" floatLabel="auto">
+                          <mat-select formControlName="bloc">
+                            <mat-option (click)="onNoneBloc()">Aucune</mat-option>
+                            <mat-option *ngFor="let bloc of data_bloc" [value]="bloc">
+                              {{ bloc.nom }}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </th>
+                    </ng-container>
+
                     <!--Column ref_gps-->
                     <ng-container matColumnDef="ref_gps">
                       <th mat-header-cell *matHeaderCellDef>ref_gps</th>
-                      <td mat-cell *matCellDef="let row">{{row.ref_gps}}</td>
+                      <td mat-cell *matCellDef="let row; index as inde;">
+                        <span *ngIf="!isRowEditCep || indeRowEditCep != inde && indeRowEdit == i || indeRowEdit != i">
+                          {{row.ref_gps}}
+                        </span>
+                        <span *ngIf="indeRowEditCep == inde && indeRowEdit == i && isRowEditCep">
+                          <mat-form-field appearance="outline">
+                            <input matInput type="text" placeholder="Ref gps!" formControlName="ref_gps">
+                          </mat-form-field>
+                        </span>
+                      </td>
                     </ng-container>
+                    <ng-container matColumnDef="new_ref_gps">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <mat-form-field appearance="outline">
+                          <input matInput type="text" placeholder="Ref gps!" formControlName="ref_gps">
+                        </mat-form-field>
+                      </th>
+                    </ng-container>
+
                     <!--Column lat-->
                     <ng-container matColumnDef="lat">
                       <th mat-header-cell *matHeaderCellDef>Latitude</th>
-                      <td mat-cell *matCellDef="let row">{{row.lat}}</td>
+                      <td mat-cell *matCellDef="let row; index as inde;">
+                        <span *ngIf="!isRowEditCep || indeRowEditCep != inde && indeRowEdit == i || indeRowEdit != i">
+                          {{row.lat}}
+                        </span>
+                        <span *ngIf="indeRowEditCep == inde && indeRowEdit == i && isRowEditCep">
+                          <mat-form-field appearance="outline">
+                            <mat-label>Latitude</mat-label>
+                            <input matInput type="number" placeholder="Merci de saisissez!" formControlName="latitude">
+                          </mat-form-field>
+                        </span>
+                      </td>
                     </ng-container>
+                    <ng-container matColumnDef="new_lat">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <mat-form-field appearance="outline">
+                          <mat-label>Latitude</mat-label>
+                          <input matInput type="number" placeholder="Merci de saisissez!" formControlName="latitude">
+                        </mat-form-field>
+                      </th>
+                    </ng-container>
+
                     <!--Column log-->
                     <ng-container matColumnDef="log">
                       <th mat-header-cell *matHeaderCellDef>Log</th>
-                      <td mat-cell *matCellDef="let row">{{row.log}}</td>
+                      <td mat-cell *matCellDef="let row; index as inde;">
+                        <span *ngIf="!isRowEditCep || indeRowEditCep != inde && indeRowEdit == i || indeRowEdit != i">
+                          {{row.log}}
+                        </span>
+                        <span *ngIf="indeRowEditCep == inde && indeRowEdit == i  && isRowEditCep">
+                          <mat-form-field appearance="outline">
+                            <input matInput type="number" placeholder="longitude!" formControlName="longitude">
+                          </mat-form-field>
+                        </span>
+                      </td>
                     </ng-container>
+                    <ng-container matColumnDef="new_log">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <mat-form-field appearance="outline">
+                          <input matInput type="number" placeholder="longitude!" formControlName="longitude">
+                        </mat-form-field>
+                      </th>
+                    </ng-container>
+
                     <!--Column superficie-->
                     <ng-container matColumnDef="superficie">
                       <th mat-header-cell *matHeaderCellDef>Superficie</th>
-                      <td mat-cell *matCellDef="let row">{{row.superficie}}</td>
+                      <td mat-cell *matCellDef="let row; index as inde;">
+                        <span *ngIf="!isRowEditCep || indeRowEditCep != inde && indeRowEdit == i || indeRowEdit != i">
+                          {{row.superficie}}
+                        </span>
+                        <span *ngIf="indeRowEditCep == inde && indeRowEdit == i  && isRowEditCep">
+                          <mat-form-field appearance="outline">
+                            <input matInput type="number" placeholder="superficie!" formControlName="superficie">
+                          </mat-form-field>
+                        </span>
+                      </td>
                     </ng-container>
+                    <ng-container matColumnDef="new_superficie">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <mat-form-field appearance="outline">
+                          <input matInput type="number" placeholder="superficie!" formControlName="superficie">
+                        </mat-form-field>
+                      </th>
+                    </ng-container>
+
+                    <!--Column Region-->
+                    <ng-container matColumnDef="region">
+                      <th mat-header-cell *matHeaderCellDef>Region</th>
+                      <td mat-cell *matCellDef="let row; index as inde;">
+                        <span *ngIf="!isRowEditCep || indeRowEditCep != inde && indeRowEdit == i || indeRowEdit != i">
+                          {{row.nom_region}}
+                        </span>
+                        <span *ngIf="indeRowEditCep == inde && indeRowEdit == i  && isRowEditCep">
+                          <mat-form-field appearance="outline" floatLabel="auto">
+                            <mat-select formControlName="region">
+                              <mat-option (click)="onSelectRegion()" *ngFor="let reg of data_region" [value]="reg">
+                                {{ reg.nom_reg }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </span>
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="new_region">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <mat-form-field appearance="outline" floatLabel="auto">
+                          <mat-select formControlName="region">
+                            <mat-option (click)="onSelectRegion()" *ngFor="let reg of data_region" [value]="reg">
+                              {{ reg.nom_reg }}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </th>
+                    </ng-container>
+
+                    <!--Column District-->
+                    <ng-container matColumnDef="district">
+                      <th mat-header-cell *matHeaderCellDef>District</th>
+                      <td mat-cell *matCellDef="let row; index as inde;">
+                        <span *ngIf="!isRowEditCep || indeRowEditCep != inde && indeRowEdit == i || indeRowEdit != i">
+                          {{ row.district }}
+                        </span>
+                        <span *ngIf="indeRowEditCep == inde && indeRowEdit == i && isRowEditCep">
+                          <mat-form-field appearance="outline" floatLabel="auto">
+                            <mat-select formControlName="district">
+                              <mat-option (click)="onSelectDistrict()" *ngFor="let dist of data_district_filter" [value]="dist">
+                                {{ dist.nom_dist }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </span>
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="new_district">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <mat-form-field appearance="outline" floatLabel="auto">
+                          <mat-select formControlName="district">
+                            <mat-option (click)="onSelectDistrict()" *ngFor="let dist of data_district_filter" [value]="dist">
+                              {{ dist.nom_dist }}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </th>
+                    </ng-container>
+
                     <!--Column commune-->
                     <ng-container matColumnDef="commune">
                       <th mat-header-cell *matHeaderCellDef>Commune</th>
-                      <td mat-cell *matCellDef="let row">{{row.commune}}</td>
+                      <td mat-cell *matCellDef="let row; index as inde;">
+                        <span *ngIf="!isRowEditCep || indeRowEditCep != inde && indeRowEdit == i || indeRowEdit != i">
+                          {{row.commune}}
+                        </span>
+                        <span *ngIf="indeRowEditCep == inde  && indeRowEdit == i && isRowEditCep">
+                          <mat-form-field appearance="outline" floatLabel="auto">
+                            <mat-select formControlName="commune">
+                              <mat-option (click)="onSelectCommune()" *ngFor="let com of data_commune_filter" [value]="com">
+                                {{ com.nom_com }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </span>
+                      </td>
                     </ng-container>
+                    <ng-container matColumnDef="new_commune">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <mat-form-field appearance="outline" floatLabel="auto">
+                          <mat-select formControlName="commune">
+                            <mat-option (click)="onSelectCommune()" *ngFor="let com of data_commune_filter" [value]="com">
+                              {{ com.nom_com }}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </th>
+                    </ng-container>
+
                     <!--Column fokontany-->
                     <ng-container matColumnDef="fokontany">
                       <th mat-header-cell *matHeaderCellDef>Fokontany</th>
-                      <td mat-cell *matCellDef="let row">{{row.fokontany}}</td>
+                      <td mat-cell *matCellDef="let row; index as inde;">
+                        <span *ngIf="!isRowEditCep || indeRowEditCep != inde && indeRowEdit == i || indeRowEdit != i">
+                          {{row.fokontany}}
+                        </span>
+                        <span *ngIf="indeRowEditCep == inde && indeRowEdit == i  && isRowEditCep">
+                          <div class="child-row-flex">
+                            <mat-form-field appearance="outline" floatLabel="auto">
+                              <mat-select formControlName="fokontany">
+                                <mat-option (click)="onSelectFokontany('autres')" *ngIf="data_fokontany_filter.length !== 0">Autres</mat-option>
+                                <mat-option (click)="onSelectFokontany('fokontany')" *ngFor="let fkt of data_fokontany_filter" [value]="fkt">
+                                  {{ fkt.nom_fkt }}
+                                </mat-option>
+                              </mat-select>
+                            </mat-form-field>
+                          </div>
+                          <!--Formulaire Village-->
+                          <div class="child-row-flex" *ngIf="isAutresFkt">
+                            <mat-form-field appearance="outline">
+                              <mat-label>Village</mat-label>
+                              <input matInput type="text" placeholder="Merci de saisissez!" formControlName="village">
+                            </mat-form-field>
+                          </div>
+                        </span>
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="new_fokontany">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <div class="child-row-flex">
+                          <mat-form-field appearance="outline" floatLabel="auto">
+                            <mat-select formControlName="fokontany">
+                              <mat-option (click)="onSelectFokontany('autres')" *ngIf="data_fokontany_filter.length !== 0">Autres</mat-option>
+                              <mat-option (click)="onSelectFokontany('fokontany')" *ngFor="let fkt of data_fokontany_filter" [value]="fkt">
+                                {{ fkt.nom_fkt }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </div>
+                        <!--Formulaire Village-->
+                        <div class="child-row-flex" *ngIf="isAutresFkt">
+                          <mat-form-field appearance="outline">
+                            <mat-label>Village</mat-label>
+                            <input matInput type="text" placeholder="Merci de saisissez!" formControlName="village">
+                          </mat-form-field>
+                        </div>
+                      </th>
+                    </ng-container>
+
+                    <!--Column Action-->
+                    <ng-container matColumnDef="action">
+                      <th mat-header-cell *matHeaderCellDef>Action</th>
+                      <td mat-cell *matCellDef="let row; index as inde;">
+                        <span *ngIf="!isRowEditCep">
+                          <a (click)="onEditCep({data: row, index_cep: inde, index_benef: i})">Editer</a>
+                        </span>
+                        <span *ngIf="indeRowEditCep == inde && indeRowEdit == i  && isRowEditCep">
+                          <div class="child-btn" fxLayout="row">
+                            <div class="child-row1">
+                              <button mat-raised-button (click)="onCancelEditCep()" color="danger">Annuller</button>
+                            </div>
+                            <div class="child-row1">
+                              <button mat-raised-button (click)="onSaveEditCep(row)" color="primary" [disabled]="!cepForm.valid || isValidate && cepForm.value.fokontany !== null || cepForm.value.village !== null">Valider</button>
+                            </div>
+                          </div>
+                        </span>
+                      </td>
+                    </ng-container>
+                    <!--Column New Action-->
+                    <ng-container matColumnDef="new_action">
+                      <th mat-header-cell *matHeaderCellDef>
+                        <span>
+                          <!--Column boutton-->
+                          <div class="child-btn" fxLayout="row">
+                            <div class="child-row1">
+                              <button mat-raised-button (click)="onCancelAddCep()" color="danger">Annuller</button>
+                            </div>
+                            <div class="child-row1">
+                              <button mat-raised-button (click)="onSaveAddCep(element)" color="primary" [disabled]="!cepForm.valid || isValidate && cepForm.value.fokontany !== null || cepForm.value.village !== null">Valider</button>
+                            </div>
+                          </div>
+                        </span>
+                      </th>
                     </ng-container>
                     <tr mat-header-row *matHeaderRowDef="displayedColumnsParce" class="hg-header-row-2"></tr>
+                    <tr [hidden]="!isAddCep || indeRowEdit != i && isAddCep" mat-header-row *matHeaderRowDef="displayedColumnsAddParce; sticky: true"></tr>
                     <tr mat-row *matRowDef="let row; columns: displayedColumnsParce;" class="hg-element-row"></tr>
+                    <!-- Row shown when there is no matching data. -->
+                    <tr class="mat-row" *matNoDataRow>
+                      <td class="mat-cell" [attr.colspan]="displayedColumnsParce.length">Aucun enregistrement</td>
+                    </tr>
                   </table>
-                </div>
-                <div class="row sv-element-detail-vide" [@detailExpand]="element.isExpanded && element.cep_pr.length == 0? 'expanded' : 'collapsed'">
+                </form>
+                <div class="row sv-element-detail-vide" [@detailExpand]="!isUpdate && element.isExpanded && element.cep_pr.length == 0? 'expanded' : 'collapsed'">
                   <div mat-line>Aucun champs Ecole Enregistrer pour PR {{element.code_pr}}</div>
                 </div>
     

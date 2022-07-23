@@ -1,9 +1,12 @@
+.container-matTab {
+    position: relative;
+    width: 100%;
+} 
 table {
     width: 100%;
 }
 .table-container {
     position: relative;
-    max-height: 400px;
     overflow: auto;
 }
 .btn-info {

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
-import { AddMepBloc, Db_Culture_pms, Db_suivi_pms, UpdateBenef, UpdateBenefActivPr, UpdateSuiviBloc } from 'src/app/interfaces/interface-insertDb';
+import { AddMepBloc, Db_Culture_pms, Db_suivi_pms, UpdateAnimationVe, UpdateAnimeSpecu, UpdateBenef, UpdateBenefActivPr, UpdateParcePr, UpdateSuiviBloc } from 'src/app/interfaces/interface-insertDb';
+import { AnimationSpecu } from 'src/app/interfaces/interfaces-local';
 import { DB_NAME } from 'src/app/utils/global-variables';
 import { DatabaseService } from '../database.service';
 
@@ -113,27 +114,40 @@ export class CrudDbService {
   /******************************
    * PR Bloc
    ******************************/
-  async AddBenef(data: UpdateBenef) {
+  /**async AddBenef(data: UpdateBenef) {
     if (this.db_ready.dbReady.value) {
       const state = `INSERT INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, dt_nais_vers, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, id_commune, village, dt_Insert, etat, statut) 
                   VALUES ("${data.code_benef}", ${data.img_benef != null?`"${data.img_benef}"`:null}, "${data.nom}", ${data.prenom != null?`"${data.prenom}"`:null}, "${data.sexe}", ${data.dt_nais != null?`"${data.dt_nais}"`:null}, ${data.dt_nais_vers != null?`"${data.dt_nais_vers}"`:null}, ${data.surnom != null?`"${data.surnom}"`:null}, ${data.cin}, 
-                  ${data.dt_delivrance != null?`"${data.dt_delivrance}"`:null}, ${data.lieu_delivrance != null?`"${data.lieu_delivrance}"`:null} , ${data.img_cin != null?`"${data.img_cin}"`:null}, ${data.contact != null?`"${data.contact}"`:null}, ${data.id_fkt != null?`"${data.id_fkt}"`:null}, ${data.id_commune != null?`"${data.id_commune}"`:null}, ${data.village != null?`"${data.village}"`:null}, "${data.dt_Insert}", "${data.etat}", "${data.statut}")`;
+                  ${data.dt_delivrance != null?`"${data.dt_delivrance}"`:null}, ${data.lieu_delivrance != null?`"${data.lieu_delivrance}"`:null} , ${data.img_cin != null?`'${data.img_cin}'`:null}, ${data.contact != null?`"${data.contact}"`:null}, ${data.id_fkt != null?`"${data.id_fkt}"`:null}, ${data.id_commune != null?`"${data.id_commune}"`:null}, ${data.village != null?`"${data.village}"`:null}, "${data.dt_Insert}", "${data.etat}", "${data.statut}")`;
       return await this.db.execute(state);
+    }
+  }*/
+  async AddBenef_(data: UpdateBenef) {
+    if (this.db_ready.dbReady.value) {
+      let data_ = [data.code_benef, data.img_benef, data.nom, data.prenom, data.sexe, data.dt_nais, data.dt_nais_vers, data.surnom, data.cin, data.dt_delivrance, data.lieu_delivrance, data.img_cin, data.contact, data.id_fkt, data.id_commune, data.village, data.dt_Insert, data.etat, data.statut];
+      const state = `INSERT INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, dt_nais_vers, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, id_commune, village, dt_Insert, etat, statut) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?)`;
+      return await this.db.query(state, data_);
     }
   }
   async UpdateBenef(data: UpdateBenef) {
     if (this.db_ready.dbReady.value) {
-      const state_ = `UPDATE beneficiaire SET img_benef=${data.img_benef != null?`"${data.img_benef}"`:null}, nom="${data.nom}", prenom=${data.prenom != null?`"${data.prenom}"`:null}, sexe="${data.sexe}",
-                  dt_nais=${data.dt_nais != null?`"${data.dt_nais}"`:null}, dt_nais_vers=${data.dt_nais_vers != null?`"${data.dt_nais_vers}"`:null}, surnom=${data.surnom != null?`"${data.surnom}"`:null}, cin=${data.cin},
-                  dt_delivrance=${data.dt_delivrance != null?`"${data.dt_delivrance}"`:null}, lieu_delivrance=${data.lieu_delivrance != null?`"${data.lieu_delivrance}"`:null}, img_cin=${data.img_cin != null?`"${data.img_cin}"`:null}, contact=${data.contact != null?`"${data.contact}"`:null},
-                  id_fkt=${data.id_fkt != null?`"${data.id_fkt}"`:null}, id_commune=${data.id_commune != null?`"${data.id_commune}"`:null}, village=${data.village != null?`"${data.village}"`:null}, dt_Insert="${data.dt_Insert}", etat="${data.etat}", statut="${data.statut}" WHERE code_benef="${data.code_benef}"`;
-      return await this.db.execute(state_);
+      let data_ = [data.img_benef, data.nom, data.prenom, data.sexe, data.dt_nais, data.dt_nais_vers, data.surnom, data.cin, data.dt_delivrance, data.lieu_delivrance, data.img_cin, data.contact, data.id_fkt, data.id_commune, data.village, data.dt_Insert, data.etat, data.statut];
+      const state_ = `UPDATE beneficiaire SET img_benef= ?, nom= ?, prenom= ?, sexe= ?, dt_nais= ?, dt_nais_vers= ?, surnom= ?, cin= ?, dt_delivrance= ?, lieu_delivrance= ?, img_cin= ?, contact= ?, id_fkt= ?, id_commune= ?, village= ?, dt_Insert= ?, etat= ?, statut= ? WHERE code_benef="${data.code_benef}"`;
+      return await this.db.query(state_, data_);
+    }
+  }
+  async UpdateBenefSync(data: any) {
+    if (this.db_ready.dbReady.value) {
+      let data_ = [data.etat];
+      const state_ = `UPDATE beneficiaire SET  etat= ? WHERE code_benef="${data.code_benef}"`;
+      return await this.db.query(state_, data_);
     }
   }
   async AddPrBenef(data: UpdateBenefActivPr) {
     if (this.db_ready.dbReady.value) {
       const state = `INSERT INTO benef_activ_pr(code_pr, id_proj, id_activ, id_benef, id_bloc, code_achat, id_collaborateur, id_tech, etat, status) 
-                    VALUES ("${data.code_pr}", "${data.id_proj}", ${data.id_activ}, "${data.id_benef}", "${data.id_bloc}", ${data.code_achat != null? `"${data.code_achat}"`:null},
+                    VALUES ("${data.code_pr}", "${data.id_proj}", ${data.id_activ}, "${data.id_benef}", ${data.id_bloc != null?`"${data.id_bloc}"`:null}, ${data.code_achat != null? `"${data.code_achat}"`:null},
                     "${data.id_collaborateur}", ${data.id_tech}, "${data.etat}", "${data.status}")`;
       return this.db.execute(state);
     }
@@ -142,6 +156,70 @@ export class CrudDbService {
     if (this.db_ready.dbReady.value) {
       const state = `UPDATE benef_activ_pr SET code_achat=${data.code_achat != null? `"${data.code_achat}"`:null}, etat="${data.etat}",status="${data.status}" WHERE code_pr="${data.code_pr}"`;
       return this.db.execute(state);
+    }
+  }
+  async UpdatePrBenefSync(data: any) {
+    if (this.db_ready.dbReady.value) {
+      const state = `UPDATE benef_activ_pr SET etat="${data.etat}" WHERE code_pr="${data.code_pr}"`;
+      return this.db.execute(state);
+    }
+  }
+  // Add parcelle
+  async AddParcellePr(data: UpdateParcePr) {
+    if (this.db_ready.dbReady.value) {
+      let data_ = [data.code_parce, data.id_bloc, data.id_benef, data.ref_gps, data.lat, data.log, data.superficie, data.id_commune, data.id_fkt, data.village, data.anne_adheran, data.dt_creation, data.etat, data.status];
+      const state_ = `INSERT INTO cep_parce(code_parce, id_bloc, id_benef, ref_gps, lat, log, superficie, id_commune, id_fkt, village, anne_adheran, dt_creation, etat, status) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      return await this.db.query(state_, data_);
+    }
+  }
+  // Update parcelle
+  async UpdateParcellePr(data: UpdateParcePr) {
+    if (this.db_ready.dbReady.value) {
+      let data_ = [data.id_bloc, data.id_benef, data.ref_gps, data.lat, data.log, data.superficie, data.id_commune, data.id_fkt, data.village, data.anne_adheran, data.dt_creation, data.etat, data.status];
+      const state_ = `UPDATE cep_parce SET id_bloc = ?, id_benef= ?, ref_gps=?, lat=?, log=?, superficie=?, id_commune=?, id_fkt=?, village=?, anne_adheran=?, dt_creation=?, etat=?, status=? WHERE code_parce = "${data.code_parce}"`;
+      return await this.db.query(state_, data_);
+    }
+  }
+  // Add animation
+  async AddAnimationVe(data: UpdateAnimationVe) {
+    if (this.db_ready.dbReady.value) {
+      let data_ = [data.code, data.id_pr, data.id_fkt, data.id_commune, data.village, data.date_anim, data.nb_participant, data.nb_h, data.nb_f, data.nb_inf_25, data.type, data.img_piece, null, data.id_tech_recenseur, data.etat, data.status];
+      const state_ = `INSERT INTO animation_ve(code, id_pr, id_fkt, id_commune, village, date_anim, nb_participant, nb_h, nb_f, nb_inf_25, type, img_piece, img_group_particip, id_tech_recenseur, etat, status) 
+                      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      return await this.db.query(state_, data_);
+    }
+  }
+  // Update animation
+  async UpdateAnimationVe(data: UpdateAnimationVe) {
+    if (this.db_ready.dbReady.value) {
+      let data_ = [data.id_pr, data.id_fkt, data.id_commune, data.village, data.date_anim, data.nb_participant, data.nb_h, data.nb_f, data.nb_inf_25, data.type, data.img_piece, null, data.id_tech_recenseur, data.etat, data.status];
+      const state_ = `UPDATE animation_ve SET id_pr = ?, id_fkt = ?, id_commune = ?, village = ?, date_anim = ?, nb_participant = ?, nb_h = ?, nb_f = ?, nb_inf_25 = ?, type = ?, img_piece = ?, img_group_particip = ?, id_tech_recenseur = ?, etat = ?, status = ? WHERE code = "${data.code}"`;
+      return await this.db.query(state_, data_);
+    }
+  }
+  // Add speculation
+  async AddAnimationVe_specu(data: UpdateAnimeSpecu) {
+    if (this.db_ready.dbReady.value) {
+      let data_ = [data.id_anime_ve, data.id_var, data.id_espece, data.quantite, data.etat, data.status];
+      const state_ = `INSERT INTO animation_ve_specu(id_anime_ve, id_var, id_espece, quantite, etat, status) 
+                      VALUES(?, ?, ?, ?, ?, ?)`;
+      return await this.db.query(state_, data_);
+    }
+  }
+  // Update speculation
+  async UpdateAnimationVe_specu(data: UpdateAnimeSpecu) {
+    if (this.db_ready.dbReady.value) {
+      let data_ = [data.id_anime_ve, data.id_var, data.id_espece, data.quantite, data.etat, data.status];
+      const state_ = `UPDATE animation_ve_specu SET id_anime_ve = ?, id_var = ?, id_espece = ?, quantite = ?, etat = ?, status = ? WHERE code_specu = ${data.code_specu}`;
+      return await this.db.query(state_, data_);
+    }
+  }
+  // Delete speculation
+  async DeleteAnimationVe_specu(data: AnimationSpecu) {
+    if (this.db_ready.dbReady.value) {
+      const state_ = `DELETE FROM animation_ve_specu WHERE code_specu = ${data.code_specu}`;
+      return await this.db.execute(state_);
     }
   }
 }
