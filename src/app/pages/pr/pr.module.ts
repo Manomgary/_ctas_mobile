@@ -7,6 +7,7 @@ import { AngularMaterialModule } from 'src/app/angular-material.module';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BeneficiairePrPage } from './beneficiaire-pr/beneficiaire-pr.page';
 import { SuiviPrPage } from './suivi-pr/suivi-pr.page';
+import { CustomDatePipe } from 'src/app/utils/custom.datepipe';
 
 
 
@@ -14,7 +15,8 @@ import { SuiviPrPage } from './suivi-pr/suivi-pr.page';
   declarations: [
     BeneficiairePrPage,
     AnimationVePage,
-    SuiviPrPage
+    SuiviPrPage,
+    CustomDatePipe
   ],
   imports: [
     CommonModule,

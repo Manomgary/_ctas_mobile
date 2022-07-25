@@ -173,11 +173,6 @@ export class SuiviBlocPage implements OnInit {
   sv_export_sg: any[] = [];
   sv_export_pa: any[] = [];
   sv_export_mv: any[] = [];
-
-   /**
-    * ** projet ***
-    * {"numero":3,"code_proj":"P03","nom":"AFAFI SUD Lot 3",
-    * "description":"null","logo":"[object Object]","statuts":"activer"}*/
   
   @ViewChild(IonAccordionGroup, { static: true }) accordionGroup: IonAccordionGroup;
   constructor(

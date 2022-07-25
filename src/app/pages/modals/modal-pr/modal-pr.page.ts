@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ModalController, NavParams, Platform } from '@ionic/angular';
-import { AnimationSpecu, AnimationVe, Loc_categEspece, Loc_Commune, Loc_district, Loc_Espece, Loc_Fokontany, Loc_PR, Loc_region, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { Loc_AnimationSpecu, Loc_AnimationVe, Loc_categEspece, Loc_cep_PR, Loc_Commune, Loc_district, Loc_Espece, Loc_Fokontany, Loc_MepPR, Loc_PR, Loc_region, Loc_saison, Loc_Suivi_MepPR, Loc_variette } from 'src/app/interfaces/interfaces-local';
 import { CaptureImageService } from 'src/app/services/capture-image.service';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
-import { SEXE } from 'src/app/utils/global-variables';
+import { EC_CULTURAL, SC, SEXE, STC } from 'src/app/utils/global-variables';
 
 import * as _moment from 'moment';
 const moment = _moment;
@@ -23,6 +23,8 @@ interface LocalFile {
 export class ModalPrPage implements OnInit {
   beneficiaireForm: FormGroup;
   animeVeForm: FormGroup;
+  mepForm: FormGroup;
+  suiviMepForm: FormGroup;
 
   data_sexe: any[] = SEXE;
   // zone 
@@ -60,24 +62,62 @@ export class ModalPrPage implements OnInit {
 
   isAddAnimeVe: boolean = false;
   isEditAnimeVe: boolean = false;
-  element_animeVe: AnimationVe;
+  element_animeVe: Loc_AnimationVe;
   data_pr: Loc_PR[] = [];
   
   specu_animeVe: any[] = [];
   isAddSpecu: boolean = false;
   data_espece: Loc_Espece[] = [];
   data_espece_filter: Loc_Espece[] = [];
+  data_espece_filter_ea: Loc_Espece[] = [];
   data_var: Loc_variette[] = [];
   data_variette_filter: Loc_variette[] = [];
+  data_variette_filter_ea: Loc_variette[] = [];
   data_categ: Loc_categEspece[] = [];
 
   selected_categorie: Loc_categEspece = null;
   selected_espece: Loc_Espece = null;
   selected_variette: Loc_variette  = null;
   data_speculation: any[] = [];
-  data_specu_delete: AnimationSpecu[] = [];
-  data_anime_specu_update: AnimationSpecu[] = [];
+  data_specu_delete: Loc_AnimationSpecu[] = [];
+  data_anime_specu_update: Loc_AnimationSpecu[] = [];
   quantite: number;
+
+  // Suivi PR
+  isMepPr: boolean = false;
+  isSuiviMepPr: boolean = false;
+  // Add MEP PR
+  isAddMepSG: boolean = false;
+  isAddMepPa: boolean = false;
+  isAddMepMv: boolean = false;
+  // Edit
+  isEditMepSG: boolean = false;
+  isEditMepPa: boolean = false;
+  isEditMepMv: boolean = false;
+  // Add Suivi MEP PR 
+  isAddMepSvSG: boolean = false;
+  isAddMepSvPa: boolean = false;
+  isAddMepSvMv: boolean = false;
+  // Add Suivi MEP PR 
+  isEditMepSvSG: boolean = false;
+  isEditMepSvPa: boolean = false;
+  isEditMepSvMv: boolean = false;
+
+  data_Mep_Pr_edit: Loc_MepPR;
+  data_Mep_suivi_PR: Loc_Suivi_MepPR;
+
+  data_saison: Loc_saison[]  = [];
+  data_cep: Loc_cep_PR[] = [];
+  data_cep_filter: Loc_cep_PR[] = [];
+  data_sc: any[] = SC;
+  espece_unite: string = null;
+  isAssocie: boolean = false;
+  isCultureBande: boolean = false;
+  isSelectedAutreCulte: boolean = false;
+  annee_du: string[] = ['2021', '2022'];
+
+  data_stc: any[] = STC;
+  data_ec: any[] = EC_CULTURAL;
 
   constructor(
     private modalCtrl: ModalController,
@@ -131,6 +171,75 @@ export class ModalPrPage implements OnInit {
         this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_animeVe.code_dist});
         this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.element_animeVe.code_commune});
       }
+    }
+
+    // Get Suivi PR
+    if (this.navParams.get('isSuiviPR')) {
+      this.isMepPr = this.navParams.get('isSuiviPR');
+      let data_initial = this.navParams.get('data_init');
+      console.log("::::Data initiale::::", data_initial);
+      this.data_saison = data_initial.saison;
+      this.data_espece = data_initial.espece;
+      this.data_var = data_initial.variette;
+      this.data_categ = data_initial.categorie;
+      this.data_pr = data_initial.pr;
+      this.data_cep = data_initial.parcelle;
+      // Add
+      if (this.navParams.get('isAddMepSg')) {
+        this.isAddMepSG = this.navParams.get('isAddMepSg');
+        this.data_espece_filter = this.data_espece.filter(item => {return item.id_categ === 1});
+      } else if (this.navParams.get('isAddMepPa')) {
+        this.isAddMepPa = this.navParams.get('isAddMepPa');
+        this.data_espece_filter = this.data_espece.filter(item => {return item.id_categ === 2});
+      } else if (this.navParams.get('isAddMepMv')) {
+        this.isAddMepMv = this.navParams.get('isAddMepMv');
+        this.data_espece_filter = this.data_espece.filter(item => {return item.id_categ === 3});
+      }
+      // Edit
+      if (this.navParams.get('isEditMepSg')) {
+        this.isEditMepSG = this.navParams.get('isEditMepSg');
+        this.data_Mep_Pr_edit = this.navParams.get('element');
+        this.data_espece_filter = this.data_espece.filter(item => {return item.id_categ === 1});
+        console.log(":::Data EDIT SG:::", this.data_Mep_Pr_edit);
+      } else if (this.navParams.get('isEditMepPa')) {
+        this.isEditMepPa = this.navParams.get('isEditMepPa');
+        this.data_Mep_Pr_edit = this.navParams.get('element');
+        this.data_espece_filter = this.data_espece.filter(item => {return item.id_categ === 2});
+        console.log(":::Data EDIT PA:::", this.data_Mep_Pr_edit);
+      } else if (this.navParams.get('isEditMepMv')) {
+        this.isEditMepMv = this.navParams.get('isEditMepMv');
+        this.data_Mep_Pr_edit = this.navParams.get('element');
+        this.data_espece_filter = this.data_espece.filter(item => {return item.id_categ === 3});
+        console.log(":::Data EDIT MV:::", this.data_Mep_Pr_edit);
+      }
+    }
+    /****************
+     * suivi Mep PR
+     *******************/
+    if (this.navParams.get('isSuiviSvPR')) {
+      // Add 
+      this.isSuiviMepPr = this.navParams.get('isSuiviSvPR');
+      this.data_Mep_Pr_edit = this.navParams.get('data_mep');
+      console.log(":::Elem Mep PR::::", this.data_Mep_Pr_edit);
+      if (this.navParams.get('isAddSvSg')) {
+        this.isAddMepSvSG = this.navParams.get('isAddSvSg');
+      } else if (this.navParams.get('isAddSvPa')) {
+        this.isAddMepSvPa = this.navParams.get('isAddSvPa');
+      } else if (this.navParams.get('isAddSvMv')) {
+        this.isAddMepSvMv = this.navParams.get('isAddSvMv');
+      }
+      // Edit
+      if (this.navParams.get('isEditSvSg')) {
+        this.isEditMepSvSG = this.navParams.get('isEditSvSg');
+        this.data_Mep_suivi_PR = this.navParams.get('data_elem_suivi');
+      } else if (this.navParams.get('isEditSvPa')) {
+        this.isEditMepSvPa = this.navParams.get('isEditSvPa');
+        this.data_Mep_suivi_PR = this.navParams.get('data_elem_suivi');
+      } else if (this.navParams.get('isEditSvMv')) {
+        this.isEditMepSvMv = this.navParams.get('isEditSvMv'); 
+        this.data_Mep_suivi_PR = this.navParams.get('data_elem_suivi');
+      }
+      console.log(":::Elem Mep Suivi PR::::", this.data_Mep_suivi_PR);
     }
   }
 
@@ -234,8 +343,14 @@ export class ModalPrPage implements OnInit {
       });
     }
 
-    if  (this.isAddAnimeVe || this.isEditAnimeVe) {
+    if (this.isAddAnimeVe || this.isEditAnimeVe) {
       this.loadFormAnimeVe();
+    }
+    if (this.isMepPr) {
+      this.initFormMepPr();
+    }
+    if (this.isSuiviMepPr) {
+      this.initFormSuiviMepPr();
     }
     //  
   }
@@ -272,6 +387,21 @@ export class ModalPrPage implements OnInit {
         });
       }
     });
+  }
+  /*************************
+   * Select formulaire
+   ***************************/
+  onSelectPR() {
+    // filtrer CEP
+    let val = this.mepForm.value;
+    this.data_cep_filter = this.data_cep.filter(item => {return item.code_pr === val.beneficiaire.code_pr});
+    this.mepForm.patchValue({
+      parcelle: null
+    });
+  }
+  onSelectCep() {
+    // Select champs ecole
+    console.log(":::Select champs ecole::::");
   }
 
   onSelectRegion() {
@@ -382,15 +512,102 @@ export class ModalPrPage implements OnInit {
     }
   }
   // Se lect Espece
-  onSeletCateg() {
-    this.data_espece_filter = this.data_espece.filter(item => {return item.id_categ === this.selected_categorie.code_cat});
-    this.selected_espece = null;
-    this.selected_variette = null;
+  onSeletCateg(data: any) {
+    if (this.isAddAnimeVe || this.isEditAnimeVe) {
+      this.data_espece_filter = this.data_espece.filter(item => {return item.id_categ === this.selected_categorie.code_cat});
+      this.selected_espece = null;
+      this.selected_variette = null;
+    }
+    if (this.isMepPr) {
+      if (data === 'autre') {
+        this.isSelectedAutreCulte = true;
+        this.mepForm.patchValue({
+          categorie_ea: null,
+          espece_ea: null,
+          variette_ea: null
+        });
+      } else if (data === 'categorie') {
+        this.mepForm.patchValue({
+          espece_ea: null,
+          variette_ea: null,
+          autreCultureEa: null
+        });
+        this.isSelectedAutreCulte = false;
+        // filtre Espece ea
+        let val_categ: Loc_categEspece = this.mepForm.value.categorie_ea;
+        this.data_espece_filter_ea = this.data_espece.filter(item => {return item.id_categ === val_categ.code_cat});
+      }
+    }
   }
-  onSelectEspece() {
-    this.data_variette_filter = this.data_var.filter(item => {return item.id_espece === this.selected_espece.code_espece});
-    this.selected_variette = null;
+  onSelectEspece(data: any) {
+    if (this.isAddAnimeVe || this.isEditAnimeVe) {
+      this.data_variette_filter = this.data_var.filter(item => {return item.id_espece === this.selected_espece.code_espece});
+      this.selected_variette = null;
+    } 
+    if (this.isMepPr) {
+      if (data === 'espece') {
+        let val_espece: Loc_Espece = this.mepForm.value.espece;
+        this.espece_unite = val_espece.unite;
+        this.data_variette_filter = this.data_var.filter(item => {return item.id_espece === val_espece.code_espece});
+        this.mepForm.patchValue({
+          variette: null
+        });
+      } else if(data === 'espece_ea') {
+        let val_espece_ea: Loc_Espece = this.mepForm.value.espece_ea;
+        this.data_variette_filter_ea = this.data_var.filter(item => {return item.id_espece === val_espece_ea.code_espece});
+        this.mepForm.patchValue({
+          variette_ea: null
+        });
+      }
+    }
   }
+  onSeletSc(data: any) {
+    if (data === 'sc') {
+      if (this.mepForm.value.sc.value === 'C.associé') {
+        this.isAssocie = true;
+        this.mepForm.patchValue({
+          categorie_ea: null,
+          espece_ea: null,
+          variette_ea: null,
+          autreCultureEa: null
+        });
+        this.data_espece_filter_ea = [];
+        this.data_variette_filter_ea = [];
+        this.isCultureBande = false;
+      } else {
+        this.isAssocie = false;
+        this.mepForm.patchValue({
+          categorie_ea: null,
+          espece_ea: null,
+          variette_ea: null,
+          autreCultureEa: null
+        });
+        this.data_espece_filter_ea = [];
+        this.data_variette_filter_ea = [];
+        // Culture bande
+        if (this.mepForm.value.sc.value === 'C.bande') {
+          this.isCultureBande = true;
+        } else this.isCultureBande = false;
+      }
+    } else if (data === 'none') {
+      this.mepForm.patchValue({
+        sc: null
+      });
+    }
+  }
+  onSelectNone(data: any) {
+    if (data === 'stc') {
+      this.suiviMepForm.patchValue({
+        stc: null
+      });
+    }
+    if (data === 'ec') {
+      this.suiviMepForm.patchValue({
+        ec: null
+      });
+    }
+   }
+  
 
   onAddSpecu() {
      this.isAddSpecu = true;
@@ -530,12 +747,216 @@ export class ModalPrPage implements OnInit {
       });
     }
   }
+
+  // Initial Form SuiviPR
+  initFormMepPr() {
+    if (this.isAddMepSG || this.isAddMepMv || this.isAddMepPa) {
+      this.mepForm = this.formBuilder.group({
+        annee: [null, Validators.required],
+        saison: this.isAddMepSG?[null, Validators.required]:null,
+        beneficiaire: [null, Validators.required],
+        parcelle: [null, Validators.required],
+        ddp: [null, Validators.required],
+        qso: [null, Validators.required],
+        dt_distribution: null,
+        dds: [null, Validators.required],
+        sfce: null,
+        nbre_ligne: this.isAddMepPa?[null, Validators.required]:null,
+        long_ligne: null,
+        sc: this.isAddMepSG? [null, Validators.required]: null,
+        categorie_ea: null,
+        espece: [null, Validators.required],
+        espece_ea: null,
+        variette: this.isAddMepSG? [null, Validators.required] : null,
+        variette_ea: null,
+        autreCultureEa: null
+      });
+    } else if (this.isEditMepSG || this.isEditMepMv || this.isEditMepPa) {
+      let saison_: Loc_saison = null;
+      let pr_: Loc_PR = null;
+      let cep_: Loc_cep_PR = null;
+      let espece_: Loc_Espece = null;
+      let var_: Loc_variette = null;
+      let sc_: any = null;
+      let categ_ea: Loc_categEspece = null;
+      let espece_ea: Loc_Espece = null;
+      let var_ea: Loc_variette = null;
+
+      this.data_pr.forEach(item => {
+        if (item.code_pr === this.data_Mep_Pr_edit.code_pr) {
+          pr_ = item
+        }
+      });
+      this.data_saison.forEach(item => {
+        console.log(":::::",item);
+        if (item.code_saison === this.data_Mep_Pr_edit.id_saison) {
+          saison_ = item;
+          console.log("Saison:::",saison_);
+        }
+      });
+      this.data_cep_filter = this.data_cep.filter(item => {return item.code_pr === this.data_Mep_Pr_edit.code_pr});
+      this.data_cep_filter.forEach(elem_cep => {
+        if (elem_cep.code_parce === this.data_Mep_Pr_edit.id_parce) {
+          cep_ = elem_cep
+        }
+      });
+      this.data_espece_filter.forEach(elem_espece => {
+        if (this.isEditMepPa || this.isEditMepMv) {
+          if (elem_espece.code_espece === this.data_Mep_Pr_edit.id_espece) {
+            espece_ = elem_espece;
+          }
+        } else if (this.isEditMepSG) {
+          if (elem_espece.code_espece === this.data_Mep_Pr_edit.code_espece_var_sg) {
+            espece_ = elem_espece;
+          }
+        }
+      });
+      this.data_variette_filter = this.data_var.filter(elem_var => {return elem_var.id_espece === this.data_Mep_Pr_edit.code_espece_var_sg});
+      this.data_variette_filter.forEach(elem_var => {
+        if (this.data_Mep_Pr_edit.id_var != null) {
+          if (elem_var.code_var === this.data_Mep_Pr_edit.id_var) {
+            var_= elem_var;
+          }
+        }
+      });
+      this.data_sc.forEach(elem_sc => {
+        if (this.data_Mep_Pr_edit.sc != null) {
+          if (elem_sc.value === this.data_Mep_Pr_edit.sc) {
+            sc_ = elem_sc;
+            if (elem_sc.value === 'C.associé') {
+              this.isAssocie = true;
+            } else {
+              this.isAssocie = false;
+              // Culture bande
+              if (elem_sc.value === 'C.bande') {
+                this.isCultureBande = true;
+              } else this.isCultureBande = false;
+            }
+          }
+        }
+      });
+      if (this.data_Mep_Pr_edit.sc != null) {
+        this.data_sc.forEach(elem_sc => {
+          sc_ = elem_sc;
+        });
+        if (this.data_Mep_Pr_edit.sc.toLowerCase() === 'c.associé') {
+          this.isAssocie = true;
+          // si Existante Variette
+          if (this.data_Mep_Pr_edit.ea_id_variette != null) {
+            this.data_categ.forEach(elem_categ => {
+              if (elem_categ.code_cat === 1) {
+                categ_ea = elem_categ;
+              }
+            });
+            this.data_espece_filter_ea = this.data_espece.filter(item_filtre => {return item_filtre.id_categ === 1});
+            // Espece ea
+            this.data_espece_filter_ea.forEach(elem_espece_filtre_ea => {
+              if (elem_espece_filtre_ea.code_espece === this.data_Mep_Pr_edit.code_espece_ea) {
+                espece_ea = elem_espece_filtre_ea;
+              }
+            });
+            this.data_variette_filter_ea = this.data_var.filter(item_var_filtre => {return item_var_filtre.id_espece === this.data_Mep_Pr_edit.code_espece_ea});
+            this.data_variette_filter_ea.forEach(elem_var => {
+              if (elem_var.code_var === this.data_Mep_Pr_edit.ea_id_variette) {
+                var_ea = elem_var;
+              }
+            });
+          }
+          // Autre cultures
+          if (this.data_Mep_Pr_edit.ea_autres != null) {
+            this.isSelectedAutreCulte = false;
+          }
+        } else {
+          // Culture bande
+          if (this.data_Mep_Pr_edit.sc.toLowerCase() === 'c.bande') {
+            this.isCultureBande = true;
+          } else this.isCultureBande = false;
+        }
+      }
+
+      this.mepForm = this.formBuilder.group({
+        annee: [this.data_Mep_Pr_edit.annee_du, Validators.required],
+        saison: this.isEditMepSG?[saison_, Validators.required]:null,
+        beneficiaire: [pr_, Validators.required],
+        parcelle: [cep_, Validators.required],
+        ddp: [moment(this.data_Mep_Pr_edit.ddp, "YYYY-MM-DD"), Validators.required],
+        qso: [this.data_Mep_Pr_edit.qso, Validators.required],
+        dt_distribution: this.data_Mep_Pr_edit.dt_distribution != null?moment(this.data_Mep_Pr_edit.dt_distribution, "YYYY-MM-DD"):null,
+        dds: [moment(this.data_Mep_Pr_edit.dds, "YYYY-MM-DD"), Validators.required],
+        sfce: this.data_Mep_Pr_edit.sfce_emb,
+        nbre_ligne: this.isEditMepPa?[this.data_Mep_Pr_edit.nbre_ligne, Validators.required]:this.data_Mep_Pr_edit.nbre_ligne,
+        long_ligne: this.data_Mep_Pr_edit.long_ligne,
+        sc: this.isEditMepSG? [sc_, Validators.required]: null,
+        categorie_ea: categ_ea,
+        espece: [espece_, Validators.required],
+        espece_ea: espece_ea,
+        variette: this.isEditMepSG? [var_, Validators.required] : null,
+        variette_ea: var_ea,
+        autreCultureEa: this.data_Mep_Pr_edit.ea_autres
+      });
+    }
+  }
+  initFormSuiviMepPr() {
+    if (this.isAddMepSvSG || this.isAddMepSvPa || this.isAddMepSvMv) {
+      this.suiviMepForm = this.formBuilder.group({
+        ddp: [null, Validators.required],
+        stc: this.isAddMepSvSG?[null, Validators.required]:null,
+        ec: null,
+        ql: this.isAddMepSvPa?[null, Validators.required]:null,
+        qr: null,
+        hauteur: null,
+        long_ligne: null,
+        nbre_ligne: null,
+        nbre_pied: null,
+        estimation: null,
+        img_culture: null
+      });
+    } else if (this.isEditMepSvSG || this.isEditMepSvPa || this.isEditMepSvMv) {
+      let stc_: any = null;
+      let ec_: any = null;
+      if (this.data_Mep_suivi_PR.img_cult != null) {
+        this.fileImage_pr.data = this.data_Mep_suivi_PR.img_cult
+      }
+      if (this.data_Mep_suivi_PR.sc != null) {
+        this.data_stc.forEach(item => {
+          if (item.value === this.data_Mep_suivi_PR.stc) {
+            stc_ = item;
+          }
+        });
+      }
+      if (this.data_Mep_suivi_PR.ec != null) {
+        this.data_ec.forEach(item => {
+          if (item.value === this.data_Mep_suivi_PR.ec) {
+            ec_ = item;
+          }
+        });
+      }
+      this.suiviMepForm = this.formBuilder.group({
+        ddp: [moment(this.data_Mep_suivi_PR.ddp, "YYYY-MM-DD"), Validators.required],
+        stc: this.isEditMepSvSG?[stc_, Validators.required]:null,
+        ec: ec_,
+        ql: this.isEditMepSvPa?[this.data_Mep_suivi_PR.ql, Validators.required]:null,
+        qr: this.data_Mep_suivi_PR.qr,
+        hauteur: this.data_Mep_suivi_PR.hauteur,
+        long_ligne: this.data_Mep_suivi_PR.long_ligne,
+        nbre_ligne: this.data_Mep_suivi_PR.nbre_ligne,
+        nbre_pied: this.data_Mep_suivi_PR.nbre_pied,
+        estimation: this.data_Mep_suivi_PR.ex,
+        img_culture: this.data_Mep_suivi_PR.img_cult
+      });
+    }
+  }
   // Image
   async takeImage(src: string) {
     this.captureImg.getImage().then(res => {
       console.log(":::Res Image:::", res);
       if (src === 'img-pr') {
         this.fileImage_pr = res;
+        if (this.isSuiviMepPr) {
+          this.suiviMepForm.patchValue({
+            img_culture: this.fileImage_pr.data
+          });
+        }
       } else if (src === 'img-cin1') {
         this.fileImage_cin1 = res;
       } else if (src === 'img-cin2') {
@@ -544,6 +965,20 @@ export class ModalPrPage implements OnInit {
         this.img_piece.push(res);
       }
     });
+  }
+
+  // Delete
+  onDeleteImg(data) {
+    if (data === 'img-cult') {
+      this.fileImage_pr = {
+        data: null,
+        date: null,
+        name: null
+      }
+      this.suiviMepForm.patchValue({
+        img_culture: null
+      });
+    }
   }
 
   onCancelSpecu() {
@@ -640,6 +1075,18 @@ export class ModalPrPage implements OnInit {
       dismiss = this.animeVeForm.value;
       console.log(dismiss);
     }
+    this.modalCtrl.dismiss(dismiss);
+  }
+  onSaveMepPr() {
+    let dismiss = this.mepForm.value;
+    this.modalCtrl.dismiss(dismiss);
+  }
+  /**
+  * Save Mep suivi PR
+  */
+  onSaveSuviPr() {
+    let dismiss = this.suiviMepForm.value;
+    console.log("::::Data dismissed:::", dismiss);
     this.modalCtrl.dismiss(dismiss);
   }
 }

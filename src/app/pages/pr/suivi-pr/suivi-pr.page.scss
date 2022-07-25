@@ -1,0 +1,62 @@
+table {
+    width: 100%;
+}
+.table-container {
+    position: relative;
+    min-width: 0;
+    max-height: 400px;
+    overflow: auto;
+}
+.btn-info {
+    color: white;
+    background-color: #0d3c68;
+    padding: 0px;
+}
+// Button
+.btn-dimension {
+    height: 23px!important;
+    line-height: 23px!important;
+}
+.sv-element-detail td {
+    border-bottom-width: 0;
+}
+    
+.sv-element-detail {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e5f1e1;
+    box-shadow: inset 1px 2px 5px #87b3cc;
+    border-radius: 2px;
+}
+.sv-element-detail-vide {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fddbcc !important;
+    border-radius: 2px;
+}
+// tr row high
+tr.hg-element-row {
+    height: 23px!important;
+}
+// tr header row
+tr.hg-header-row-1 {
+    height: 30px!important;
+}
+tr.hg-header-row-2 {
+    height: 27px!important;
+}
+/**Expended element tables*/
+tr.detail-row {
+    height: 0!important;
+}
+tr.sv-element-row:not(.sv-expanded-row):hover {
+    background: rgb(236, 235, 132);
+}
+    
+tr.sv-element-row:not(.sv-expanded-row):active {
+    background: #e4b5ff !important;
+}

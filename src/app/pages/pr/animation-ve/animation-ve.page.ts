@@ -4,7 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { UpdateAnimationVe, UpdateAnimeSpecu } from 'src/app/interfaces/interface-insertDb';
-import { AnimationSpecu, AnimationVe, LocalFile, Loc_categEspece, Loc_Commune, Loc_district, Loc_Espece, Loc_Fokontany, Loc_PR, Loc_projet, Loc_region, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { LocalFile, Loc_activ_projet, Loc_AnimationSpecu, Loc_AnimationVe, Loc_categEspece, Loc_Commune, Loc_district, Loc_Espece, Loc_Fokontany, Loc_PR, Loc_projet, Loc_region, Loc_variette } from 'src/app/interfaces/interfaces-local';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { ACTIVE, ANIMATION, SYNC, UPDATE } from 'src/app/utils/global-variables';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
@@ -29,7 +29,7 @@ interface AnimetionVe {
   fokontany: Loc_Fokontany,
   village: string,
   quantite_specu: number,
-  specu_delete:  AnimationSpecu[]
+  specu_delete:  Loc_AnimationSpecu[]
 }
 
 @Component({
@@ -47,10 +47,10 @@ interface AnimetionVe {
 export class AnimationVePage implements OnInit {
   private projet: Loc_projet;
   private user: Utilisateurs[];
-  private activite: string;
+  private activite: Loc_activ_projet;
 
-  private data_animation_ve: AnimationVe[] = [];
-  private data_anime_specu: AnimationSpecu[] = [];
+  private data_animation_ve: Loc_AnimationVe[] = [];
+  private data_anime_specu: Loc_AnimationSpecu[] = [];
 
   // displayed columns
   displayedColumnsAnimeVe: string[] = ['code_pr', 'nom', 'code_anime', 'date_anime', 'commune', 'fokontany', 'nb_participant', 'nb_f', 'nb_h', 'nb-25', 'nb_specu', 'quantite', 'img_pièce', 'action'];
@@ -58,7 +58,7 @@ export class AnimationVePage implements OnInit {
   displayedColumnsSpecu: string[] = ['speculation', 'quantite'];
 
   // data source Mep
-  dataSourceAnimationVe = new MatTableDataSource<AnimationVe>();
+  dataSourceAnimationVe = new MatTableDataSource<Loc_AnimationVe>();
 
   isTableAnimationExpanded = false;
   isUpdate: boolean = false;
@@ -206,7 +206,7 @@ export class AnimationVePage implements OnInit {
     this.isRowEditAnimation = false;
     this.indexRowEdit = null;
   }
-  onSaveEdit(element: AnimationVe) {
+  onSaveEdit(element: Loc_AnimationVe) {
     console.log("::Element Edit:::", element);
     console.log("::Element To Update Edit:::", this.update_animeve);
     let img_piece: string[] = [];
@@ -235,6 +235,7 @@ export class AnimationVePage implements OnInit {
     }
     this.crudData.UpdateAnimationVe(updateAnimation).then(res => {
       console.log(":::Animation Updated:::Specu Delete::::", this.update_animeve.specu_delete);
+      // Delete speculation Animation
       if (this.update_animeve.specu_delete != null) {
         if (this.update_animeve.specu_delete.length > 0) {
           this.update_animeve.specu_delete.forEach((elem_del, ind) => {
@@ -245,6 +246,25 @@ export class AnimationVePage implements OnInit {
             });
           });
         }
+      }
+      // Add new speculation
+      console.log("Animation Add Ve::", this.update_animeve.speculation);
+      if (this.update_animeve.speculation != null) {
+        this.update_animeve.speculation.forEach(item => {
+          let add_specu: UpdateAnimeSpecu = {
+            code_specu: 0,
+            id_anime_ve: element.code_anime,
+            id_var: item.variette != null ? item.variette.code_var : null,
+            id_espece: item.variette != null ? null : item.espece.code_espece,
+            quantite: item.quantite,
+            etat: SYNC,
+            status: ACTIVE
+          }
+          console.log("data Specu to Add:::", add_specu);
+          this.crudData.AddAnimationVe_specu(add_specu).then(res => {
+            console.log("Added speculation::::");
+          });
+        });
       }
       this.loadAnimation();
     });

@@ -1,9 +1,1141 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>suiviPr</ion-title>
+    <div class="content-fvlex" fxLayout="column">
+      <div class="child-flex">
+        <ion-buttons>
+          <ion-menu-button autoHide="false"></ion-menu-button>
+        </ion-buttons>
+      </div>
+      <div class="child-flex">
+        <ion-title>suiviPr</ion-title>
+      </div>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <div class="contonaire-content-flex">
+    <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
+      <!--Column Head-->
+      <div class="child-column-flex-1" fxLayout="column">
+        <div class="child-flex-column">
+          <p>Filtre</p>
+        </div>
+        <div class="child-flex-column" fxLayout="row">
+          <div class="child-flex-row">
+            <ion-button (click)="onUpdate()" *ngIf="!isUpdated">Modifier</ion-button>
+            <ion-button (click)="onFinished()" *ngIf="isUpdated">Terminer</ion-button>
+          </div>
+          <div class="child-flex-row">
+            <ion-button (click)="onExport()" *ngIf="!isUpdated" [disabled]="data_mep_pr.length == 0">Exporter</ion-button>
+          </div>
+        </div>
+      </div>
+      <!--Column content-->
+      <div class="child-column-flex-1" style="justify-content: flex-start;">
+        <!-- Multiple Accordions -->
+        <ion-accordion-group mode="ios" [multiple]="true" [value]="['sg']">
+          <!--Semences en grains-->
+          <ion-accordion value="sg">
+            <ion-item slot="header" class="level1">
+              <ion-label>Semences en grains</ion-label>
+            </ion-item>
 
+            <div slot="content">
+              <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
+                <!--Column Bouton-->
+                <div class="child-column">
+                  <ion-button (click)="onAdd('mep-sg')" *ngIf="isUpdated" [disabled]="isAddSg">Ajouter</ion-button>
+                  <ion-button (click)="onExportCateg('mep-sg')" *ngIf="!isUpdated" [disabled]="mep_sg.length == 0 || isAddSg">Exporter</ion-button>
+                  <button mat-raised-button (click)="toggleTableRows({src: 'mep-sg'})" color="primary">Tout afficher</button>
+                </div>
+                <!--Table modifier-->
+                <div class="child-column">
+                  <div class="container-matTab mat-elevation-z8">
+                    <div class="table-container">
+                      <table mat-table [dataSource]="dataSourceMepSg" class="example-table" multiTemplateDataRows>
+                        <!--Column Code MEP-->
+                        <ng-container matColumnDef="code_mep">
+                          <th mat-header-cell *matHeaderCellDef>code_MEP</th>
+                          <td mat-cell *matCellDef="let row">{{row.code_culture}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_code_mep">
+                          <th mat-header-cell *matHeaderCellDef></th>
+                        </ng-container>
+                        <!--Column Annee-->
+                        <ng-container matColumnDef="annee">
+                          <th mat-header-cell *matHeaderCellDef>Annee</th>
+                          <td mat-cell *matCellDef="let row">{{row.annee_du}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_annee">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.annee}}</th>
+                        </ng-container>
+                        <!--Column Saison-->
+                        <ng-container matColumnDef="saison">
+                          <th mat-header-cell *matHeaderCellDef>Saison</th>
+                          <td mat-cell *matCellDef="let row">{{row.saison}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_saison">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.saison != null?updated_Mep.saison.intitule:null}}</th>
+                        </ng-container>
+                        <!--Column Code parcelle-->
+                        <ng-container matColumnDef="code_parce">
+                          <th mat-header-cell *matHeaderCellDef>Code parce</th>
+                          <td mat-cell *matCellDef="let row">{{row.id_parce}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_code_parce">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.parcelle != null?updated_Mep.parcelle.code_parce:null}}</th>
+                        </ng-container>
+                        <!--Column Surface reel-->
+                        <ng-container matColumnDef="sfce_reel">
+                          <th mat-header-cell *matHeaderCellDef>sfce_reel</th>
+                          <td mat-cell *matCellDef="let row">{{row.sfce_reel}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_sfce_reel">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.parcelle != null?updated_Mep.parcelle.superficie:null}}</th>
+                        </ng-container>
+                        <!--Column code_benef-->
+                        <ng-container matColumnDef="code_benef">
+                          <th mat-header-cell *matHeaderCellDef>code PR</th>
+                          <td mat-cell *matCellDef="let row">{{row.code_pr}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_code_benef">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.beneficiaire != null?updated_Mep.beneficiaire.code_pr:null}}</th>
+                        </ng-container>
+                        <!--Column nom-->
+                        <ng-container matColumnDef="nom">
+                          <th mat-header-cell *matHeaderCellDef>Nom</th>
+                          <td mat-cell *matCellDef="let row">{{row.nom}} {{row.prenom}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_nom">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.beneficiaire != null?updated_Mep.beneficiaire.nom:null}} {{updated_Mep.beneficiaire != null?updated_Mep.beneficiaire.prenom:null}}</th>
+                        </ng-container>
+                        <!--Column DDP-->
+                        <ng-container matColumnDef="ddp">
+                          <th mat-header-cell *matHeaderCellDef>DDP</th>
+                          <td mat-cell *matCellDef="let row">{{row.ddp | customDate}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_ddp">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.ddp | customDate}}</th>
+                        </ng-container>
+                
+                        <!--Column Variette-->
+                        <ng-container matColumnDef="variette">
+                          <th mat-header-cell *matHeaderCellDef>Variette</th>
+                          <td mat-cell *matCellDef="let row">{{row.variette}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_variette">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.espece !=null?updated_Mep.espece.nom_espece:null}} {{updated_Mep.variette != null?updated_Mep.variette.nom_var:null}}</th>
+                        </ng-container>
+                        <!--Column QSO-->
+                        <ng-container matColumnDef="qso">
+                          <th mat-header-cell *matHeaderCellDef>QSO</th>
+                          <td mat-cell *matCellDef="let row">{{row.qso}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_qso">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.qso}}</th>
+                        </ng-container>
+                        <!--Column DDS-->
+                        <ng-container matColumnDef="dds">
+                          <th mat-header-cell *matHeaderCellDef>DDS</th>
+                          <td mat-cell *matCellDef="let row">{{row.dds | customDate}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_dds">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dds | customDate}}</th>
+                        </ng-container>
+                        <!--Column Sfce-->
+                        <ng-container matColumnDef="sfce_embl">
+                          <th mat-header-cell *matHeaderCellDef>Sfce_emb</th>
+                          <td mat-cell *matCellDef="let row">{{row.sfce_emb}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_sfce_embl">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.sfce}}</th>
+                        </ng-container>
+                        <!--Column Système cultural-->
+                        <ng-container matColumnDef="sc">
+                          <th mat-header-cell *matHeaderCellDef>SC</th>
+                          <td mat-cell *matCellDef="let row">{{row.sc}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_sc">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.sc != null?updated_Mep.sc.description:null}}</th>
+                        </ng-container>
+                        <!--Column Système cultural-->
+                        <ng-container matColumnDef="ea">
+                          <th mat-header-cell *matHeaderCellDef>EA</th>
+                          <td mat-cell *matCellDef="let row">{{row.cult_associe}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_ea">
+                          <th mat-header-cell *matHeaderCellDef>
+                            {{updated_Mep.autreCultureEa != null?updated_Mep.autreCultureEa:null}}
+                            {{updated_Mep.espece_ea != null?updated_Mep.espece_ea.nom_espece:null}} {{updated_Mep.variette_ea != null?updated_Mep.variette_ea.nom_var:null}}
+                          </th>
+                        </ng-container>
+                        <!--Column Nombre ligne-->
+                        <ng-container matColumnDef="nb_ligne">
+                          <th mat-header-cell *matHeaderCellDef>Nb ligne</th>
+                          <td mat-cell *matCellDef="let row">{{row.nbre_ligne}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_nb_ligne">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.nbre_ligne}}</th>
+                        </ng-container>
+                        <!--Column Longuer ligne-->
+                        <ng-container matColumnDef="long_ligne">
+                          <th mat-header-cell *matHeaderCellDef>Long ligne</th>
+                          <td mat-cell *matCellDef="let row">{{row.long_ligne}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_long_ligne">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.long_ligne}}</th>
+                        </ng-container>
+                        <ng-container matColumnDef="new_action">
+                          <th mat-header-cell *matHeaderCellDef> 
+                            <div class="content-flex" fxLayout="row">
+                              <div class="child-flex-row">
+                                <button mat-flat-button class="btn-info btn-dimension" (click)="onCancelMep('mep-sg')">annuler</button>
+                              </div>
+                              <div class="child-flex-row">
+                                <button mat-flat-button class="btn-info btn-dimension" (click)="onSaveMep('mep-sg')">enregistrer</button>
+                              </div>
+                            </div>
+                          </th>
+                        </ng-container>
+                        <ng-container matColumnDef="action">
+                          <th mat-header-cell *matHeaderCellDef> Action </th>
+                          <td mat-cell *matCellDef="let element; dataIndex as i">
+                            <span *ngIf="indexRowMepSg == i  && isEditRowSg && isUpdated">
+                              <a (click)="onCancelEdit('mep-sg')">cancel</a>
+                              <a (click)="onSaveEdit({row: element, src: 'mep-sg'})">Done</a>
+                            </span>
+                            <span *ngIf="!isUpdated">
+                              <button mat-flat-button class="btn-info btn-dimension" (click)="element.isExpanded = !element.isExpanded">suivi</button>
+                            </span>
+                            <span *ngIf="isUpdated && !isEditRowSg">
+                              <button mat-flat-button class="btn-info btn-dimension" (click)="onEditRow({src: 'mep-sg', action: 'edit', row: element, index: i, data_initial: null})">Editer</button>
+                            </span>
+                            <span *ngIf="isUpdated && !isEditRowSg">
+                              <button mat-flat-button class="btn-info btn-dimension" (click)="onAddShowSuivi({src: 'mep-sg', data: element, index_: i})">Af_</button>
+                            </span>
+                          </td>
+                        </ng-container>
+                        <!-- Template for Suivi-->
+                        <ng-container matColumnDef="expandedDetail">
+                          <td mat-cell *matCellDef="let element_mep; dataIndex as ind_mep" [attr.colspan]="displayedColumnsMepSg.length">
+                
+                            <div class="row sv-element-detail" [@detailExpand]="element_mep.isExpanded && element_mep.suivi_Mep.length > 0 || isUpdated && element_mep.isExpanded? 'expanded' : 'collapsed'">
+                              <table mat-table [dataSource]="element_mep.suivi_Mep">
+                                <!--Column DDP-->
+                                <ng-container matColumnDef="ddp">
+                                  <th mat-header-cell *matHeaderCellDef>DDP</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvSg || (isEditSvSg && indexRowMepSvSg != inde_suivi && indexRowMepSg == ind_mep) || (indexRowMepSg != ind_mep && isEditSvSg)">
+                                      {{row.ddp | customDate}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvSg == inde_suivi && indexRowMepSg == ind_mep && isEditSvSg">
+                                      {{updated_Suivi.ddp | customDate}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--New DDP Column -->
+                                <ng-container matColumnDef="new_ddp">
+                                  <th mat-header-cell *matHeaderCellDef> 
+                                    <span>
+                                      {{updated_Suivi.ddp | customDate}}
+                                    </span> 
+                                  </th>
+                                </ng-container>  
+
+                                <!--Column Stc-->
+                                <ng-container matColumnDef="stc">
+                                  <th mat-header-cell *matHeaderCellDef>STC</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvSg || (isEditSvSg && indexRowMepSvSg != inde_suivi && indexRowMepSg == ind_mep) || (indexRowMepSg != ind_mep && isEditSvSg)">
+                                      {{row.stc}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvSg == inde_suivi && indexRowMepSg == ind_mep && isEditSvSg">
+                                      {{updated_Suivi.stc != null?updated_Suivi.stc.intitule:null}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column New stc-->
+                                <ng-container matColumnDef="new_stc">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    {{updated_Suivi.stc != null?updated_Suivi.stc.intitule:null}}
+                                  </th>
+                                </ng-container>
+                                <!--Column long ligne-->
+                                <ng-container matColumnDef="long_ligne">
+                                  <th mat-header-cell *matHeaderCellDef>Long ligne</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvSg || (isEditSvSg && indexRowMepSvSg != inde_suivi && indexRowMepSg == ind_mep) || (indexRowMepSg != ind_mep && isEditSvSg)">
+                                      {{row.long_ligne}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvSg == inde_suivi && indexRowMepSg == ind_mep && isEditSvSg">
+                                      {{updated_Suivi.long_ligne}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column long ligne-->
+                                <ng-container matColumnDef="new_long_ligne">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    {{updated_Suivi.long_ligne}}
+                                  </th>
+                                </ng-container>
+                                <!--Column nbre_ligne-->
+                                <ng-container matColumnDef="nbre_ligne">
+                                  <th mat-header-cell *matHeaderCellDef>Nbre ligne</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvSg || (isEditSvSg && indexRowMepSvSg != inde_suivi && indexRowMepSg == ind_mep) || (indexRowMepSg != ind_mep && isEditSvSg)">
+                                      {{row.nbre_ligne}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvSg == inde_suivi && indexRowMepSg == ind_mep && isEditSvSg">
+                                      {{updated_Suivi.nbre_ligne}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column nbre_ligne-->
+                                <ng-container matColumnDef="new_nbre_ligne">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    {{updated_Suivi.nbre_ligne}}
+                                  </th>
+                                </ng-container>
+                                <!--Column img-->
+                                <ng-container matColumnDef="img">
+                                  <th mat-header-cell *matHeaderCellDef>Pièce</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvSg || (isEditSvSg && indexRowMepSvSg != inde_suivi && indexRowMepSg == ind_mep) || (indexRowMepSg != ind_mep && isEditSvSg)">
+                                      <ion-thumbnail slot="start">
+                                        <img [src]="row.img_cult" alt="" class="img-cell">
+                                      </ion-thumbnail>
+                                    </span>
+                                    <span *ngIf="indexRowMepSvSg == inde_suivi && indexRowMepSg == ind_mep && isEditSvSg">
+                                      <ion-thumbnail slot="start">
+                                        <ion-img [src]="updated_Suivi.img_culture"></ion-img>
+                                      </ion-thumbnail>
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column img-->
+                                <ng-container matColumnDef="new_img">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <ion-thumbnail slot="start">
+                                      <ion-img [src]="updated_Suivi.img_culture"></ion-img>
+                                    </ion-thumbnail>
+                                  </th>
+                                </ng-container>
+                                <!--Column Estimation-->
+                                <ng-container matColumnDef="ex">
+                                  <th mat-header-cell *matHeaderCellDef>Estimation</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvSg || (isEditSvSg && indexRowMepSvSg != inde_suivi && indexRowMepSg == ind_mep) || (indexRowMepSg != ind_mep && isEditSvSg)">
+                                      {{row.ex}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvSg == inde_suivi && indexRowMepSg == ind_mep && isEditSvSg">
+                                      {{updated_Suivi.estimation}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column New Estimation-->
+                                <ng-container matColumnDef="new_ex">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    {{updated_Suivi.estimation}}
+                                  </th>
+                                </ng-container>
+                                <!--Column Etat cultural-->
+                                <ng-container matColumnDef="etat_cultural">
+                                  <th mat-header-cell *matHeaderCellDef>Etat cultural</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvSg || (isEditSvSg && indexRowMepSvSg != inde_suivi && indexRowMepSg == ind_mep) || (indexRowMepSg != ind_mep && isEditSvSg)">
+                                      {{row.ec}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvSg == inde_suivi && indexRowMepSg == ind_mep && isEditSvSg">
+                                      {{updated_Suivi.ec != null?updated_Suivi.ec.intitule:null}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column Etat cultural-->
+                                <ng-container matColumnDef="new_etat_cultural">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    {{updated_Suivi.ec != null?updated_Suivi.ec.intitule:null}}
+                                  </th>
+                                </ng-container>
+                                <!--Action-->
+                                <ng-container matColumnDef="action">
+                                  <th mat-header-cell *matHeaderCellDef> 
+                                    <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'add', src: 'mep-sg', row_mep:  element_mep, index_mep: ind_mep})">Ajouter</button>
+                                  </th>
+                                  <td mat-cell *matCellDef="let row; index as ind_suivi">
+                                    <span *ngIf="indexRowMepSvSg == ind_suivi && indexRowMepSg == ind_mep && isEditSvSg">
+                                      <div class="child-btn" fxLayout="row">
+                                        <div class="child-row1">
+                                          <button mat-raised-button (click)="onCancelEditSuivi('mep-sg')" color="danger">Annuller</button>
+                                        </div>
+                                        <div class="child-row1">
+                                          <button mat-raised-button (click)="onSaveEditSuivi({src: 'mep-sg', row_suivi: row})" color="primary">Valider</button>
+                                        </div>
+                                      </div>
+                                    </span>
+                                    <span *ngIf="!isEditSvSg">
+                                      <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'edit', src: 'mep-sg', row_mep: element_mep, row_suivi: row, index_mep_suivi: ind_suivi, index_mep: ind_mep})">Editer</button>
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Action-->
+                                <ng-container matColumnDef="new_action">
+                                  <th mat-header-cell *matHeaderCellDef> 
+                                    <span>
+                                      <a (click)="onCancelAddSv('mep-sg')">Annuler</a>
+                                      <a (click)="onSaveAddSv({src: 'mep-sg', row_mep: element_mep})">Done</a>
+                                    </span>
+                                  </th>
+                                </ng-container>
+                                <tr mat-header-row *matHeaderRowDef="displayedColumnsSvSg" class="hg-header-row-2"></tr>
+                                <tr [hidden]="(isAddSvSg && indexRowMepSg != ind_mep) ||  !isAddSvSg" mat-header-row *matHeaderRowDef="displayedColumnsNewSvSg" class="hg-header-row-2"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumnsSvSg;" class="hg-element-row"></tr>
+                              </table>
+                            </div>
+                            <div class="row sv-element-detail-vide" [@detailExpand]="!isUpdated && element_mep.isExpanded && element_mep.suivi_Mep.length == 0? 'expanded' : 'collapsed'">
+                              <div mat-line>Aucun suivi</div>
+                            </div>
+                
+                          </td>
+                        </ng-container>
+                        <tr mat-header-row *matHeaderRowDef="displayedColumnsMepSg" class="hg-header-row-1"></tr>
+                        <tr [hidden]="!isAddSg" mat-header-row *matHeaderRowDef="displayedColumnsNewMepSg; sticky: true"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumnsMepSg;" class="sv-element-row hg-element-row" [class.sv-expanded-row]="row.isExpanded" [class.sv-row-vide]="row.suivi_Mep.length == 0"></tr>
+                        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+                
+                        <!-- Row shown when there is no matching data. -->
+                        <tr class="mat-row" *matNoDataRow>
+                          <td class="mat-cell" [attr.colspan]="displayedColumnsMepSg.length">Aucun enregistrement</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ion-accordion>
+          <!--Plants d'arbre-->
+          <ion-accordion value="pa">
+            <ion-item slot="header" class="level1">
+              <ion-label>Plants d'arbes</ion-label>
+            </ion-item>
+
+            <div slot="content">
+              <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
+                <!--Column Bouton-->
+                <div class="child-column">
+                  <ion-button (click)="onAdd('mep-pa')" *ngIf="isUpdated" [disabled]="isAddPa">Ajouter</ion-button>
+                  <ion-button (click)="onExportCateg('mep-pa')" *ngIf="!isUpdated" [disabled]="mep_pa.length == 0 || isAddPa">Exporter</ion-button>
+                  <button mat-raised-button (click)="toggleTableRows({src: 'mep-pa'})" color="primary">Tout afficher</button>
+                </div>
+                <!--Table modifier-->
+                <div class="child-column">
+                  <div class="container-matTab mat-elevation-z8">
+                    <div class="table-container">
+                      <table mat-table [dataSource]="dataSourceMepPa" class="example-table" multiTemplateDataRows>
+                        <!--Column Code MEP-->
+                        <ng-container matColumnDef="code_mep">
+                          <th mat-header-cell *matHeaderCellDef>code_MEP</th>
+                          <td mat-cell *matCellDef="let row">{{row.code_culture}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_code_mep">
+                          <th mat-header-cell *matHeaderCellDef></th>
+                        </ng-container>
+                        <!--Annee-->
+                        <ng-container matColumnDef="annee">
+                          <th mat-header-cell *matHeaderCellDef>Annee</th>
+                          <td mat-cell *matCellDef="let row">{{row.annee_du}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_annee">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.annee}}</th>
+                        </ng-container>
+                        <!--Column Code parcelle-->
+                        <ng-container matColumnDef="code_parce">
+                          <th mat-header-cell *matHeaderCellDef>Code cep</th>
+                          <td mat-cell *matCellDef="let row">{{row.id_parce}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_code_parce">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.parcelle != null?updated_Mep.parcelle.code_parce:null}}</th>
+                        </ng-container>
+                        <!--Column Surface reel-->
+                        <ng-container matColumnDef="sfce_reel">
+                          <th mat-header-cell *matHeaderCellDef>Sfce reel</th>
+                          <td mat-cell *matCellDef="let row">{{row.sfce_reel}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_sfce_reel">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.parcelle != null?updated_Mep.parcelle.superficie:null}}</th>
+                        </ng-container>
+                        <!--Column code_benef-->
+                        <ng-container matColumnDef="code_benef">
+                          <th mat-header-cell *matHeaderCellDef>code PR</th>
+                          <td mat-cell *matCellDef="let row">{{row.code_pr}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_code_benef">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.beneficiaire != null?updated_Mep.beneficiaire.code_pr:null}}</th>
+                        </ng-container>
+                        <!--Column nom-->
+                        <ng-container matColumnDef="nom">
+                          <th mat-header-cell *matHeaderCellDef>Nom</th>
+                          <td mat-cell *matCellDef="let row">{{row.nom}} {{row.prenom}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_nom">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.beneficiaire != null?updated_Mep.beneficiaire.nom:null}} {{updated_Mep.beneficiaire != null?updated_Mep.beneficiaire.prenom:null}}</th>
+                        </ng-container>
+                        <!--Column DDP-->
+                        <ng-container matColumnDef="ddp">
+                          <th mat-header-cell *matHeaderCellDef>DDP</th>
+                          <td mat-cell *matCellDef="let row">{{row.ddp | customDate}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_ddp">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.ddp | customDate}}</th>
+                        </ng-container>
+                  
+                        <!--Column Espece-->
+                        <ng-container matColumnDef="espece">
+                          <th mat-header-cell *matHeaderCellDef>Espece</th>
+                          <td mat-cell *matCellDef="let row">{{row.variette}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_espece">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.espece != null?updated_Mep.espece.nom_espece:null}}</th>
+                        </ng-container>
+                        <!--Column DDS-->
+                        <ng-container matColumnDef="dt_dist">
+                          <th mat-header-cell *matHeaderCellDef>Dt_Dist</th>
+                          <td mat-cell *matCellDef="let row">{{row.dt_distribution | customDate}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_dt_dist">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dt_distribution | customDate}}</th>
+                        </ng-container>
+                         <!--Column QSO-->
+                        <ng-container matColumnDef="qso">
+                          <th mat-header-cell *matHeaderCellDef>QO</th>
+                          <td mat-cell *matCellDef="let row">{{row.qso}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_qso">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.qso}}</th>
+                        </ng-container>
+                        <!--Column DDS-->
+                        <ng-container matColumnDef="dds">
+                          <th mat-header-cell *matHeaderCellDef>Dt_MEP</th>
+                          <td mat-cell *matCellDef="let row">{{row.dds | customDate}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_dds">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dds | customDate}}</th>
+                        </ng-container>
+                        <!--Column Sfce-->
+                        <ng-container matColumnDef="nbre_ligne">
+                          <th mat-header-cell *matHeaderCellDef>nbre_ligne</th>
+                          <td mat-cell *matCellDef="let row">{{row.nbre_ligne}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_nbre_ligne">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.nbre_ligne}}</th>
+                        </ng-container>
+                        <!--Column Système cultural-->
+                        <ng-container matColumnDef="long_ligne">
+                          <th mat-header-cell *matHeaderCellDef>Long Ligne</th>
+                          <td mat-cell *matCellDef="let row">{{row.long_ligne}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_long_ligne">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.long_ligne}}</th>
+                        </ng-container>
+                  
+                        <!--Action-->
+                        <ng-container matColumnDef="action">
+                          <th mat-header-cell *matHeaderCellDef> Action </th>
+                          <td mat-cell *matCellDef="let element; dataIndex as i">
+                            <span *ngIf="indexRowMepPa == i  && isEditRowPa && isUpdated">
+                              <a (click)="onCancelEdit('mep-pa')">cancel</a>
+                              <a (click)="onSaveEdit({row: element, src: 'mep-pa'})">Done</a>
+                            </span>
+                            <span *ngIf="!isUpdated">
+                              <button mat-flat-button class="btn-info btn-dimension" (click)="element.isExpanded = !element.isExpanded">suivi</button>
+                            </span>
+                            <span *ngIf="isUpdated && !isEditRowPa">
+                              <button mat-flat-button class="btn-info btn-dimension" (click)="onEditRow({src: 'mep-pa', action: 'edit', row: element, index: i, data_initial: null})">Editer</button>
+                            </span>
+                            <span *ngIf="isUpdated && !isEditRowPa">
+                              <button mat-flat-button class="btn-info btn-dimension" (click)="onAddShowSuivi({src: 'mep-pa', data: element, index_: i})">Af_</button>
+                            </span>
+                          </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="new_action">
+                          <th mat-header-cell *matHeaderCellDef> 
+                            <div class="content-flex" fxLayout="row">
+                              <div class="child-flex-row">
+                                <button mat-flat-button class="btn-info btn-dimension" (click)="onCancelMep('mep-pa')">annuler</button>
+                              </div>
+                              <div class="child-flex-row">
+                                <button mat-flat-button class="btn-info btn-dimension" (click)="onSaveMep('mep-pa')">enregistrer</button>
+                              </div>
+                            </div>
+                          </th>
+                        </ng-container>
+                        
+                        <!-- Template for details row -->
+                        <ng-container matColumnDef="expandedDetail">
+                          <td mat-cell *matCellDef="let element; dataIndex as ind_mep" [attr.colspan]="displayedColumnsMepPa.length">
+                  
+                            <div class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.suivi_Mep.length > 0 || isUpdated && element.isExpanded? 'expanded' : 'collapsed'">
+                              <table mat-table [dataSource]="element.suivi_Mep">
+                                <!--Column DDP-->
+                                <ng-container matColumnDef="ddp">
+                                  <th mat-header-cell *matHeaderCellDef>DDP</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvPa || (isEditSvPa && indexRowMepSvPa != inde_suivi && indexRowMepPa == ind_mep) || (indexRowMepPa != ind_mep && isEditSvPa)">
+                                      {{row.ddp | customDate}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvPa == inde_suivi && indexRowMepPa == ind_mep && isEditSvPa">
+                                      {{updated_Suivi.ddp | customDate}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column new DDP-->
+                                <ng-container matColumnDef="new_ddp">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>
+                                      {{updated_Suivi.ddp | customDate}}
+                                    </span> 
+                                  </th>
+                                </ng-container>
+                                <!--Column Quantité Lévéé-->
+                                <ng-container matColumnDef="ql">
+                                  <th mat-header-cell *matHeaderCellDef>QL</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvPa || (isEditSvPa && indexRowMepSvPa != inde_suivi && indexRowMepPa == ind_mep) || (indexRowMepPa != ind_mep && isEditSvPa)">
+                                      {{row.ql}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvPa == inde_suivi && indexRowMepPa == ind_mep && isEditSvPa">
+                                      {{updated_Suivi.ql}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column New Quantité Lévéé-->
+                                <ng-container matColumnDef="new_ql">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>
+                                      {{updated_Suivi.ql}}
+                                    </span>
+                                  </th>
+                                </ng-container>
+                                <!--Column Quantité réussi-->
+                                <ng-container matColumnDef="qr">
+                                  <th mat-header-cell *matHeaderCellDef>QR(1ans)</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvPa || (isEditSvPa && indexRowMepSvPa != inde_suivi && indexRowMepPa == ind_mep) || (indexRowMepPa != ind_mep && isEditSvPa)">
+                                      {{row.qr}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvPa == inde_suivi && indexRowMepPa == ind_mep && isEditSvPa">
+                                      {{updated_Suivi.qr}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column New Quantité réussi-->
+                                <ng-container matColumnDef="new_qr">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>
+                                      {{updated_Suivi.qr}}
+                                    </span>
+                                  </th>
+                                </ng-container>
+                                <!--Column Hauteur-->
+                                <ng-container matColumnDef="hauteur">
+                                  <th mat-header-cell *matHeaderCellDef>Hauteur</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvPa || (isEditSvPa && indexRowMepSvPa != inde_suivi && indexRowMepPa == ind_mep) || (indexRowMepPa != ind_mep && isEditSvPa)">
+                                      {{row.hauteur}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvPa == inde_suivi && indexRowMepPa == ind_mep && isEditSvPa">
+                                      {{updated_Suivi.hauteur}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column new Hauteur-->
+                                <ng-container matColumnDef="new_hauteur">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>
+                                      {{updated_Suivi.hauteur}}
+                                    </span>
+                                  </th>
+                                </ng-container>
+                                <!--Column Etat de la pa-->
+                                <ng-container matColumnDef="etat_pa">
+                                  <th mat-header-cell *matHeaderCellDef>Etat Cultural</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvPa || (isEditSvPa && indexRowMepSvPa != inde_suivi && indexRowMepPa == ind_mep) || (indexRowMepPa != ind_mep && isEditSvPa)">
+                                      {{row.ec}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvPa == inde_suivi && indexRowMepPa == ind_mep && isEditSvPa">
+                                      {{updated_Suivi.ec != null?updated_Suivi.ec.intitule:null}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column New Etat de la pa-->
+                                <ng-container matColumnDef="new_etat_pa">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>
+                                      {{updated_Suivi.ec != null?updated_Suivi.ec.intitule:null}}
+                                    </span>
+                                  </th>
+                                </ng-container>
+                                <!--Column Nbre ligne-->
+                                <ng-container matColumnDef="nb_ligne">
+                                  <th mat-header-cell *matHeaderCellDef>Nb_ligne</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvPa || (isEditSvPa && indexRowMepSvPa != inde_suivi && indexRowMepPa == ind_mep) || (indexRowMepPa != ind_mep && isEditSvPa)">
+                                      {{row.nbre_ligne}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvPa == inde_suivi && indexRowMepPa == ind_mep && isEditSvPa">
+                                      {{updated_Suivi.nbre_ligne}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column new Nbre ligne-->
+                                <ng-container matColumnDef="new_nb_ligne">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>
+                                      {{updated_Suivi.nbre_ligne}}
+                                    </span>
+                                  </th>
+                                </ng-container>
+
+                                <!--Column img-->
+                                <ng-container matColumnDef="img_cult">
+                                  <th mat-header-cell *matHeaderCellDef>Image</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvPa || (isEditSvPa && indexRowMepSvPa != inde_suivi && indexRowMepPa == ind_mep) || (indexRowMepPa != ind_mep && isEditSvPa)">
+                                      <ion-thumbnail slot="start">
+                                        <img [src]="row.img_cult" alt="" class="img-cell">
+                                      </ion-thumbnail>
+                                    </span>
+                                    <span *ngIf="indexRowMepSvPa == inde_suivi && indexRowMepPa == ind_mep && isEditSvPa">
+                                      <ion-thumbnail slot="start">
+                                        <ion-img [src]="updated_Suivi.img_culture"></ion-img>
+                                      </ion-thumbnail>
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--Column New img-->
+                                <ng-container matColumnDef="new_img_cult">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <ion-thumbnail slot="start">
+                                      <ion-img [src]="updated_Suivi.img_culture"></ion-img>
+                                    </ion-thumbnail>
+                                  </th>
+                                </ng-container>
+                                <!--Action-->
+                                <ng-container matColumnDef="action">
+                                  <th mat-header-cell *matHeaderCellDef> 
+                                    <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'add', src: 'mep-pa', row_mep:  element, index_mep: ind_mep})">Ajouter</button>
+                                  </th>
+                                  <td mat-cell *matCellDef="let row; index as ind_suivi">
+                                    <span *ngIf="indexRowMepSvPa == ind_suivi && indexRowMepPa == ind_mep && isEditSvPa">
+                                      <div class="child-btn" fxLayout="row">
+                                        <div class="child-row1">
+                                          <button mat-raised-button (click)="onCancelEditSuivi('mep-pa')" color="danger">Annuller</button>
+                                        </div>
+                                        <div class="child-row1">
+                                          <button mat-raised-button (click)="onSaveEditSuivi({src: 'mep-pa', row_suivi: row})" color="primary">Valider</button>
+                                        </div>
+                                      </div>
+                                    </span>
+                                    <span *ngIf="!isEditSvPa">
+                                      <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'edit', src: 'mep-pa', row_mep: element, row_suivi: row, index_mep_suivi: ind_suivi, index_mep: ind_mep})">Editer</button>
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--New Action-->
+                                <ng-container matColumnDef="new_action">
+                                  <th mat-header-cell *matHeaderCellDef> 
+                                    <span>
+                                      <a (click)="onCancelAddSv('mep-pa')">Annuler</a>
+                                      <a (click)="onSaveAddSv({src: 'mep-pa', row_mep: element})">Done</a>
+                                    </span>
+                                  </th>
+                                </ng-container>
+                                <tr mat-header-row *matHeaderRowDef="displayedColumnsSvPa" class="hg-header-row-2"></tr>
+                                <tr [hidden]="(isAddSvPa && indexRowMepPa != ind_mep) ||  !isAddSvPa" mat-header-row *matHeaderRowDef="displayedColumnsNewSvPa" class="hg-header-row-2"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumnsSvPa;" class="hg-element-row"></tr>
+                              </table>
+                            </div>
+                            <div class="row sv-element-detail-vide" [@detailExpand]="!isUpdated && element.isExpanded && element.suivi_Mep.length == 0? 'expanded' : 'collapsed'">
+                              <div mat-line>Aucun suivi</div>
+                            </div>
+                  
+                          </td>
+                        </ng-container>
+                  
+                        <tr mat-header-row *matHeaderRowDef="displayedColumnsMepPa" class="hg-header-row-1"></tr>
+                        <tr [hidden]="!isAddPa" mat-header-row *matHeaderRowDef="displayedColumnsNewMepPa; sticky: true"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumnsMepPa;" class="sv-element-row hg-element-row" class="sv-element-row hg-element-row" [class.sv-expanded-row]="row.isExpanded" [class.sv-row-vide]="row.suivi_Mep.length == 0"></tr>
+                        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+                  
+                        <!-- Row shown when there is no matching data. -->
+                        <tr class="mat-row" *matNoDataRow>
+                          <td class="mat-cell" [attr.colspan]="displayedColumnsMepPa.length">Aucun enregistrement</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ion-accordion>
+          <!--Materiels végetaux-->
+          <ion-accordion value="mv">
+            <ion-item slot="header" class="level1">
+              <ion-label>Materiels vegetaux</ion-label>
+            </ion-item>
+
+            <div slot="content">
+              <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
+                <!--Column Bouton-->
+                <div class="child-column">
+                  <ion-button (click)="onAdd('mep-mv')" *ngIf="isUpdated" [disabled]="isAddMv">Ajouter</ion-button>
+                  <ion-button (click)="onExportCateg('mep-mv')" *ngIf="!isUpdated" [disabled]="mep_mv.length == 0 || isAddMv">Exporter</ion-button>
+                  <button mat-raised-button (click)="toggleTableRows({src: 'mep-mv'})" color="primary">Tout afficher</button>
+                </div>
+                <!--Table modifier-->
+                <div class="child-column">
+                  <div class="container-matTab mat-elevation-z8">
+                    <div class="table-container">
+                      <table mat-table [dataSource]="dataSourceMepMv" class="example-table" multiTemplateDataRows>
+                        <!--Column Code MEP-->
+                        <ng-container matColumnDef="code_mep">
+                          <th mat-header-cell *matHeaderCellDef>code_MEP</th>
+                          <td mat-cell *matCellDef="let row">{{row.code_culture}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_code_mep">
+                          <th mat-header-cell *matHeaderCellDef></th>
+                        </ng-container>
+                        <!--Annee -->
+                        <ng-container matColumnDef="annee">
+                          <th mat-header-cell *matHeaderCellDef>Annee</th>
+                          <td mat-cell *matCellDef="let row">{{row.annee_du}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_annee">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.annee}}</th>
+                        </ng-container>
+
+                        <!--Column Saison-->
+                        <ng-container matColumnDef="saison">
+                          <th mat-header-cell *matHeaderCellDef>Saison</th>
+                          <td mat-cell *matCellDef="let row">{{row.saison}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_saison">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.saison != null?updated_Mep.saison.intitule:null}}</th>
+                        </ng-container>
+                        <!--Column Code parcelle-->
+                        <ng-container matColumnDef="code_parce">
+                          <th mat-header-cell *matHeaderCellDef>Code parce</th>
+                          <td mat-cell *matCellDef="let row">{{row.id_parce}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_code_parce">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.parcelle != null?updated_Mep.parcelle.code_parce:null}}</th>
+                        </ng-container>
+                        <!--Column Surface reel-->
+                        <ng-container matColumnDef="sfce_reel">
+                          <th mat-header-cell *matHeaderCellDef>Sfc reel</th>
+                          <td mat-cell *matCellDef="let row">{{row.sfce_reel}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_sfce_reel">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.parcelle != null?updated_Mep.parcelle.superficie:null}}</th>
+                        </ng-container>
+                        <!--Column code_benef-->
+                        <ng-container matColumnDef="code_benef">
+                          <th mat-header-cell *matHeaderCellDef>code PR</th>
+                          <td mat-cell *matCellDef="let row">{{row.code_pr}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_code_benef">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.beneficiaire != null?updated_Mep.beneficiaire.code_pr:null}}</th>
+                        </ng-container>
+                        <!--Column nom-->
+                        <ng-container matColumnDef="nom">
+                          <th mat-header-cell *matHeaderCellDef>Nom</th>
+                          <td mat-cell *matCellDef="let row">{{row.nom}} {{row.prenom}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_nom">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.beneficiaire != null?updated_Mep.beneficiaire.nom:null}} {{updated_Mep.beneficiaire != null?updated_Mep.beneficiaire.prenom:null}}</th>
+                        </ng-container>
+                        <!--Column DDP-->
+                        <ng-container matColumnDef="ddp">
+                          <th mat-header-cell *matHeaderCellDef>DDP</th>
+                          <td mat-cell *matCellDef="let row">{{row.ddp | customDate}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_ddp">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.ddp | customDate}}</th>
+                        </ng-container>
+                  
+                        <!--Column Espece-->
+                        <ng-container matColumnDef="espece">
+                          <th mat-header-cell *matHeaderCellDef>Espece</th>
+                          <td mat-cell *matCellDef="let row">{{row.variette}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_espece">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.espece != null?updated_Mep.espece.nom_espece:null}}</th>
+                        </ng-container>
+                  
+                         <!--Column QSO-->
+                        <ng-container matColumnDef="qso">
+                          <th mat-header-cell *matHeaderCellDef>QO</th>
+                          <td mat-cell *matCellDef="let row">{{row.qso}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_qso">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.qso}}</th>
+                        </ng-container>
+                        <!--Column DDS-->
+                        <ng-container matColumnDef="dds">
+                          <th mat-header-cell *matHeaderCellDef>Dt_MEP</th>
+                          <td mat-cell *matCellDef="let row">{{row.dds | customDate}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_dds">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dds | customDate}}</th>
+                        </ng-container>
+                        
+                        <!--Column Sfce-->
+                        <ng-container matColumnDef="sfce_embl">
+                          <th mat-header-cell *matHeaderCellDef>Sfce_emb</th>
+                          <td mat-cell *matCellDef="let row">{{row.sfce_emb}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_sfce_embl">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.sfce}}</th>
+                        </ng-container>
+                        <!--Column nbre ligne-->
+                        <ng-container matColumnDef="nbre_ligne">
+                          <th mat-header-cell *matHeaderCellDef>nbre_ligne</th>
+                          <td mat-cell *matCellDef="let row">{{row.nbre_ligne}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_nbre_ligne">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.nbre_ligne}}</th>
+                        </ng-container>
+                        <!--Column Long ligne-->
+                        <ng-container matColumnDef="long_ligne">
+                          <th mat-header-cell *matHeaderCellDef>Long Ligne</th>
+                          <td mat-cell *matCellDef="let row">{{row.long_ligne}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_long_ligne">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.long_ligne}}</th>
+                        </ng-container>
+                        <!--Column Système cultural-->
+                        <ng-container matColumnDef="sc">
+                          <th mat-header-cell *matHeaderCellDef>SC</th>
+                          <td mat-cell *matCellDef="let row">{{row.sc}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_sc">
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.sc != null?updated_Mep.sc.description:null}}</th>
+                        </ng-container>
+                        <!--Column Système cultural-->
+                        <ng-container matColumnDef="ea">
+                          <th mat-header-cell *matHeaderCellDef>EA</th>
+                          <td mat-cell *matCellDef="let row">{{row.cult_associe}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_ea">
+                          <th mat-header-cell *matHeaderCellDef>
+                            {{updated_Mep.autreCultureEa != null?updated_Mep.autreCultureEa:null}}
+                            {{updated_Mep.espece_ea != null?updated_Mep.espece_ea.nom_espece:null}} {{updated_Mep.variette_ea != null?updated_Mep.variette_ea.nom_var:null}}</th>
+                        </ng-container>
+                  
+                        <!--Action-->
+                        <ng-container matColumnDef="action">
+                          <th mat-header-cell *matHeaderCellDef> Action </th>
+                          <td mat-cell *matCellDef="let element; dataIndex as i">
+                            <span *ngIf="indexRowMepMv == i  && isEditRowMv && isUpdated">
+                              <a (click)="onCancelEdit('mep-mv')">cancel</a>
+                              <a (click)="onSaveEdit({row: element, src: 'mep-mv'})">Done</a>
+                            </span>
+                            <span *ngIf="!isUpdated">
+                              <button mat-flat-button class="btn-info btn-dimension" (click)="element.isExpanded = !element.isExpanded">suivi</button>
+                            </span>
+                            <span *ngIf="isUpdated && !isEditRowMv">
+                              <button mat-flat-button class="btn-info btn-dimension" (click)="onEditRow({src: 'mep-mv', action: 'edit', row: element, index: i, data_initial: null})">Editer</button>
+                            </span>
+                            <span *ngIf="isUpdated && !isEditRowMv">
+                              <button mat-flat-button class="btn-info btn-dimension" (click)="onAddShowSuivi({src: 'mep-mv', data: element, index_: i})">Af_</button>
+                            </span>
+                          </td>
+                        </ng-container>
+                        <ng-container matColumnDef="new_action">
+                          <th mat-header-cell *matHeaderCellDef> 
+                            <div class="content-flex" fxLayout="row">
+                              <div class="child-flex-row">
+                                <button mat-flat-button class="btn-info btn-dimension" (click)="onCancelMep('mep-mv')">annuler</button>
+                              </div>
+                              <div class="child-flex-row">
+                                <button mat-flat-button class="btn-info btn-dimension" (click)="onSaveMep('mep-mv')">enregistrer</button>
+                              </div>
+                            </div>
+                          </th>
+                        </ng-container>
+                  
+                        <!-- Template for details row -->
+                        <ng-container matColumnDef="expandedDetail">
+                          <td mat-cell *matCellDef="let element; dataIndex as ind_mep" [attr.colspan]="displayedColumnsMepMv.length">
+                  
+                            <div class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.suivi_Mep.length > 0 || isUpdated && element.isExpanded? 'expanded' : 'collapsed'">
+                              <table mat-table [dataSource]="element.suivi_Mep">
+                                <!--Column Code MEP-->
+                                <ng-container matColumnDef="code_sv">
+                                  <th mat-header-cell *matHeaderCellDef>code DDP</th>
+                                  <td mat-cell *matCellDef="let row">
+                                    {{row.code_sv}}
+                                  </td>
+                                </ng-container>
+                                <ng-container matColumnDef="new_code_sv">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>--</span>
+                                  </th>
+                                </ng-container>
+
+                                <!--Column DDP-->
+                                <ng-container matColumnDef="ddp">
+                                  <th mat-header-cell *matHeaderCellDef>DDP</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvMv || (isEditSvMv && indexRowMepSvMv != inde_suivi && indexRowMepMv == ind_mep) || (indexRowMepMv != ind_mep && isEditSvMv)">
+                                      {{row.ddp | customDate}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvMv == inde_suivi && indexRowMepMv == ind_mep && isEditSvMv">
+                                      {{updated_Suivi.ddp | customDate}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <ng-container matColumnDef="new_ddp">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>{{updated_Suivi.ddp | customDate}}</span>
+                                  </th>
+                                </ng-container>
+
+                                <!--Column nbre_pied-->
+                                <ng-container matColumnDef="nbre_pied">
+                                  <th mat-header-cell *matHeaderCellDef>Nbre pied</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvMv || (isEditSvMv && indexRowMepSvMv != inde_suivi && indexRowMepMv == ind_mep) || (indexRowMepMv != ind_mep && isEditSvMv)">
+                                      {{row.nbre_pied}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvMv == inde_suivi && indexRowMepMv == ind_mep && isEditSvMv">
+                                      {{updated_Suivi.nbre_pied}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <ng-container matColumnDef="new_nbre_pied">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>{{updated_Suivi.nbre_pied}}</span>
+                                  </th>
+                                </ng-container>
+
+                                <!--Column Long_ligne-->
+                                <ng-container matColumnDef="Long_ligne">
+                                  <th mat-header-cell *matHeaderCellDef>Long_ligne</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvMv || (isEditSvMv && indexRowMepSvMv != inde_suivi && indexRowMepMv == ind_mep) || (indexRowMepMv != ind_mep && isEditSvMv)">
+                                      {{row.long_ligne}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvMv == inde_suivi && indexRowMepMv == ind_mep && isEditSvMv">
+                                      {{updated_Suivi.long_ligne}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <ng-container matColumnDef="new_Long_ligne">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>{{updated_Suivi.long_ligne}}</span>
+                                  </th>
+                                </ng-container>
+
+                                <!--Column nbre_ligne-->
+                                <ng-container matColumnDef="nbre_ligne">
+                                  <th mat-header-cell *matHeaderCellDef>nbre_ligne</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvMv || (isEditSvMv && indexRowMepSvMv != inde_suivi && indexRowMepMv == ind_mep) || (indexRowMepMv != ind_mep && isEditSvMv)">
+                                      {{row.nbre_ligne}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvMv == inde_suivi && indexRowMepMv == ind_mep && isEditSvMv">
+                                      {{updated_Suivi.nbre_ligne}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <ng-container matColumnDef="new_nbre_ligne">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>{{updated_Suivi.nbre_ligne}}</span>
+                                  </th>
+                                </ng-container>
+
+                                <!--Column Etat dans la bdd-->
+                                <ng-container matColumnDef="ex">
+                                  <th mat-header-cell *matHeaderCellDef>Estimation</th>
+                                  <td mat-cell *matCellDef="let row; index as inde_suivi">
+                                    <span *ngIf="!isEditSvMv || (isEditSvMv && indexRowMepSvMv != inde_suivi && indexRowMepMv == ind_mep) || (indexRowMepMv != ind_mep && isEditSvMv)">
+                                      {{row.ex}}
+                                    </span>
+                                    <span *ngIf="indexRowMepSvMv == inde_suivi && indexRowMepMv == ind_mep && isEditSvMv">
+                                      {{updated_Suivi.estimation}}
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <ng-container matColumnDef="new_ex">
+                                  <th mat-header-cell *matHeaderCellDef>
+                                    <span>{{updated_Suivi.estimation}}</span>
+                                  </th>
+                                </ng-container>
+
+                                <!--Action-->
+                                <ng-container matColumnDef="action">
+                                  <th mat-header-cell *matHeaderCellDef> 
+                                    <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'add', src: 'mep-mv', row_mep:  element, index_mep: ind_mep})">Ajouter</button>
+                                  </th>
+                                  <td mat-cell *matCellDef="let row; index as ind_suivi">
+                                    <span *ngIf="indexRowMepSvMv == ind_suivi && indexRowMepMv == ind_mep && isEditSvMv">
+                                      <div class="child-btn" fxLayout="row">
+                                        <div class="child-row1">
+                                          <button mat-raised-button (click)="onCancelEditSuivi('mep-mv')" color="danger">Annuller</button>
+                                        </div>
+                                        <div class="child-row1">
+                                          <button mat-raised-button (click)="onSaveEditSuivi({src: 'mep-mv', row_suivi: row})" color="primary">Valider</button>
+                                        </div>
+                                      </div>
+                                    </span>
+                                    <span *ngIf="!isEditSvMv">
+                                      <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'edit', src: 'mep-mv', row_mep: element, row_suivi: row, index_mep_suivi: ind_suivi, index_mep: ind_mep})">Editer</button>
+                                    </span>
+                                  </td>
+                                </ng-container>
+                                <!--New Action-->
+                                <ng-container matColumnDef="new_action">
+                                  <th mat-header-cell *matHeaderCellDef> 
+                                    <span>
+                                      <a (click)="onCancelAddSv('mep-mv')">Annuler</a>
+                                      <a (click)="onSaveAddSv({src: 'mep-mv', row_mep: element})">Done</a>
+                                    </span>
+                                  </th>
+                                </ng-container>
+                                <tr mat-header-row *matHeaderRowDef="displayedColumnsSvMv" class="hg-header-row-2"></tr>
+                                <tr [hidden]="(isAddSvMv && indexRowMepMv != ind_mep) ||  !isAddSvMv" mat-header-row *matHeaderRowDef="displayedColumnsNewSvMv" class="hg-header-row-2"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumnsSvMv;" class="hg-element-row"></tr>
+                              </table>
+                            </div>
+                            <div class="row sv-element-detail-vide" [@detailExpand]="!isUpdated && element.isExpanded && element.suivi_Mep.length == 0? 'expanded' : 'collapsed'">
+                              <div mat-line>Aucun suivi</div>
+                            </div>
+                  
+                          </td>
+                        </ng-container>
+                  
+                        <tr mat-header-row *matHeaderRowDef="displayedColumnsMepMv" class="hg-header-row-1"></tr>
+                        <tr [hidden]="!isAddMv" mat-header-row *matHeaderRowDef="displayedColumnsNewMepMv; sticky: true"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumnsMepMv;" class="sv-element-row hg-element-row" [class.sv-expanded-row]="row.isExpanded" [class.sv-row-vide]="row.suivi_Mep.length == 0"></tr>
+                        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+                  
+                        <!-- Row shown when there is no matching data. -->
+                        <tr class="mat-row" *matNoDataRow>
+                          <td class="mat-cell" colspan="12">Aucun enregistrement</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ion-accordion>
+        </ion-accordion-group>
+      </div>
+    </div>
+  </div>
 </ion-content>

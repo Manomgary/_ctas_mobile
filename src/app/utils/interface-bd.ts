@@ -418,3 +418,47 @@ export interface Specu_anime {
     etat: string, 
     status: string
 }
+export interface MepPR {
+    code_culture: string, 
+    id_parce: string, 
+    id_espece: string, 
+    id_var: string, 
+    id_saison: string, 
+    annee_du: string, 
+    ddp: string, 
+    qso: string, 
+    dt_distribution: string, 
+    dds: string, 
+    sfce: number, 
+    nbre_ligne: number, 
+    long_ligne: number, 
+    usage: string, 
+    sc: string, 
+    ea_autres: string, 
+    ea_id_variette: string, 
+    dt_creation: string, 
+    dt_modification: string, 
+    status: string, 
+    etat: string, 
+    id_equipe: number, 
+    type: string
+}
+export interface suiviMepPR {
+    code_sv: string, 
+    id_culture: string, 
+    ddp: string, 
+    stc: string, 
+    ql: number, 
+    qr: number, 
+    long_ligne: number, 
+    nbre_ligne: number, 
+    nbre_pied: number, 
+    hauteur: number, 
+    ec: string, 
+    img_cult: string, 
+    dt_capture: string, 
+    ex: number, 
+    dt_creation: string, 
+    dt_modification: string, 
+    etat: string
+}

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
-import { AddMepBloc, Db_Culture_pms, Db_suivi_pms, UpdateAnimationVe, UpdateAnimeSpecu, UpdateBenef, UpdateBenefActivPr, UpdateParcePr, UpdateSuiviBloc } from 'src/app/interfaces/interface-insertDb';
-import { AnimationSpecu } from 'src/app/interfaces/interfaces-local';
+import { AddMepBloc, Db_Culture_pms, Db_suivi_pms, UpdateAnimationVe, UpdateAnimeSpecu, UpdateBenef, UpdateBenefActivPr, UpdateMepPR, UpdateParcePr, UpdateSuiviBloc, UpdateSuiviMepPR } from 'src/app/interfaces/interface-insertDb';
+import { Loc_AnimationSpecu } from 'src/app/interfaces/interfaces-local';
 import { DB_NAME } from 'src/app/utils/global-variables';
 import { DatabaseService } from '../database.service';
 
@@ -190,11 +190,20 @@ export class CrudDbService {
       return await this.db.query(state_, data_);
     }
   }
+  
   // Update animation
   async UpdateAnimationVe(data: UpdateAnimationVe) {
     if (this.db_ready.dbReady.value) {
       let data_ = [data.id_pr, data.id_fkt, data.id_commune, data.village, data.date_anim, data.nb_participant, data.nb_h, data.nb_f, data.nb_inf_25, data.type, data.img_piece, null, data.id_tech_recenseur, data.etat, data.status];
       const state_ = `UPDATE animation_ve SET id_pr = ?, id_fkt = ?, id_commune = ?, village = ?, date_anim = ?, nb_participant = ?, nb_h = ?, nb_f = ?, nb_inf_25 = ?, type = ?, img_piece = ?, img_group_particip = ?, id_tech_recenseur = ?, etat = ?, status = ? WHERE code = "${data.code}"`;
+      return await this.db.query(state_, data_);
+    }
+  }
+  // Update
+  async UpdateAnimationVeSync(data: any) {
+    if (this.db_ready.dbReady.value) {
+      let data_ = [data.etat];
+      const state_ = `UPDATE animation_ve SET etat = ? WHERE code = "${data.code}"`;
       return await this.db.query(state_, data_);
     }
   }
@@ -216,10 +225,64 @@ export class CrudDbService {
     }
   }
   // Delete speculation
-  async DeleteAnimationVe_specu(data: AnimationSpecu) {
+  async DeleteAnimationVe_specu(data: Loc_AnimationSpecu) {
     if (this.db_ready.dbReady.value) {
       const state_ = `DELETE FROM animation_ve_specu WHERE code_specu = ${data.code_specu}`;
       return await this.db.execute(state_);
+    }
+  }
+  // Add Mep PR
+  AddMepPR(data: UpdateMepPR) {
+    if (this.db_ready.dbReady.value) {
+      let data_ = [data.code_culture, data.id_parce, data.id_espece, data.id_var, data.id_saison, data.annee_du, data.ddp, data.qso, data.dt_distribution, data.dds, data.sfce, data.nbre_ligne, data.long_ligne, data.sc, data.ea_autres, data.ea_id_variette, data.dt_creation, data.dt_modification, data.status, data.etat, data.id_equipe, data.type];
+      const state_ = `INSERT INTO culture_pr(code_culture, id_parce, id_espece, id_var, id_saison, annee_du, ddp, qso, dt_distribution, dds, sfce, nbre_ligne, long_ligne, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      return this.db.query(state_, data_);
+    }
+  }
+  // Add Mep PR
+  UpdatedMepPR(data: any) {
+    if (this.db_ready.dbReady.value) {
+      let data_: any;
+      let state_: any;
+      if (data.isUpdateMepSuivi) {
+        let data_mep: UpdateMepPR = data.data_mep;
+        data_ = [data_mep.id_parce, data_mep.id_espece, data_mep.id_var, data_mep.id_saison, data_mep.annee_du, data_mep.ddp, data_mep.qso, data_mep.dt_distribution, data_mep.dds, data_mep.sfce, data_mep.nbre_ligne, data_mep.long_ligne, data_mep.sc, data_mep.ea_autres, data_mep.ea_id_variette, data_mep.dt_modification, data_mep.status, data_mep.etat];
+        state_ = `UPDATE culture_pr SET id_parce= ?, id_espece= ?, id_var= ?, id_saison= ?, annee_du= ?, ddp= ?, qso= ?, dt_distribution= ?, 
+                dds= ?, sfce= ?, nbre_ligne= ?, long_ligne= ?, sc= ?, ea_autres= ?, ea_id_variette= ?, dt_modification= ?, status= ?, etat= ? WHERE code_culture= "${data.code_culture}"`;
+      }
+      if (data.isUpdateMepSuiviSync) {
+        data_ = [data.status, data.etat];
+        state_ = `UPDATE culture_pr SET status= ?, etat= ? WHERE code_culture= "${data.code_culture}"`;
+      }
+      return this.db.query(state_, data_);
+    }
+  }
+  // Add suivi Mep PR
+  AddSuiviMepPR(data: UpdateSuiviMepPR) {
+    if (this.db_ready.dbReady.value) {
+      let data_ = [data.code_sv, data.id_culture, data.ddp, data.stc, data.ql, data.qr, data.long_ligne, data.nbre_ligne, data.nbre_pied, data.hauteur, data.ec, data.img_cult, data.dt_capture, data.ex, data.dt_creation, data.dt_modification, data.etat];
+      let state_ = `INSERT INTO suivi_pr(code_sv, id_culture, ddp, stc, ql, qr, long_ligne, nbre_ligne, nbre_pied, hauteur, ec, img_cult, dt_capture, ex, dt_creation, dt_modification, etat) 
+                  VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      return this.db.query(state_, data_);
+    }
+  }
+  UpdateSuiviMepPR(data: any) {
+    if (this.db_ready.dbReady.value) {
+      let data_: any;
+      let state_: any;
+      if (data.isUpdateSuivi) {
+        let data_suivi: UpdateSuiviMepPR = data.data_suivi;
+        data_ = [data_suivi.ddp, data_suivi.stc, data_suivi.ql, data_suivi.qr, data_suivi.long_ligne, data_suivi.nbre_ligne, data_suivi.nbre_pied, data_suivi.hauteur, data_suivi.ec, data_suivi.img_cult, data_suivi.dt_capture, data_suivi.ex, data_suivi.dt_modification, data_suivi.etat];
+        state_ = `UPDATE suivi_pr SET ddp= ?, stc= ?, ql= ?, qr= ?, long_ligne= ?, nbre_ligne= ?, nbre_pied= ?, hauteur= ?, ec= ?, img_cult= ?, dt_capture= ?, ex= ?, dt_modification= ?, etat= ? 
+                  WHERE code_sv= "${data_suivi.code_sv}"`;
+      }
+      if (data.isUpdateSuiviSync) {
+        let data_suivi: any = data.data_suivi;
+        data_ = [data_suivi.etat];
+        state_ = `UPDATE suivi_pr SET etat= ? WHERE code_sv= "${data_suivi.code_sv}"`;
+      }
+      return this.db.query(state_, data_);
     }
   }
 }

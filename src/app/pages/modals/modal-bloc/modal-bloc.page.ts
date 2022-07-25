@@ -13,8 +13,8 @@ import { ROLE_CACT_INERME, SC } from 'src/app/utils/global-variables';
 export class ModalBlocPage implements OnInit, AfterViewInit {
   //Reactive form group
   sg_paForm: FormGroup;
-  paForm: FormGroup;
-  mvForm: FormGroup;
+  //paForm: FormGroup;
+  //mvForm: FormGroup;
 
   // Suivi bloc
   private isSuivi: boolean = false;
@@ -123,7 +123,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
       }
     }
    }
-   ngOnInit() {
+  ngOnInit() {
     console.log(":::::OnInit::::::::");
     if (this.isAddMepSg || this.isAddMepMv || this.isAddMepPa) {
       this.sg_paForm = this.formBuilder.group({

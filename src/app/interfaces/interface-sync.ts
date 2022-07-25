@@ -159,11 +159,54 @@ export interface Sync_anime_ve {
     status: string
 }
 export interface Sync_anime_specu {
-    code_specu: string, 
+    code_specu: number, 
     id_anime_ve: string, 
     id_var: string, 
     id_espece: string, 
-    quantite: string, 
+    quantite: number, 
     etat: string, 
     status: string
+}
+export interface Sync_MepPR {
+    code_culture: string, 
+    id_parce: string, 
+    id_espece: string, 
+    id_var: string, 
+    id_saison: string, 
+    annee_du: string, 
+    ddp: string, 
+    qso: number, 
+    dt_distribution: string, 
+    dds: string, 
+    sfce: number, 
+    nbre_ligne: number, 
+    long_ligne: number,
+    sc: string,
+    ea_autres: string,
+    ea_id_variette: string, 
+    dt_creation: string, 
+    dt_modification: string, 
+    status: string, 
+    etat: string, 
+    id_equipe: number, 
+    type: string
+}
+export interface Sync_Suivi_MepPr {
+    code_sv: string, 
+    id_culture: string, 
+    ddp: string, 
+    stc: string, 
+    ql: number, 
+    qr: number, 
+    long_ligne: number, 
+    nbre_ligne: number, 
+    nbre_pied: number, 
+    hauteur: number, 
+    ec: string, 
+    img_cult: string, 
+    dt_capture: string, 
+    ex: number, 
+    dt_creation: string, 
+    dt_modification: string, 
+    etat: string
 }

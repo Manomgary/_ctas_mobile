@@ -86,4 +86,25 @@ export class LoadSyncService {
                   WHERE BAPR.id_tech = ${data.id_tech} AND BAPR.id_proj = "${data.id_projet}" AND SPECU.etat IN("${SYNC}", "${UPDATE}") AND SPECU.status = "active"`;
     return await this.db.query(state);
   }
+  async loadSyncMepPR(data: any) {
+    const state = `SELECT MEP.code_culture, MEP.id_parce, MEP.id_espece, MEP.id_var, MEP.id_saison, MEP.annee_du, MEP.ddp, MEP.qso, MEP.dt_distribution, MEP.dds, MEP.sfce, MEP.nbre_ligne, MEP.long_ligne, MEP.usage, MEP.sc, MEP.ea_autres, MEP.ea_id_variette, MEP.dt_creation, MEP.dt_modification, MEP.status, MEP.etat, MEP.id_equipe, MEP.type 
+                  FROM culture_pr MEP
+                  INNER JOIN cep_parce CEP ON CEP.code_parce = MEP.id_parce AND CEP.status = "active"
+                  INNER JOIN beneficiaire BNF ON BNF.code_benef = CEP.id_benef AND BNF.statut = "active"
+                  INNER JOIN benef_activ_pr BAPR ON BAPR.id_proj = "${data.id_projet}" AND BAPR.id_tech = ${data.id_tech} AND BAPR.id_benef = BNF.code_benef AND BAPR.status = "active"
+                  INNER JOIN projet_equipe PE ON PE.id_projet = "${data.id_projet}" AND PE.id_equipe = ${data.id_tech} AND PE.status_pe = "active"
+                  WHERE MEP.etat IN("${SYNC}", "${UPDATE}") AND MEP.status = "active"`;
+    return await this.db.query(state);
+  }
+  async loadSyncSuiviMepPR(data: any) {
+    const state = `SV.code_sv, SV.id_culture, SV.ddp, SV.stc, SV.ql, SV.qr, SV.long_ligne, SV.nbre_ligne, SV.nbre_pied, SV.hauteur, SV.ec, SV.img_cult, SV.dt_capture, SV.ex, SV.dt_creation, SV.dt_modification, SV.etat
+                FROM suivi_pr SV
+                INNER JOIN culture_pr MEP ON MEP.code_culture = SV.id_culture AND MEP.status = "active"
+                INNER JOIN cep_parce CEP ON CEP.code_parce = MEP.id_parce AND CEP.status = "active"
+                INNER JOIN beneficiaire BNF ON BNF.code_benef = CEP.id_benef AND BNF.statut = "active"
+                INNER JOIN benef_activ_pr BAPR ON BAPR.id_proj = "${data.id_projet}" AND BAPR.id_tech = ${data.id_tech} AND BNF.code_benef = BAPR.id_benef AND BAPR.status = "active"
+                INNER JOIN projet_equipe PE ON PE.id_projet = "${data.id_projet}" AND PE.id_equipe = ${data.id_tech} AND PE.status_pe = "active"
+                WHERE SV.etat IN("${SYNC}", "${UPDATE}")`;
+    return await this.db.query(state);
+  }
 }

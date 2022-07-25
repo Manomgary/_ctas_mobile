@@ -450,6 +450,55 @@ CREATE TABLE IF NOT EXISTS animation_ve_specu(
     etat TEXT NOT NULL, 
     status TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS culture_pr(
+    code_culture TEXT PRIMARY KEY, 
+    id_parce TEXT NOT NULL, 
+    id_espece TEXT, 
+    id_var TEXT, 
+    id_saison TEXT, 
+    annee_du TEXT NOT NULL, 
+    ddp TEXT NOT NULL, 
+    qso TEXT, 
+    dt_distribution TEXT, 
+    dds TEXT, 
+    sfce INTEGER, 
+    nbre_ligne INTEGER, 
+    long_ligne INTEGER, 
+    usage TEXT, 
+    sc TEXT, 
+    ea_autres TEXT, 
+    ea_id_variette TEXT, 
+    dt_creation TEXT, 
+    dt_modification TEXT, 
+    status TEXT NOT NULL, 
+    etat TEXT NOT NULL, 
+    id_equipe INTEGER, 
+    type TEXT,
+    FOREIGN KEY(id_parce) REFERENCES cep_parce(code_parce) ON DELETE SET DEFAULT,
+    FOREIGN KEY(id_espece) REFERENCES espece(code_espece) ON DELETE SET DEFAULT,
+    FOREIGN KEY(id_var) REFERENCES variette(code_var) ON DELETE SET DEFAULT,
+    FOREIGN KEY(id_saison) REFERENCES saison(code_saison) ON DELETE SET DEFAULT
+);
+CREATE TABLE IF NOT EXISTS suivi_pr(
+    code_sv TEXT PRIMARY KEY, 
+    id_culture TEXT NOT NULL, 
+    ddp TEXT NOT NULL, 
+    stc TEXT, 
+    ql TEXT, 
+    qr TEXT, 
+    long_ligne TEXT, 
+    nbre_ligne TEXT, 
+    nbre_pied TEXT, 
+    hauteur TEXT, 
+    ec TEXT, 
+    img_cult TEXT, 
+    dt_capture TEXT, 
+    ex number, 
+    dt_creation TEXT, 
+    dt_modification TEXT, 
+    etat TEXT NOT NULL,
+    FOREIGN KEY(id_culture) REFERENCES culture_pr(code_culture) ON DELETE SET DEFAULT
+);
 PRAGMA ctas_version = 1;
 `;
 

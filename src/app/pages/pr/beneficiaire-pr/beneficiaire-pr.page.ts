@@ -245,7 +245,6 @@ export class BeneficiairePrPage implements OnInit {
         row.isExpanded = true;
       }
     });
-
   }
 
   // Edit Cep

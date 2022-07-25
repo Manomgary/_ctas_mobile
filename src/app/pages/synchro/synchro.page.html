@@ -21,13 +21,13 @@
     </button>
   </p>
   <p>
-    MEP : {{data_mep_bloc.length}}
+    MEP Bloc: {{data_mep_bloc.length}}
     <button mat-raised-button (click)="onSyncMepBl()" class="demo-button" [disabled] = "data_mep_bloc.length === 0">
       Sync
     </button>
   </p>
   <p>
-    Suivi : {{data_suivi_bloc.length}}
+    Suivi Bloc: {{data_suivi_bloc.length}}
     <button mat-raised-button (click)="onSyncSuiviBl()" class="demo-button" [disabled] = "data_suivi_bloc.length === 0">
       Sync
     </button>
@@ -41,6 +41,18 @@
   <p>
     Animation PR : {{data_anime_ve.length}}
     <button mat-raised-button (click)="onSyncAnimationVe()" class="demo-button" [disabled] = "data_anime_ve.length === 0">
+      Sync
+    </button>
+  </p>
+  <p>
+    MEP CEP: {{data_mep_pr.length}}
+    <button mat-raised-button (click)="onSyncMepPR()" class="demo-button" [disabled] = "data_mep_pr.length === 0">
+      Sync
+    </button>
+  </p>
+  <p>
+    Suivi CEP: {{data_suivi_pr.length}}
+    <button mat-raised-button (click)="onSyncSuiviPr()" class="demo-button" [disabled] = "data_suivi_pr.length === 0">
       Sync
     </button>
   </p>

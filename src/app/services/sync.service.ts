@@ -47,4 +47,12 @@ export class SyncService {
   syncAnimeVe(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'prBloc/updateAnimeVe', data, this.httpOptions);
   }
+  // Sync Mep PR
+  syncMepPR(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'culture/update_mep_pr', data, this.httpOptions);
+  }
+  // Sync Mep PR
+  syncSuiviMepPR(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'culture/update_suivi_mep_pr', data, this.httpOptions);
+  }
 }

@@ -6,8 +6,8 @@ import { DB_NAME } from '../utils/global-variables';
 import { DatabaseService } from './database.service';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { ApiService } from './api.service';
-import { Activite, Animation_ve, Benef_Bloc, Benef_PR_Bloc, Benef_RP, Bloc, bloc_Parcelle, Catego_espece, Cep_pr, Collaborateur, Collaborateur_activ, Commune, Culture_pms, District, Equipe, Espece, Fonkotany, Mep_bloc, Parcelle, Parcelle_Association, Parcelle_bl, 
-        Participe_proj_activ, Participe_proj_volet, Projet, ProjetEquipe, ProjetEquipeVolet, Region, Saison, Specu_anime, Suivi_bloc, Suivi_pms, Utilisateurs, Variette, Volet } from '../utils/interface-bd';
+import { Activite, Animation_ve, Benef_Bloc, Benef_PR_Bloc, Benef_RP, Bloc, bloc_Parcelle, Catego_espece, Cep_pr, Collaborateur, Collaborateur_activ, Commune, Culture_pms, District, Equipe, Espece, Fonkotany, MepPR, Mep_bloc, Parcelle, Parcelle_Association, Parcelle_bl, 
+        Participe_proj_activ, Participe_proj_volet, Projet, ProjetEquipe, ProjetEquipeVolet, Region, Saison, Specu_anime, suiviMepPR, Suivi_bloc, Suivi_pms, Utilisateurs, Variette, Volet } from '../utils/interface-bd';
 import { BehaviorSubject } from 'rxjs';
 import { Console } from 'console';
 
@@ -182,6 +182,9 @@ export class ImportDataService implements OnInit, OnDestroy {
   }
   async insertData(data: string) {
     await this.db.execute(data);
+  }
+  async insertDataSet(data: any) {
+    return await this.db.query(data.state_, data.data_);
   }
   async select(tbName: string, data: any[]) {
     let req = "SELECT * FROM " + tbName + ";";
@@ -501,12 +504,12 @@ export class ImportDataService implements OnInit, OnDestroy {
             //this.loadBenefBloc(data_bl_benef);
           } else if (intitule.toUpperCase() === 'PR') {
             console.log("============ ACTIVITE Paysant Relais +++++ " + data_equipe_pr.id_projet);
-            let data_rp = {
+            let data_pr = {
               id_projet: data_equipe_pr.id_projet,
               code_activ: elem.id_activ,
               id_equipe: data_equipe_pr.id_equipe
             }
-            this.loadBenefPRBloc(data_rp);
+            this.loadBenefPRBloc(data_pr);
           }
 
   
@@ -532,7 +535,7 @@ export class ImportDataService implements OnInit, OnDestroy {
       data_coll = data;
 
       data_coll.forEach((elem, i) => {
-        const insert = `INSERT INTO collaborateur(code_col, nom, description, ancronyme) 
+        const insert = `INSERT OR IGNORE INTO collaborateur(code_col, nom, description, ancronyme) 
                         VALUES("${elem.code_col}", "${elem.nom}", ${elem.description != null?`"${elem.description}"`:null}, ${elem.ancronyme != null?`"${elem.ancronyme}"`:null});`;
         console.log(elem);
         this.insertData(insert);
@@ -794,8 +797,8 @@ export class ImportDataService implements OnInit, OnDestroy {
             console.log("::::::::::::::::::::::::::::::::");
             benef_pr.forEach((elem_bnf_pr, ind_benef_pr) => {
               // Inserer beneficiaire Payant Relais
-              const state_activ_pr = `INSERT INTO benef_activ_pr(code_pr, id_proj, id_activ, id_benef, id_bloc, code_achat, id_collaborateur, id_tech, etat, status)
-                        VALUES("${elem_bnf_pr.code_pr}","${elem_bnf_pr.id_proj}", ${elem_bnf_pr.id_activ}, "${elem_bnf_pr.id_benef}", "${elem_bnf_pr.id_bloc}", ${elem_bnf_pr.code_achat != null?`"${elem_bnf_pr.code_achat}"`:null}, 
+              const state_activ_pr = `INSERT OR IGNORE INTO benef_activ_pr(code_pr, id_proj, id_activ, id_benef, id_bloc, code_achat, id_collaborateur, id_tech, etat, status)
+                        VALUES("${elem_bnf_pr.code_pr}","${elem_bnf_pr.id_proj}", ${elem_bnf_pr.id_activ}, "${elem_bnf_pr.id_benef}", ${elem_bnf_pr.id_bloc != null?`"${elem_bnf_pr.id_bloc}"`:null}, ${elem_bnf_pr.code_achat != null?`"${elem_bnf_pr.code_achat}"`:null}, 
                         "${elem_bnf_pr.id_collaborateur}", ${elem_bnf_pr.id_tech}, "${elem_bnf_pr.etat_activ_pr}", "${elem_bnf_pr.status_activ_pr}");`;
               this.insertData(state_activ_pr);
               code_pr.push(elem_bnf_pr.code_pr);
@@ -804,10 +807,12 @@ export class ImportDataService implements OnInit, OnDestroy {
                 console.log("::::!!Fin du boucle Beneficiaire PR!!:::", benef_pr.length);
                 console.log("::::::::::::::::::::::::::::::::");
                 let id_pr = {
-                  code_pr: code_pr
+                  code_pr: code_pr,
+                  data_pr: data
                 }
                 this.loadAnimationVe(data);
                 this.loadParcellePRBenef(id_pr);
+                //this.loadMepPR(data);
                 this.select("benef_activ_pr", benef_pr);
               }
             });
@@ -820,19 +825,69 @@ export class ImportDataService implements OnInit, OnDestroy {
   loadParcellePRBenef(data: any) {
     this.api.getParcePRBloc(data).subscribe((res: any[]) => {
       if (res.length > 0) {
-        res.forEach((cep_benef: Cep_pr[], ind_cep) => {
-          cep_benef.forEach(elem_cep => {
-            const state_add_cep = `INSERT INTO cep_parce(code_parce, id_bloc, id_benef, ref_gps, lat, log, superficie, id_commune, id_fkt, village, anne_adheran, etat, status)
+        res.forEach((cep_benef: Cep_pr[], ind_res) => {
+          cep_benef.forEach((elem_cep, ind_cep) => {
+            const state_add_cep = `INSERT OR IGNORE INTO cep_parce(code_parce, id_bloc, id_benef, ref_gps, lat, log, superficie, id_commune, id_fkt, village, anne_adheran, etat, status)
                           VALUES("${elem_cep.code_parce}", ${elem_cep.id_bloc != null? `"${elem_cep.id_bloc}"`:null}, "${elem_cep.id_benef}", ${elem_cep.ref_gps != null?`"${elem_cep.ref_gps}"`:null}, ${elem_cep.lat}, ${elem_cep.log}, ${elem_cep.superficie}, 
                           ${elem_cep.id_commune != null? `"${elem_cep.id_commune}"`:null}, ${elem_cep.id_fkt != null? `"${elem_cep.id_fkt}"`:null}, ${elem_cep.village != null? `"${elem_cep.village}"`:null}, ${elem_cep.anne_adheran}, "${elem_cep.etat}", "${elem_cep.status}");`;
             this.insertData(state_add_cep);
+            if ((cep_benef.length - 1 ) === ind_cep) {
+              // Fin du boucle
+              if ((res.length - 1) === ind_res) {
+                //this.loadMepPR(data.data_pr);
+              }
+            }
           });
-          if ((cep_benef.length - 1 ) === ind_cep) {
-            console.log("::::Fin du boucle CEP PR PARCELLE::::", res.length);
-            /**
-             * IMPORTER ACTIVITER PR ET CULTURE CEP
-             */
+          if ((res.length - 1) === ind_res) {
+            this.loadMepPR(data.data_pr);
           }
+        });
+      }
+    });
+  }
+  // Mep PR
+  loadMepPR(data: any) {
+    this.api.getMepPR(data).subscribe((res: MepPR[]) => {
+      let data_elem: any[] = [];
+      if (res.length > 0) {
+        res.forEach((elem_mep, ind_mep) => {
+          data_elem.push({
+            code_mep: elem_mep.code_culture
+          });
+          let value = [elem_mep.code_culture, elem_mep.id_parce, elem_mep.id_espece, elem_mep.id_var, elem_mep.id_saison, elem_mep.annee_du, elem_mep.ddp, elem_mep.qso, elem_mep.dt_distribution, elem_mep.dds, elem_mep.sfce, elem_mep.nbre_ligne, elem_mep.long_ligne, elem_mep.usage, elem_mep.sc, elem_mep.ea_autres, elem_mep.ea_id_variette, elem_mep.dt_creation, elem_mep.dt_modification, elem_mep.status, elem_mep.etat, elem_mep.id_equipe, elem_mep.type];
+          let state_add_mep = `INSERT INTO culture_pr(code_culture, id_parce, id_espece, id_var, id_saison, annee_du, ddp, qso, dt_distribution, dds, sfce, nbre_ligne, long_ligne, usage, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+          let req = {
+            state_: state_add_mep, 
+            data_: value
+          }
+          this.insertDataSet(req);
+          if ((res.length - 1) === ind_mep) {
+            // load suivi MEP PR
+            let code_culture = {
+              code_mep: data_elem
+            }
+            this.loadSuiviPR(code_culture);
+          }
+        });
+      }
+    });
+  }
+  // load Suivi MEP PR
+  loadSuiviPR(data: any) {
+    this.api.getSuiviMepPR(data).subscribe((res_suivi: any[]) => {
+      if (res_suivi.length > 0) {
+        res_suivi.forEach((suivi: suiviMepPR[], ind_suivi) => {
+          suivi.forEach(elem_suivi => {
+            let value = [elem_suivi.code_sv, elem_suivi.id_culture, elem_suivi.ddp, elem_suivi.stc, elem_suivi.ql, elem_suivi.qr, elem_suivi.long_ligne, elem_suivi.nbre_ligne, elem_suivi.nbre_pied, elem_suivi.hauteur, elem_suivi.ec, elem_suivi.img_cult, elem_suivi.dt_capture, elem_suivi.ex, elem_suivi.dt_creation, elem_suivi.dt_modification, elem_suivi.etat];
+            let state_add_suivi = `INSERT INTO suivi_pr(code_sv, id_culture, ddp, stc, ql, qr, long_ligne, nbre_ligne, nbre_pied, hauteur, ec, img_cult, dt_capture, ex, dt_creation, dt_modification, etat) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            let req = {
+              state_: state_add_suivi, 
+              data_: value
+            }
+            this.insertDataSet(req);
+          });
         });
       }
     });

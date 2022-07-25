@@ -961,6 +961,48 @@ export class LoadDataService {
     return await this.db.query(req);
   }
 
+  async loadMepPR(data: any) {
+    const req = `SELECT MEP.code_culture, MEP.id_parce, CEP.superficie AS sfce_reel, BAPR.code_pr, BAPR.code_achat, BNF.img_benef, BNF.nom, BNF.prenom, BNF.dt_nais, MEP.id_espece, MEP.id_var, MEP.id_saison, MEP.annee_du, MEP.ddp, MEP.qso, MEP.dt_distribution, MEP.dds, MEP.sfce AS sfce_emb, MEP.nbre_ligne, MEP.long_ligne, MEP.usage, MEP.sc, MEP.ea_autres, MEP.ea_id_variette, MEP.dt_creation, MEP.dt_modification, MEP.status, MEP.etat AS etat_mep, MEP.id_equipe, MEP.type, CEP.etat AS etat_cep, BNF.etat AS etat_benef, BAPR.etat AS etat_benef_pr,
+                CASE WHEN MEP.id_var IS NOT NULL THEN (SELECT E.code_espece FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = MEP.id_var)
+                ELSE NULL END AS code_espece_var_sg,
+                CASE WHEN MEP.id_espece IS NOT NULL AND MEP.id_var IS NULL THEN (SELECT ESP.nom_espece FROM espece ESP WHERE ESP.code_espece = MEP.id_espece)
+                WHEN MEP.id_var IS NOT NULL AND MEP.id_espece IS NULL THEN (SELECT (ESP.nom_espece || ' ' || VAR.nom_var) AS varie FROM variette VAR INNER JOIN espece ESP ON ESP.code_espece = VAR.id_espece WHERE VAR.code_var = MEP.id_var)
+                END AS variette,
+                CASE WHEN MEP.ea_id_variette IS NOT NULL THEN (SELECT E.code_espece FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = MEP.ea_id_variette)
+                ELSE NULL END AS code_espece_ea,
+                CASE WHEN MEP.ea_id_variette IS NOT NULL THEN (SELECT (E.nom_espece || ' ' || V.nom_var) AS associe FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = MEP.ea_id_variette)
+                WHEN MEP.ea_autres IS NOT NULL THEN MEP.ea_autres
+                END AS cult_associe,
+                CASE WHEN MEP.id_saison IS NOT NULL THEN (SELECT SS.intitule FROM saison SS WHERE SS.code_saison = MEP.id_saison)
+                END AS saison
+                FROM culture_pr MEP
+                INNER JOIN cep_parce CEP ON CEP.code_parce = MEP.id_parce AND CEP.status = "active"
+                INNER JOIN beneficiaire BNF ON BNF.code_benef = CEP.id_benef AND BNF.statut = "active"
+                INNER JOIN benef_activ_pr BAPR ON BAPR.id_benef = BNF.code_benef AND BAPR.status = "active"
+                INNER JOIN equipe EQ ON EQ.code_equipe = BAPR.id_tech AND EQ.statuts = "active"
+                INNER JOIN projet PRJ ON PRJ.code_proj = BAPR.id_proj AND PRJ.statuts = "activer"
+                INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND PE.id_equipe = EQ.code_equipe AND PE.status_pe = "active"
+                WHERE BAPR.id_proj = "${data.code_projet}" AND BAPR.id_tech = ${data.code_equipe} AND MEP.status = "active" ORDER BY MEP.code_culture`;
+    return await this.db.query(req);
+  }
+
+  async loadSuiviMepPR(data: any) {
+    const req = `SELECT BAPR.code_pr, BNF.nom, BNF.prenom, MEP.id_espece, MEP.id_var, MEP.dt_distribution, MEP.qso, MEP.dds, MEP.sc, MEP.sfce AS sfce_emblavee, CEP.code_parce, CEP.superficie AS sfce_reel, MEP.type AS type_mep, SV.code_sv, SV.id_culture, SV.ddp, SV.stc, SV.ql, SV.qr, SV.long_ligne, SV.nbre_ligne, SV.nbre_pied, SV.hauteur, SV.ec, SV.img_cult, SV.dt_capture, SV.ex, SV.dt_creation, SV.dt_modification, SV.etat AS etat_suivi, MEP.etat AS etat_mep, CEP.etat AS etat_cep, BAPR.etat AS etat_pr,
+              CASE WHEN MEP.id_var IS NOT NULL THEN (SELECT (E.nom_espece || ' ' || V.nom_var) AS espec_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = MEP.id_var)
+              WHEN MEP.id_espece IS NOT NULL THEN (SELECT E.nom_espece FROM espece E WHERE E.code_espece = MEP.id_espece)
+              END AS variette
+              FROM suivi_pr SV
+              INNER JOIN culture_pr MEP ON MEP.code_culture = SV.id_culture AND MEP.status = "active"
+              INNER JOIN cep_parce CEP ON CEP.code_parce = MEP.id_parce AND CEP.status = "active"
+              INNER JOIN benef_activ_pr BAPR ON BAPR.id_benef = CEP.id_benef AND BAPR.status = "active"
+              INNER JOIN beneficiaire BNF ON BNF.code_benef = BAPR.id_benef AND BNF.statut = "active"
+              INNER JOIN equipe EQ ON EQ.code_equipe = BAPR.id_tech AND EQ.statuts = "active"
+              INNER JOIN projet PRJ ON PRJ.code_proj = BAPR.id_proj AND PRJ.statuts = "activer"
+              INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND PE.id_equipe = EQ.code_equipe AND PE.status_pe = "active"
+              WHERE BAPR.id_proj = "${data.code_projet}" AND BAPR.id_tech = ${data.code_equipe}`;
+    return await this.db.query(req);
+  }
+
   async loadBenefPRTemp(data: any) {
     const req = `SELECT BAPR.code_pr, BAPR.id_proj, BAPR.id_activ, BAPR.id_benef, BAPR.id_bloc, BAPR.code_achat, BAPR.id_collaborateur, BAPR.id_tech, BAPR.etat, BAPR.status 
                 FROM benef_activ_pr BAPR

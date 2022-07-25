@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import * as moment from 'moment';
 import { BehaviorSubject } from 'rxjs';
-import { Db_Culture_pms } from 'src/app/interfaces/interface-insertDb';
-import { Sync_activ_pr, Sync_anime_specu, Sync_anime_ve, Sync_benef_activ_pr, Sync_culture_pms, Sync_info_benef, Sync_mep_bl, Sync_suivi_bl, Sync_suivi_pms } from 'src/app/interfaces/interface-sync';
+import { Db_Culture_pms, UpdateAnimeSpecu } from 'src/app/interfaces/interface-insertDb';
+import { Sync_activ_pr, Sync_anime_specu, Sync_anime_ve, Sync_benef_activ_pr, Sync_culture_pms, Sync_info_benef, Sync_MepPR, Sync_mep_bl, Sync_suivi_bl, Sync_Suivi_MepPr, Sync_suivi_pms } from 'src/app/interfaces/interface-sync';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 import { LoadSyncService } from 'src/app/services/local/load-sync.service';
 import { SyncService } from 'src/app/services/sync.service';
-import { ISSYNC, ISUPDATE, SYNC } from 'src/app/utils/global-variables';
+import { ACTIVE, ISSYNC, ISUPDATE, SYNC } from 'src/app/utils/global-variables';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
 
 @Component({
@@ -31,6 +31,9 @@ export class SynchroPage implements OnInit {
   private data_anime_ve: Sync_anime_ve[] = [];
   private data_anime_specu: Sync_anime_specu[] = [];
 
+  private data_mep_pr: Sync_MepPR[] = [];
+  private data_suivi_pr: Sync_Suivi_MepPr[] = [];
+
   constructor(private router: Router,
               private LoadTosync: LoadSyncService,
               private syncService: SyncService,
@@ -50,6 +53,8 @@ export class SynchroPage implements OnInit {
         this.loadSvBloc();
         this.loadBenefeActivePr();
         this.loadAnimationVe();
+        this.loadSyncMepPR();
+        this.loadSuiviMepPR();
       }
     });
   }
@@ -303,6 +308,9 @@ export class SynchroPage implements OnInit {
       id_tech : this.users[this.users.length - 1].id_equipe,
       id_projet: this.projet.code_proj
     };
+    this.data_benef_activ_pr = [];
+    this.data_info_benf_pr = [];
+    this.data_benef_pr = [];
     this.LoadTosync.loadSyncBenefActivPR(data_).then(res_ => {
       this.data_benef_activ_pr = res_.values;
       if (this.data_benef_activ_pr.length > 0) {
@@ -367,7 +375,10 @@ export class SynchroPage implements OnInit {
                   code_pr: elem_pr.code_pr,
                   etat: elem_pr.etat === SYNC? ISSYNC: ISUPDATE
                 }
-                this.crudDb.UpdatePrBenefSync(update_etat_pr).then(res => {console.log(":::::PR updated::::")});
+                this.crudDb.UpdatePrBenefSync(update_etat_pr).then(res => {
+                  console.log(":::::PR updated::::");
+                  this.loadBenefeActivePr();
+                });
               });
             }
           });
@@ -375,14 +386,16 @@ export class SynchroPage implements OnInit {
       }
     });
   }
-  /**
-   * 
-   */
+  /********************
+   * Animation Ve
+   ***************/
   loadAnimationVe() {
     const data_ = {
       id_tech : this.users[this.users.length - 1].id_equipe,
       id_projet: this.projet.code_proj
     };
+    this.data_anime_ve = [];
+    this.data_anime_specu = [];
     this.LoadTosync.loadSyncAnimationVe(data_).then(res => {
       this.data_anime_ve = res.values;
       this.LoadTosync.loadSyncSpecuAnime(data_).then(res => {
@@ -397,8 +410,106 @@ export class SynchroPage implements OnInit {
     }
     this.syncService.syncAnimeVe(data_).subscribe(res => {
       console.log(":::Res sync Animation::::", res);
+      if (res.response == 1) {
+        this.data_anime_ve.forEach((elem_anime_ve, ind) => {
+          let update_etat_anime = {
+            code: elem_anime_ve.code,
+            etat: elem_anime_ve.etat === SYNC? ISSYNC: ISUPDATE
+          }
+          this.crudDb.UpdateAnimationVeSync(update_etat_anime).then(res => {
+            console.log(":::::Updated Sync Animation ve:::::");
+          });
+          if ((this.data_anime_ve.length - 1) === ind) {
+            if (this.data_anime_specu.length > 0) {
+              this.data_anime_specu.forEach(elem_specu => {
+                let update_specu: UpdateAnimeSpecu = {
+                  code_specu: elem_specu.code_specu,
+                  id_anime_ve: elem_specu.id_anime_ve,
+                  id_var: elem_specu.id_var,
+                  id_espece: elem_specu.id_espece,
+                  quantite: elem_specu.quantite,
+                  etat: elem_specu.etat === SYNC?ISSYNC: ISUPDATE,
+                  status: elem_specu.status
+                }
+                this.crudDb.UpdateAnimationVe_specu(update_specu).then(res => {
+                  console.log(":::::Animation/VE Speculation is Updated:::::");
+                });
+              });
+            } 
+            this.loadAnimationVe();
+          }
+        });
+      }
     });
     console.log("Animation Ve::::", this.data_anime_ve);
     console.log("Animaton Speculation::::", this.data_anime_specu);
+  }
+  /***************************
+   * Sync suivi PR
+   ****************************/
+  loadSyncMepPR() {
+    const data_ = {
+      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_projet: this.projet.code_proj
+    };
+    this.data_mep_pr = [];
+    this.LoadTosync.loadSyncMepPR(data_).then(res => {
+      this.data_mep_pr = res.values;
+    });
+  }
+  onSyncMepPR() {
+    const data_ = {
+      updtate_mep_pr: this.data_mep_pr
+    }
+    this.syncService.syncMepPR(data_).subscribe(res => {
+      console.log("::::Response Sync MEP PR::::", res);
+      if (res.response == 1) {
+        this.data_mep_pr.forEach(elem_mep_pr => {
+          let update_etat_mep_pr = {
+            isUpdateMepSuiviSync: true,
+            code_culture: elem_mep_pr.code_culture,
+            etat: elem_mep_pr.etat === SYNC? ISSYNC: ISUPDATE,
+            status: ACTIVE
+          }
+          this.crudDb.UpdatedMepPR(update_etat_mep_pr).then(res => {
+            console.log(":::::Updated Sync MEP PR:::::");
+            this.loadSyncMepPR();
+          });
+        });
+      }
+    });
+  }
+  loadSuiviMepPR() {
+    const data_ = {
+      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_projet: this.projet.code_proj
+    };
+    this.data_suivi_pr = [];
+    this.LoadTosync.loadSyncSuiviMepPR(data_).then(res => {
+      this.data_suivi_pr = res.values;
+    });
+  }
+  onSyncSuiviPr() {
+    const data_ = {
+      update_suivi_pr: this.data_suivi_pr
+    }
+    this.syncService.syncSuiviMepPR(data_).subscribe(res_ => {
+      console.log(":::::RESONSE SYNC SUIVI:::::", res_);
+      if (res_.response == 1) {
+        this.data_suivi_pr.forEach(elem_suivi_pr => {
+          let update_etat_suivi_pr = {
+            isUpdateSuiviSync: true,
+            data_suivi: {
+              code_sv: elem_suivi_pr.code_sv,
+              etat: elem_suivi_pr.etat === SYNC? ISSYNC: ISUPDATE
+            }
+          }
+          this.crudDb.UpdateSuiviMepPR(update_etat_suivi_pr).then(res => {
+            console.log(":::::Updated Sync SUIVI MEP PR:::::");
+            this.loadSuiviMepPR();
+          });
+        });
+      }
+    });
   }
 }

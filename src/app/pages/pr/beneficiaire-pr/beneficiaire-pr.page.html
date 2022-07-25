@@ -55,7 +55,7 @@
         <h5>PR</h5>
         <button mat-raised-button (click)="onToggleTableRows()" color="primary">Tout Afficher</button>
         <button mat-raised-button (click)="onPresentModal({src: 'add'})" color="primary" *ngIf="!isAddPr && !isRowEdit && !isAddCep && isUpdate">Ajouter</button>
-        <div class="table-container">
+        <div [formGroup]="cepForm" class="table-container">
           <!--If multiTemplateDataRows property of mat-table to true, you can't use index. Instead you have use either dataIndex-->
           <table mat-table [dataSource]="dataSourcePR" class="example-table" multiTemplateDataRows>
             <!-- Image culture Column -->
@@ -276,7 +276,7 @@
             <!-- Template for details row -->
             <ng-container matColumnDef="expandedDetail">
               <td mat-cell *matCellDef="let element; dataIndex as i;" [attr.colspan]="displayedColumnsPR.length">
-                <form [formGroup]="cepForm" class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.cep_pr.length > 0 || isUpdate && element.isExpanded? 'expanded' : 'collapsed'">
+                <div class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.cep_pr.length > 0 || isUpdate && element.isExpanded? 'expanded' : 'collapsed'">
                   <table mat-table [dataSource]="element.cep_pr">
                     <!--Column code_parce-->
                     <ng-container matColumnDef="code_parce">
@@ -592,7 +592,7 @@
                       <td class="mat-cell" [attr.colspan]="displayedColumnsParce.length">Aucun enregistrement</td>
                     </tr>
                   </table>
-                </form>
+                </div>
                 <div class="row sv-element-detail-vide" [@detailExpand]="!isUpdate && element.isExpanded && element.cep_pr.length == 0? 'expanded' : 'collapsed'">
                   <div mat-line>Aucun champs Ecole Enregistrer pour PR {{element.code_pr}}</div>
                 </div>

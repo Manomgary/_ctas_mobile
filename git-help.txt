@@ -1,0 +1,18 @@
+********CREATE NEW REPOSITORY***********
+1.git init
+2.git add README.md (All branch: git add -A ou git add .)
+3.git commit -m "first commit"
+4.git branch -M main
+5.git remote add origin https://github.com/Manomgary/ctas_ong.git
+6.git push -u origin main
+*********push an existing repository from the command line**********
+1.git remote add origin https://github.com/Manomgary/ctas_ong.git
+2.git branch -M main
+3.git push -u origin main
+*******Liste tous les depots git existante dans votre depots local******
+git remote -v
+*****List local branch****
+git branch
+*****Delete local branch***
+git branch -d <branch-name>
+***Delete a branch Remote from local project****

@@ -211,4 +211,12 @@ export class ApiService {
   getSpecuAnime(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'prBloc/findSpeculationAnime', data, this.httpOptions);
   }
+  // load Mep PR
+  getMepPR(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'culture/find_mep_pr', data, this.httpOptions);
+  }
+  // load Suivi Mep PR
+  getSuiviMepPR(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'culture/find_suivi_pr', data, this.httpOptions);
+  }
 }
