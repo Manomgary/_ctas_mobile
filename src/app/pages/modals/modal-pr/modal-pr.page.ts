@@ -90,6 +90,7 @@ export class ModalPrPage implements OnInit {
   selected_espece: Loc_Espece = null;
   selected_variette: Loc_variette  = null;
   data_speculation: any[] = [];
+  data_speculation_add: any[] = [];
   data_specu_delete: Loc_AnimationSpecu[] = [];
   data_anime_specu_update: Loc_AnimationSpecu[] = [];
   quantite: number;
@@ -716,7 +717,8 @@ export class ModalPrPage implements OnInit {
         fokontany: null,
         village: null,
         quantite_specu: null,
-        specu_delete: null
+        specu_delete: null,
+        specu_add_edit: null
       });
     }
     if (this.isEditAnimeVe) {
@@ -828,7 +830,8 @@ export class ModalPrPage implements OnInit {
         fokontany: fkt,
         village: this.element_animeVe.village,
         quantite_specu: null,// local input
-        specu_delete: null
+        specu_delete: null,
+        specu_add_edit: null
       });
     }
   }
@@ -1131,13 +1134,21 @@ export class ModalPrPage implements OnInit {
   onSaveSpecu() {
     this.isAddSpecu = false;
     let val = this.animeVeForm.value;
-    let ind_specu =  this.data_speculation.length;
+    //let ind_specu =  this.data_speculation.length;
     this.data_speculation.push({
       categorie: this.selected_categorie,
       espece:  this.selected_espece,
       variette: this.selected_variette,
       quantite: val.quantite_specu
     });
+    if (this.isEditAnimeVe) {
+      this.data_speculation_add.push({
+        categorie: this.selected_categorie,
+        espece:  this.selected_espece,
+        variette: this.selected_variette,
+        quantite: val.quantite_specu
+      });
+    }
     console.log("Espece quantite::::", this.data_speculation);
     this.selected_categorie  = null;
     this.selected_espece = null;
@@ -1154,12 +1165,13 @@ export class ModalPrPage implements OnInit {
     this.data_speculation.splice(ind_,1);
 
     if (this.isEditAnimeVe) {
+      let ind_add = this.data_speculation_add.indexOf(elem);
       this.data_anime_specu_update.forEach(item => {
         if (item.code_specu ===  elem.code_specu) {
-          console.log("::::Specu to delete::", item)
           this.data_specu_delete.push(item);
         }
       });
+      this.data_speculation_add.splice(ind_add, 1);
     }
     console.log("Espece:::", this.data_speculation); 
   }
@@ -1215,6 +1227,13 @@ export class ModalPrPage implements OnInit {
         this.animeVeForm.patchValue({
           specu_delete: this.data_specu_delete
         });
+      }
+      if (this.isEditAnimeVe) {
+        if(this.data_speculation_add.length > 0) {
+          this.animeVeForm.patchValue({
+            specu_add_edit: this.data_speculation_add
+          });
+        }
       }
       dismiss = this.animeVeForm.value;
       console.log(dismiss);

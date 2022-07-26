@@ -6,7 +6,7 @@ import { LoadingController, ModalController } from '@ionic/angular';
 import { UpdateAnimationVe, UpdateAnimeSpecu } from 'src/app/interfaces/interface-insertDb';
 import { LocalFile, Loc_activ_projet, Loc_AnimationSpecu, Loc_AnimationVe, Loc_categEspece, Loc_Commune, Loc_district, Loc_Espece, Loc_Fokontany, Loc_PR, Loc_projet, Loc_region, Loc_variette } from 'src/app/interfaces/interfaces-local';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
-import { ACTIVE, ANIMATION, SYNC, UPDATE } from 'src/app/utils/global-variables';
+import { ACTIVE, ANIMATION, SYNC, UPDATE, VE } from 'src/app/utils/global-variables';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
 import { ModalPrPage } from '../../modals/modal-pr/modal-pr.page';
 
@@ -29,7 +29,8 @@ interface AnimetionVe {
   fokontany: Loc_Fokontany,
   village: string,
   quantite_specu: number,
-  specu_delete:  Loc_AnimationSpecu[]
+  specu_delete:  Loc_AnimationSpecu[],
+  specu_add_edit: any[]
 }
 
 @Component({
@@ -51,6 +52,8 @@ export class AnimationVePage implements OnInit {
 
   private data_animation_ve: Loc_AnimationVe[] = [];
   private data_anime_specu: Loc_AnimationSpecu[] = [];
+  private src_animation: Loc_AnimationVe[] = [];
+  private src_ve: Loc_AnimationVe[] = [];
 
   // displayed columns
   displayedColumnsAnimeVe: string[] = ['code_pr', 'nom', 'code_anime', 'date_anime', 'commune', 'fokontany', 'nb_participant', 'nb_f', 'nb_h', 'nb-25', 'nb_specu', 'quantite', 'img_pièce', 'action'];
@@ -58,7 +61,8 @@ export class AnimationVePage implements OnInit {
   displayedColumnsSpecu: string[] = ['speculation', 'quantite'];
 
   // data source Mep
-  dataSourceAnimationVe = new MatTableDataSource<Loc_AnimationVe>();
+  dataSourceAnimation = new MatTableDataSource<Loc_AnimationVe>();
+  dataSourceVe = new MatTableDataSource<Loc_AnimationVe>();
 
   isTableAnimationExpanded = false;
   isUpdate: boolean = false;
@@ -67,7 +71,24 @@ export class AnimationVePage implements OnInit {
   data_district: Loc_district[] = [];
   data_commune: Loc_Commune[] = [];
   data_fokontany: Loc_Fokontany[] = [];
-  update_animeve: AnimetionVe;
+  update_animeve: AnimetionVe = {
+    pr: null,
+    dt_anime: null,
+    nb_participant: null,
+    nb_femme: null,
+    nb_homme: null,
+    nb_inf_25: null,
+    speculation: null,
+    img_piece: null,
+    region: null,
+    district: null,
+    commune: null,
+    fokontany: null,
+    village: null,
+    quantite_specu: null,
+    specu_delete: null,
+    specu_add_edit: null
+  };
   isAddAnimation: boolean = false;
   isRowEditAnimation: boolean = false;
   indexRowEdit: number;
@@ -107,7 +128,9 @@ export class AnimationVePage implements OnInit {
     this.loadSpeculation();
   }
 
-  onFinish() {
+  async onFinish() {
+    const loading = await this.loadingCtrl.create();
+    await loading.present();
     this.isUpdate = false;
     if (this.isRowEditAnimation) {
       this.isRowEditAnimation = false;
@@ -117,11 +140,17 @@ export class AnimationVePage implements OnInit {
       this.isAddAnimation = false;
     }
     setTimeout(async () => {
-      const loading = await this.loadingCtrl.create();
-      await loading.present();
       this.loadAnimation();
       this.loadingCtrl.dismiss();
-    }, 1000);
+    }, 700);
+  }
+  // Export
+  onExport(data: any) {
+    if (data === 'animation') {
+      console.log("::::Export Animation:::");
+    } else if (data === 've') {
+      console.log("::::Export Ve:::");
+    }
   }
   onUpdate() {
     this.isUpdate = true;
@@ -146,19 +175,20 @@ export class AnimationVePage implements OnInit {
   // Save add Animation
   onCancelAnime() {
     this.isAddAnimation = false;
+    this.update_animeve = <AnimetionVe>{};
   }
-  onSaveAnime() {
+  onSaveAnime(src_: string) {
     this.isAddAnimation = false;
     console.log(":::Update Animation Ve:::", this.update_animeve);
     let img_piece: string[] = [];
+    let code_anime: string;
     if (this.update_animeve.img_piece != null) {
       this.update_animeve.img_piece.forEach(item => {
         img_piece.push(item.data);
       });
     }
-    let code_anime: string = this.user[this.user.length - 1].id_equipe + this.projet.ancronyme  + '-' + 'ANIM' + '-' + moment().format('YYYYMMDD-HHmmss');
     let addAnimation : UpdateAnimationVe = {
-      code: code_anime,
+      code: '',
       id_pr: this.update_animeve.pr.code_pr,
       id_fkt: this.update_animeve.fokontany != null?this.update_animeve.fokontany.code_fkt:null,
       id_commune: this.update_animeve.village != null?this.update_animeve.commune.code_com:null ,
@@ -168,12 +198,21 @@ export class AnimationVePage implements OnInit {
       nb_h: this.update_animeve.nb_homme,
       nb_f: this.update_animeve.nb_femme,
       nb_inf_25: this.update_animeve.nb_inf_25,
-      type: ANIMATION,
+      type: '',
       img_piece: img_piece.length > 0?JSON.stringify(img_piece.join("-")):null,
       img_group_particip: null,
       id_tech_recenseur: this.user[this.user.length - 1].id_equipe,
       etat: SYNC,
       status: ACTIVE
+    }
+    if (src_ === 'animation') {
+      code_anime = this.user[this.user.length - 1].id_equipe + this.projet.ancronyme  + '-' + 'ANIME' + '-' + moment().format('YYYYMMDD-HHmmss');
+      addAnimation.code = code_anime;
+      addAnimation.type = ANIMATION;
+    } else if (src_ === 've') {
+      let code_anime: string = this.user[this.user.length - 1].id_equipe + this.projet.ancronyme  + '-' + 'VE' + '-' + moment().format('YYYYMMDD-HHmmss');
+      addAnimation.code = code_anime;
+      addAnimation.type = VE;
     }
     console.log("Data to Add:::", addAnimation);
     this.crudData.AddAnimationVe(addAnimation).then(res => {
@@ -197,6 +236,7 @@ export class AnimationVePage implements OnInit {
       }
       setTimeout(() => {
         this.loadAnimation();
+        this.update_animeve = <AnimetionVe>{};
       },  500);
     });
   }
@@ -205,6 +245,7 @@ export class AnimationVePage implements OnInit {
   onCancelEdit() {
     this.isRowEditAnimation = false;
     this.indexRowEdit = null;
+    this.update_animeve = <AnimetionVe>{};
   }
   onSaveEdit(element: Loc_AnimationVe) {
     console.log("::Element Edit:::", element);
@@ -226,7 +267,7 @@ export class AnimationVePage implements OnInit {
       nb_h: this.update_animeve.nb_homme,
       nb_f: this.update_animeve.nb_femme,
       nb_inf_25: this.update_animeve.nb_inf_25,
-      type: ANIMATION,
+      type: element.type,
       img_piece: img_piece.length > 0?JSON.stringify(img_piece.join("-")):null,
       img_group_particip: null,
       id_tech_recenseur: this.user[this.user.length - 1].id_equipe,
@@ -248,9 +289,9 @@ export class AnimationVePage implements OnInit {
         }
       }
       // Add new speculation
-      console.log("Animation Add Ve::", this.update_animeve.speculation);
-      if (this.update_animeve.speculation != null) {
-        this.update_animeve.speculation.forEach(item => {
+      console.log(":::::Add Specu Edit::", this.update_animeve.specu_add_edit);
+      if (this.update_animeve.specu_add_edit != null) {
+        this.update_animeve.specu_add_edit.forEach(item => {
           let add_specu: UpdateAnimeSpecu = {
             code_specu: 0,
             id_anime_ve: element.code_anime,
@@ -267,6 +308,7 @@ export class AnimationVePage implements OnInit {
         });
       }
       this.loadAnimation();
+      this.update_animeve = <AnimetionVe>{};
     });
     this.isRowEditAnimation = false;
     this.indexRowEdit = null;
@@ -277,6 +319,7 @@ export class AnimationVePage implements OnInit {
       code_projet: this.projet.code_proj,
       code_equipe: this.user[this.user.length - 1].id_equipe
     }
+
     this.data_anime_specu = [];
     this.data_animation_ve = [];
     this.loadData.loadAnimeSpecu(data).then(res => {
@@ -299,23 +342,53 @@ export class AnimationVePage implements OnInit {
             item.specu_animation = this.data_anime_specu.filter(item_specu => {return item_specu.id_anime_ve === item.code_anime});
           });
         }
-        this.dataSourceAnimationVe.data = this.data_animation_ve;
-        console.log(":::::Load Animation Ve With elem:::", this.data_animation_ve);
+        if (this.data_animation_ve.length > 0) {
+          this.src_animation = this.data_animation_ve.filter(item => {return item.type.toLowerCase() === ANIMATION});
+          this.src_ve = this.data_animation_ve.filter(item => {return item.type.toLowerCase() === VE});
+        }
+        this.dataSourceAnimation.data = this.src_animation;
+        this.dataSourceVe.data = this.src_ve;
+        console.log(":::::DATA ANIMATION VE::", this.data_animation_ve);
+        console.log(":::::DATA VE FILTRE::", this.src_ve);
+        console.log(":::::DATA ANIMATION FILTRE::", this.src_animation);
       }
     });
   }
 
-  toggleTableRows() {
+  toggleTableRows(data: any) {
     this.isTableAnimationExpanded = !this.isTableAnimationExpanded;
-    this.dataSourceAnimationVe.data.forEach(row => {
-      if (row.specu_animation.length > 0) {
-        row.isExpanded = this.isTableAnimationExpanded;
-      } else {
-        if (row.isExpanded) {
-          row.isExpanded = false;
+    if (data === 'animation') {
+      this.dataSourceAnimation.data.forEach(row => {
+        if (row.specu_animation.length > 0) {
+          row.isExpanded = this.isTableAnimationExpanded;
+        } else {
+          if (row.isExpanded) {
+            row.isExpanded = false;
+          }
         }
-      }
-    });
+      });
+    } else if (data === 've') {
+      this.dataSourceVe.data.forEach(row => {
+        if (row.specu_animation.length > 0) {
+          row.isExpanded = this.isTableAnimationExpanded;
+        } else {
+          if (row.isExpanded) {
+            row.isExpanded = false;
+          }
+        }
+      });
+    }
+  }
+
+  // Event selected matgroupe
+  async selectMatTab(index: number) {
+    this.isTableAnimationExpanded = false;
+    this.onFinish();
+    if (index == 0) {
+      console.log("selected index 0*******");
+    } else if (index == 1) {
+      console.log("selected index 1*******");
+    } 
   }
 
   async onPresentModal(data: any) {

@@ -34,42 +34,78 @@
 </ion-header>
 
 <ion-content>
-  <mat-tab-group mat-align-tabs="start">
+  <mat-tab-group mat-align-tabs="start" (selectedIndexChange)="selectMatTab($event)">
     <mat-tab label="Animation">
-      <div class="container">
-        <h5>Animation-VE</h5>
-        <button mat-raised-button (click)="toggleTableRows()" color="primary">Afficher Tout</button>
-        <button mat-raised-button (click)="onUpdate()" color="primary" *ngIf="!isUpdate">Modifier</button>
-        <button mat-raised-button (click)="onFinish()" color="primary" *ngIf="isUpdate">Terminer</button>
-        <button mat-raised-button (click)="onAdd()" color="primary" *ngIf="isUpdate">Ajouter</button>
-        <div class="table-container">
-          <table mat-table [dataSource]="dataSourceAnimationVe" class="example-table" multiTemplateDataRows>
+      <div class="content-flex" fxLayout="column width100">
+        <!--column 1-->
+        <div class="child-column" fxLayout="row">
+          <div class="child-row">        
+            <button mat-raised-button (click)="onUpdate()" color="primary" *ngIf="!isUpdate">Modifier</button>
+            <button mat-raised-button (click)="onFinish()" color="primary" *ngIf="isUpdate">Terminer</button>
+          </div>
+        </div>
+        <!--Contenent Ajouter-->
+        <div class="child-column" fxLayout="row">
+          <div class="child-row">
+            <button mat-raised-button (click)="toggleTableRows('animation')" color="primary">Afficher Tout</button>
+          </div>
+          <div class="child-row">
+            <button mat-raised-button (click)="onExport('animation')" color="primary" *ngIf="!isUpdate" [disabled]="src_animation.length === 0">Exporter</button>
+          </div>
+          <div class="child-row">
+            <button mat-raised-button (click)="onAdd()" color="primary" *ngIf="isUpdate" [disabled]="isRowEditAnimation">Ajouter</button>
+          </div>
+        </div>
+        <!--Contenent Ajouter-->
+        <div class="child-column">
+          <table mat-table [dataSource]="dataSourceAnimation" class="example-table" multiTemplateDataRows>
             <!--Column code_pr-->
             <ng-container matColumnDef="code_pr">
               <th mat-header-cell *matHeaderCellDef>Code Pr</th>
-              <td mat-cell *matCellDef="let row">{{row.code_pr}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.code_pr}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.pr != null?update_animeve.pr.code_pr:null}}
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_code_pr">
               <th mat-header-cell *matHeaderCellDef>
-                --
+                {{update_animeve.pr != null?update_animeve.pr.code_pr:null}}
               </th>
             </ng-container>
     
             <!--Column Nom-->
             <ng-container matColumnDef="nom">
               <th mat-header-cell *matHeaderCellDef>Nom</th>
-              <td mat-cell *matCellDef="let row">{{row.nom}} {{row.prenom}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nom}} {{row.prenom}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.pr != null?update_animeve.pr.nom:null}} {{update_animeve.pr != null?update_animeve.pr.prenom:null}}
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_nom">
               <th mat-header-cell *matHeaderCellDef>
-                --
+                {{update_animeve.pr != null?update_animeve.pr.nom:null}} {{update_animeve.pr != null?update_animeve.pr.prenom:null}}
               </th>
             </ng-container>
     
             <!--Column Code_anime-->
             <ng-container matColumnDef="code_anime">
               <th mat-header-cell *matHeaderCellDef>Code_anime</th>
-              <td mat-cell *matCellDef="let row">{{row.code_anime}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.code_anime}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  --
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_code_anime">
               <th mat-header-cell *matHeaderCellDef>
@@ -80,83 +116,158 @@
             <!--Column date_anime-->
             <ng-container matColumnDef="date_anime">
               <th mat-header-cell *matHeaderCellDef>Date anime</th>
-              <td mat-cell *matCellDef="let row">{{row.date_anim}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.date_anim}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.dt_anime}}
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_date_anime">
               <th mat-header-cell *matHeaderCellDef>
-                --
+                {{update_animeve.dt_anime}}
               </th>
             </ng-container>
     
             <!--Column commune-->
             <ng-container matColumnDef="commune">
               <th mat-header-cell *matHeaderCellDef>Commune</th>
-              <td mat-cell *matCellDef="let row">{{row.commune}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.commune}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.commune != null?update_animeve.commune.nom_com:null}}
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_commune">
               <th mat-header-cell *matHeaderCellDef>
-                --
+                {{update_animeve.commune != null?update_animeve.commune.nom_com:null}}
               </th>
             </ng-container>
     
             <!--Column fokontany-->
             <ng-container matColumnDef="fokontany">
               <th mat-header-cell *matHeaderCellDef>Fokontany</th>
-              <td mat-cell *matCellDef="let row">{{row.fokontany}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.fokontany}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.fokontany != null?update_animeve.fokontany.nom_fkt : update_animeve.village}}
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_fokontany">
-              <th mat-header-cell *matHeaderCellDef>--</th>
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.fokontany != null?update_animeve.fokontany.nom_fkt : update_animeve.village}}
+              </th>
             </ng-container>
     
             <!--Column nb_participant-->
             <ng-container matColumnDef="nb_participant">
               <th mat-header-cell *matHeaderCellDef>Nb participant</th>
-              <td mat-cell *matCellDef="let row">{{row.nb_participant}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nb_participant}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.nb_participant}}
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_nb_participant">
-              <th mat-header-cell *matHeaderCellDef>--</th>
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.nb_participant}}
+              </th>
             </ng-container>
     
             <!--Column nb_f-->
             <ng-container matColumnDef="nb_f">
               <th mat-header-cell *matHeaderCellDef>Nb F</th>
-              <td mat-cell *matCellDef="let row">{{row.nb_f}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nb_f}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.nb_femme}}
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_nb_f">
-              <th mat-header-cell *matHeaderCellDef>--</th>
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.nb_femme}}
+              </th>
             </ng-container>
     
             <!--Column nb_f-->
             <ng-container matColumnDef="nb_h">
               <th mat-header-cell *matHeaderCellDef>Nb H</th>
-              <td mat-cell *matCellDef="let row">{{row.nb_h}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nb_h}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.nb_homme}}
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_nb_h">
-              <th mat-header-cell *matHeaderCellDef>--</th>
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.nb_homme}}
+              </th>
             </ng-container>
     
             <!--Column nb-25-->
             <ng-container matColumnDef="nb-25">
               <th mat-header-cell *matHeaderCellDef>Nb-25</th>
-              <td mat-cell *matCellDef="let row">{{row.nb_inf_25}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nb_inf_25}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.nb_inf_25}}
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_nb-25">
-              <th mat-header-cell *matHeaderCellDef>--</th>
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.nb_inf_25}}
+              </th>
             </ng-container>
     
             <!--Column nb_specu-->
             <ng-container matColumnDef="nb_specu">
               <th mat-header-cell *matHeaderCellDef>Nb specu</th>
-              <td mat-cell *matCellDef="let row">{{row.nb_specu}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nb_specu}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.speculation != null?update_animeve.speculation.length:null}}
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_nb_specu">
-              <th mat-header-cell *matHeaderCellDef>--</th>
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.speculation != null?update_animeve.speculation.length:null}}
+              </th>
             </ng-container>
     
             <!--Column quantite-->
             <ng-container matColumnDef="quantite">
               <th mat-header-cell *matHeaderCellDef>Quantite</th>
-              <td mat-cell *matCellDef="let row">{{row.somme_specu}}</td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.somme_specu}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  
+                </span>
+              </td>
             </ng-container>
             <ng-container matColumnDef="new_quantite">
               <th mat-header-cell *matHeaderCellDef>--</th>
@@ -165,11 +276,24 @@
             <!--Column img_pièce-->
             <ng-container matColumnDef="img_pièce">
               <th mat-header-cell *matHeaderCellDef>Img pièce</th>
-              <td mat-cell *matCellDef="let row"></td>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  <ion-thumbnail slot="start" *ngIf="update_animeve.img_piece != null">
+                    <ion-img [src]="update_animeve.img_piece[0].data"></ion-img>
+                  </ion-thumbnail>
+                </span>
+              </td>
               <!--<td mat-cell *matCellDef="let row">{{row.img_piece}}</td>-->
             </ng-container>
             <ng-container matColumnDef="new_img_pièce">
-              <th mat-header-cell *matHeaderCellDef>--</th>
+              <th mat-header-cell *matHeaderCellDef>
+                <ion-thumbnail slot="start" *ngIf="update_animeve.img_piece != null">
+                  <ion-img [src]="update_animeve.img_piece[0].data"></ion-img>
+                </ion-thumbnail>
+              </th>
             </ng-container>
     
             <!--Column Action-->
@@ -192,7 +316,7 @@
               <th mat-header-cell *matHeaderCellDef> 
                 <span>
                   <a (click)="onCancelAnime()">annuler</a>
-                  <a (click)="onSaveAnime()">Done</a>
+                  <a (click)="onSaveAnime('animation')">Done</a>
                 </span>
               </th>
             </ng-container>
@@ -240,7 +364,332 @@
       </div>
     </mat-tab>
     <mat-tab label="Vise Echange">
-      <p>Visite Echange</p>
+      <div class="content-flex" fxLayout="column width100">
+        <!--column 1-->
+        <div class="child-column" fxLayout="row">
+          <div class="child-row">        
+            <button mat-raised-button (click)="onUpdate()" color="primary" *ngIf="!isUpdate">Modifier</button>
+            <button mat-raised-button (click)="onFinish()" color="primary" *ngIf="isUpdate">Terminer</button>
+          </div>
+        </div>
+        <!--Contenent Ajouter-->
+        <div class="child-column" fxLayout="row">
+          <div class="child-row">
+            <button mat-raised-button (click)="toggleTableRows('ve')" color="primary">Afficher Tout</button>
+          </div>
+          <div class="child-row">
+            <button mat-raised-button (click)="onExport('ve')" color="primary" *ngIf="!isUpdate" [disabled]="src_ve.length === 0">Exporter</button>
+          </div>
+          <div class="child-row">
+            <button mat-raised-button (click)="onAdd()" color="primary" *ngIf="isUpdate" [disabled]="isRowEditAnimation">Ajouter</button>
+          </div>
+        </div>
+        <!--Contenent Ajouter-->
+        <div class="child-column">
+          <table mat-table [dataSource]="dataSourceVe" class="example-table" multiTemplateDataRows>
+            <!--Column code_pr-->
+            <ng-container matColumnDef="code_pr">
+              <th mat-header-cell *matHeaderCellDef>Code Pr</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.code_pr}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.pr != null?update_animeve.pr.code_pr:null}}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_code_pr">
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.pr != null?update_animeve.pr.code_pr:null}}
+              </th>
+            </ng-container>
+    
+            <!--Column Nom-->
+            <ng-container matColumnDef="nom">
+              <th mat-header-cell *matHeaderCellDef>Nom</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nom}} {{row.prenom}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.pr != null?update_animeve.pr.nom:null}} {{update_animeve.pr != null?update_animeve.pr.prenom:null}}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_nom">
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.pr != null?update_animeve.pr.nom:null}} {{update_animeve.pr != null?update_animeve.pr.prenom:null}}
+              </th>
+            </ng-container>
+    
+            <!--Column Code_anime-->
+            <ng-container matColumnDef="code_anime">
+              <th mat-header-cell *matHeaderCellDef>Code_anime</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.code_anime}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  --
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_code_anime">
+              <th mat-header-cell *matHeaderCellDef>
+                --
+              </th>
+            </ng-container>
+    
+            <!--Column date_anime-->
+            <ng-container matColumnDef="date_anime">
+              <th mat-header-cell *matHeaderCellDef>Date anime</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.date_anim}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.dt_anime}}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_date_anime">
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.dt_anime}}
+              </th>
+            </ng-container>
+    
+            <!--Column commune-->
+            <ng-container matColumnDef="commune">
+              <th mat-header-cell *matHeaderCellDef>Commune</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.commune}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.commune != null?update_animeve.commune.nom_com:null}}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_commune">
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.commune != null?update_animeve.commune.nom_com:null}}
+              </th>
+            </ng-container>
+    
+            <!--Column fokontany-->
+            <ng-container matColumnDef="fokontany">
+              <th mat-header-cell *matHeaderCellDef>Fokontany</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.fokontany}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.fokontany != null?update_animeve.fokontany.nom_fkt : update_animeve.village}}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_fokontany">
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.fokontany != null?update_animeve.fokontany.nom_fkt : update_animeve.village}}
+              </th>
+            </ng-container>
+    
+            <!--Column nb_participant-->
+            <ng-container matColumnDef="nb_participant">
+              <th mat-header-cell *matHeaderCellDef>Nb participant</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nb_participant}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.nb_participant}}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_nb_participant">
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.nb_participant}}
+              </th>
+            </ng-container>
+    
+            <!--Column nb_f-->
+            <ng-container matColumnDef="nb_f">
+              <th mat-header-cell *matHeaderCellDef>Nb F</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nb_f}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.nb_femme}}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_nb_f">
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.nb_femme}}
+              </th>
+            </ng-container>
+    
+            <!--Column nb_f-->
+            <ng-container matColumnDef="nb_h">
+              <th mat-header-cell *matHeaderCellDef>Nb H</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nb_h}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.nb_homme}}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_nb_h">
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.nb_homme}}
+              </th>
+            </ng-container>
+    
+            <!--Column nb-25-->
+            <ng-container matColumnDef="nb-25">
+              <th mat-header-cell *matHeaderCellDef>Nb-25</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nb_inf_25}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.nb_inf_25}}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_nb-25">
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.nb_inf_25}}
+              </th>
+            </ng-container>
+    
+            <!--Column nb_specu-->
+            <ng-container matColumnDef="nb_specu">
+              <th mat-header-cell *matHeaderCellDef>Nb specu</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.nb_specu}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  {{update_animeve.speculation != null?update_animeve.speculation.length:null}}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_nb_specu">
+              <th mat-header-cell *matHeaderCellDef>
+                {{update_animeve.speculation != null?update_animeve.speculation.length:null}}
+              </th>
+            </ng-container>
+    
+            <!--Column quantite-->
+            <ng-container matColumnDef="quantite">
+              <th mat-header-cell *matHeaderCellDef>Quantite</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  {{row.somme_specu}}
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_quantite">
+              <th mat-header-cell *matHeaderCellDef>--</th>
+            </ng-container>
+    
+            <!--Column img_pièce-->
+            <ng-container matColumnDef="img_pièce">
+              <th mat-header-cell *matHeaderCellDef>Img pièce</th>
+              <td mat-cell *matCellDef="let row; dataIndex as i">
+                <span *ngIf="indexRowEdit != i  || !isRowEditAnimation">
+                  
+                </span>
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  <ion-thumbnail slot="start" *ngIf="update_animeve.img_piece != null">
+                    <ion-img [src]="update_animeve.img_piece[0].data"></ion-img>
+                  </ion-thumbnail>
+                </span>
+              </td>
+              <!--<td mat-cell *matCellDef="let row">{{row.img_piece}}</td>-->
+            </ng-container>
+            <ng-container matColumnDef="new_img_pièce">
+              <th mat-header-cell *matHeaderCellDef>
+                <ion-thumbnail slot="start" *ngIf="update_animeve.img_piece != null">
+                  <ion-img [src]="update_animeve.img_piece[0].data"></ion-img>
+                </ion-thumbnail>
+              </th>
+            </ng-container>
+    
+            <!--Column Action-->
+            <ng-container matColumnDef="action">
+              <th mat-header-cell *matHeaderCellDef> Action </th>
+              <td mat-cell *matCellDef="let element; dataIndex as i">
+                <span *ngIf="indexRowEdit == i  && isRowEditAnimation && isUpdate">
+                  <a (click)="onCancelEdit()">cancel</a>
+                  <a (click)="onSaveEdit(element)">Done</a>
+                </span>
+                <span *ngIf="!isAddAnimation && !isUpdate && !isRowEditAnimation">
+                  <button mat-flat-button class="btn-info btn-dimension" (click)="element.isExpanded = !element.isExpanded">Afficher</button>
+                </span>
+                <span *ngIf="isUpdate && !isRowEditAnimation && !isAddAnimation">
+                  <button mat-flat-button class="btn-info btn-dimension" (click)="onEditElement({src: 'edit', data: element, index: i})">Edite</button>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="new_action">
+              <th mat-header-cell *matHeaderCellDef> 
+                <span>
+                  <a (click)="onCancelAnime()">annuler</a>
+                  <a (click)="onSaveAnime('animation')">Done</a>
+                </span>
+              </th>
+            </ng-container>
+    
+              <!-- Template for details row -->
+              <ng-container matColumnDef="expandedDetail">
+              <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumnsAnimeVe.length">
+    
+                <div class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.specu_animation.length > 0? 'expanded' : 'collapsed'">
+                  <table mat-table [dataSource]="element.specu_animation">
+                    <!--Column code_parce-->
+                    <ng-container matColumnDef="speculation">
+                      <th mat-header-cell *matHeaderCellDef>Speculation</th>
+                      <td mat-cell *matCellDef="let row">{{row.speculation}}</td>
+                    </ng-container>
+                    <!--Column bloc-->
+                    <ng-container matColumnDef="quantite">
+                      <th mat-header-cell *matHeaderCellDef>Quantite</th>
+                      <td mat-cell *matCellDef="let row">{{row.quantite}}</td>
+                    </ng-container>
+                  
+                    <tr mat-header-row *matHeaderRowDef="displayedColumnsSpecu" class="hg-header-row-2"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumnsSpecu;" class="hg-element-row"></tr>
+                  </table>
+                </div>
+                <div class="row sv-element-detail-vide" [@detailExpand]="element.isExpanded && element.specu_animation.length == 0? 'expanded' : 'collapsed'">
+                  <div mat-line>Aucun champs Ecole Enregistrer pour PR {{element.code_pr}}</div>
+                </div>
+    
+              </td>
+            </ng-container>
+    
+            <tr mat-header-row *matHeaderRowDef="displayedColumnsAnimeVe" class="hg-header-row-1"></tr>
+            <tr [hidden]="!isAddAnimation" mat-header-row *matHeaderRowDef="displayedColumnsAddAnimeVe; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumnsAnimeVe;" class="sv-element-row hg-element-row" [class.sv-expanded-row]="row.isExpanded" [class.sv-row-vide]="row.specu_animation.length == 0"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+    
+            <!-- Row shown when there is no matching data. -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell" [attr.colspan]="displayedColumnsAnimeVe.length">Aucun enregistrement</td>
+            </tr>
+    
+          </table>
+        </div>
+      </div>
     </mat-tab>
   </mat-tab-group>
 </ion-content>

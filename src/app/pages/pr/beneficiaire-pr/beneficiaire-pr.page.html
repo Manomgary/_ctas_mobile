@@ -301,13 +301,13 @@
                         {{row.bloc_cep}}
                       </span>
                       <span *ngIf="indeRowEditCep == inde && indeRowEdit == i && isRowEditCep">
-                        --update bloc
+                        {{this.update_cep.bloc != null?this.update_cep.bloc.nom:null}}
                       </span>
                     </td>
                   </ng-container>
                   <ng-container matColumnDef="new_bloc">
                     <th mat-header-cell *matHeaderCellDef>
-                      -- new Bloc--
+                      {{this.update_cep.bloc != null?this.update_cep.bloc.nom:null}}
                     </th>
                   </ng-container>
 
@@ -319,13 +319,13 @@
                         {{row.ref_gps}}
                       </span>
                       <span *ngIf="indeRowEditCep == inde && indeRowEdit == i && isRowEditCep">
-                        --update ref_gps
+                        {{update_cep.ref_gps}}
                       </span>
                     </td>
                   </ng-container>
                   <ng-container matColumnDef="new_ref_gps">
                     <th mat-header-cell *matHeaderCellDef>
-                      --new ref-gps
+                      {{update_cep.ref_gps}}
                     </th>
                   </ng-container>
 
@@ -337,13 +337,13 @@
                         {{row.lat}}
                       </span>
                       <span *ngIf="indeRowEditCep == inde && indeRowEdit == i && isRowEditCep">
-                        --updated lat
+                        {{update_cep.latitude}}
                       </span>
                     </td>
                   </ng-container>
                   <ng-container matColumnDef="new_lat">
                     <th mat-header-cell *matHeaderCellDef>
-                      --new Lat
+                      {{update_cep.latitude}}
                     </th>
                   </ng-container>
 
@@ -355,13 +355,13 @@
                         {{row.log}}
                       </span>
                       <span *ngIf="indeRowEditCep == inde && indeRowEdit == i  && isRowEditCep">
-                        --update log
+                        {{update_cep.longitude}}
                       </span>
                     </td>
                   </ng-container>
                   <ng-container matColumnDef="new_log">
                     <th mat-header-cell *matHeaderCellDef>
-                      --new Long
+                      {{update_cep.longitude}}
                     </th>
                   </ng-container>
 
@@ -373,13 +373,13 @@
                         {{row.superficie}}
                       </span>
                       <span *ngIf="indeRowEditCep == inde && indeRowEdit == i  && isRowEditCep">
-                        --update sfce
+                        {{update_cep.superficie}}
                       </span>
                     </td>
                   </ng-container>
                   <ng-container matColumnDef="new_superficie">
                     <th mat-header-cell *matHeaderCellDef>
-                      --new sfce
+                      {{update_cep.superficie}}
                     </th>
                   </ng-container>
 
@@ -391,13 +391,13 @@
                         {{row.nom_region}}
                       </span>
                       <span *ngIf="indeRowEditCep == inde && indeRowEdit == i  && isRowEditCep">
-                        --update region
+                        {{update_cep.region != null?update_cep.region.nom_reg:null}}
                       </span>
                     </td>
                   </ng-container>
                   <ng-container matColumnDef="new_region">
                     <th mat-header-cell *matHeaderCellDef>
-                      --new _region
+                      {{update_cep.region != null?update_cep.region.nom_reg:null}}
                     </th>
                   </ng-container>
 
@@ -409,13 +409,13 @@
                         {{ row.district }}
                       </span>
                       <span *ngIf="indeRowEditCep == inde && indeRowEdit == i && isRowEditCep">
-                        --update district
+                        {{update_cep.district != null?update_cep.district.nom_dist:null}}
                       </span>
                     </td>
                   </ng-container>
                   <ng-container matColumnDef="new_district">
                     <th mat-header-cell *matHeaderCellDef>
-                      -- new district
+                      {{update_cep.district != null?update_cep.district.nom_dist:null}}
                     </th>
                   </ng-container>
 
@@ -427,13 +427,13 @@
                         {{row.commune}}
                       </span>
                       <span *ngIf="indeRowEditCep == inde  && indeRowEdit == i && isRowEditCep">
-                        --update com
+                        {{update_cep.commune != null?update_cep.commune.nom_com:null}}
                       </span>
                     </td>
                   </ng-container>
                   <ng-container matColumnDef="new_commune">
                     <th mat-header-cell *matHeaderCellDef>
-                      --new com
+                      {{update_cep.commune != null?update_cep.commune.nom_com:null}}
                     </th>
                   </ng-container>
 
@@ -445,13 +445,13 @@
                         {{row.fokontany}}
                       </span>
                       <span *ngIf="indeRowEditCep == inde && indeRowEdit == i  && isRowEditCep">
-                        --update fkt
+                        {{update_cep.fokontany != null?update_cep.fokontany.nom_fkt:update_cep.village}}
                       </span>
                     </td>
                   </ng-container>
                   <ng-container matColumnDef="new_fokontany">
                     <th mat-header-cell *matHeaderCellDef>
-                      --new fkt
+                      {{update_cep.fokontany != null?update_cep.fokontany.nom_fkt:update_cep.village}}
                     </th>
                   </ng-container>
 

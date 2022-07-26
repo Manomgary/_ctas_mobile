@@ -495,7 +495,7 @@ export class BeneficiairePrPage implements OnInit {
   }
 
   // Edit Cep
-  onSaveEditCep(element: Loc_cep_PR) {
+  onSaveEditCep(element: Loc_cep_PR) { this.update_cep.village
     console.log("::::Edit data::::", this.update_cep);
     this.indeRowEditCep = null;
     this.isRowEditCep = false;
