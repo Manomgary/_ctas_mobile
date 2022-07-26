@@ -249,7 +249,7 @@ export class CrudDbService {
         let data_mep: UpdateMepPR = data.data_mep;
         data_ = [data_mep.id_parce, data_mep.id_espece, data_mep.id_var, data_mep.id_saison, data_mep.annee_du, data_mep.ddp, data_mep.qso, data_mep.dt_distribution, data_mep.dds, data_mep.sfce, data_mep.nbre_ligne, data_mep.long_ligne, data_mep.sc, data_mep.ea_autres, data_mep.ea_id_variette, data_mep.dt_modification, data_mep.status, data_mep.etat];
         state_ = `UPDATE culture_pr SET id_parce= ?, id_espece= ?, id_var= ?, id_saison= ?, annee_du= ?, ddp= ?, qso= ?, dt_distribution= ?, 
-                dds= ?, sfce= ?, nbre_ligne= ?, long_ligne= ?, sc= ?, ea_autres= ?, ea_id_variette= ?, dt_modification= ?, status= ?, etat= ? WHERE code_culture= "${data.code_culture}"`;
+                dds= ?, sfce= ?, nbre_ligne= ?, long_ligne= ?, sc= ?, ea_autres= ?, ea_id_variette= ?, dt_modification= ?, status= ?, etat= ? WHERE code_culture= "${data_mep.code_culture}"`;
       }
       if (data.isUpdateMepSuiviSync) {
         data_ = [data.status, data.etat];
@@ -259,7 +259,7 @@ export class CrudDbService {
     }
   }
   // Add suivi Mep PR
-  AddSuiviMepPR(data: UpdateSuiviMepPR) {
+  AddSuiviMepPR(data: UpdateSuiviMepPR) { 
     if (this.db_ready.dbReady.value) {
       let data_ = [data.code_sv, data.id_culture, data.ddp, data.stc, data.ql, data.qr, data.long_ligne, data.nbre_ligne, data.nbre_pied, data.hauteur, data.ec, data.img_cult, data.dt_capture, data.ex, data.dt_creation, data.dt_modification, data.etat];
       let state_ = `INSERT INTO suivi_pr(code_sv, id_culture, ddp, stc, ql, qr, long_ligne, nbre_ligne, nbre_pied, hauteur, ec, img_cult, dt_capture, ex, dt_creation, dt_modification, etat) 

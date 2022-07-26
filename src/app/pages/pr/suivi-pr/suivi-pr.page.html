@@ -45,7 +45,7 @@
               <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
                 <!--Column Bouton-->
                 <div class="child-column">
-                  <ion-button (click)="onAdd('mep-sg')" *ngIf="isUpdated" [disabled]="isAddSg">Ajouter</ion-button>
+                  <ion-button (click)="onAdd('mep-sg')" *ngIf="isUpdated" [disabled]="isAddSg || isEditRowSg || isAddPa || isEditRowPa || isAddMv || isEditRowMv">Ajouter</ion-button>
                   <ion-button (click)="onExportCateg('mep-sg')" *ngIf="!isUpdated" [disabled]="mep_sg.length == 0 || isAddSg">Exporter</ion-button>
                   <button mat-raised-button (click)="toggleTableRows({src: 'mep-sg'})" color="primary">Tout afficher</button>
                 </div>
@@ -208,10 +208,10 @@
                             <span *ngIf="!isUpdated">
                               <button mat-flat-button class="btn-info btn-dimension" (click)="element.isExpanded = !element.isExpanded">suivi</button>
                             </span>
-                            <span *ngIf="isUpdated && !isEditRowSg">
+                            <span *ngIf="isUpdated && !isEditRowSg && !isAddSg && !isEditRowMv && !isAddMv && !isEditRowPa && !isAddPa">
                               <button mat-flat-button class="btn-info btn-dimension" (click)="onEditRow({src: 'mep-sg', action: 'edit', row: element, index: i, data_initial: null})">Editer</button>
                             </span>
-                            <span *ngIf="isUpdated && !isEditRowSg">
+                            <span *ngIf="isUpdated && !isEditRowSg && !isAddSg && !isEditRowMv && !isAddMv && !isEditRowPa && !isAddPa">
                               <button mat-flat-button class="btn-info btn-dimension" (click)="onAddShowSuivi({src: 'mep-sg', data: element, index_: i})">Af_</button>
                             </span>
                           </td>
@@ -360,7 +360,7 @@
                                 <!--Action-->
                                 <ng-container matColumnDef="action">
                                   <th mat-header-cell *matHeaderCellDef> 
-                                    <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'add', src: 'mep-sg', row_mep:  element_mep, index_mep: ind_mep})">Ajouter</button>
+                                    <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'add', src: 'mep-sg', row_mep:  element_mep, index_mep: ind_mep})" [disabled]="isAddSvSg || isEditSvSg || isAddSvMv || isEditSvMv || isAddSvPa || isEditSvPa">Ajouter</button>
                                   </th>
                                   <td mat-cell *matCellDef="let row; index as ind_suivi">
                                     <span *ngIf="indexRowMepSvSg == ind_suivi && indexRowMepSg == ind_mep && isEditSvSg">
@@ -373,7 +373,7 @@
                                         </div>
                                       </div>
                                     </span>
-                                    <span *ngIf="!isEditSvSg">
+                                    <span *ngIf="!isEditSvMv && !isAddSvMv && !isEditSvSg && !isAddSvSg && !isEditSvPa && !isAddSvPa">
                                       <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'edit', src: 'mep-sg', row_mep: element_mep, row_suivi: row, index_mep_suivi: ind_suivi, index_mep: ind_mep})">Editer</button>
                                     </span>
                                   </td>
@@ -424,7 +424,7 @@
               <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
                 <!--Column Bouton-->
                 <div class="child-column">
-                  <ion-button (click)="onAdd('mep-pa')" *ngIf="isUpdated" [disabled]="isAddPa">Ajouter</ion-button>
+                  <ion-button (click)="onAdd('mep-pa')" *ngIf="isUpdated" [disabled]="isAddSg || isEditRowSg || isAddPa || isEditRowPa || isAddMv || isEditRowMv">Ajouter</ion-button>
                   <ion-button (click)="onExportCateg('mep-pa')" *ngIf="!isUpdated" [disabled]="mep_pa.length == 0 || isAddPa">Exporter</ion-button>
                   <button mat-raised-button (click)="toggleTableRows({src: 'mep-pa'})" color="primary">Tout afficher</button>
                 </div>
@@ -550,10 +550,10 @@
                             <span *ngIf="!isUpdated">
                               <button mat-flat-button class="btn-info btn-dimension" (click)="element.isExpanded = !element.isExpanded">suivi</button>
                             </span>
-                            <span *ngIf="isUpdated && !isEditRowPa">
+                            <span *ngIf="isUpdated && !isEditRowSg && !isAddSg && !isEditRowMv && !isAddMv && !isEditRowPa && !isAddPa">
                               <button mat-flat-button class="btn-info btn-dimension" (click)="onEditRow({src: 'mep-pa', action: 'edit', row: element, index: i, data_initial: null})">Editer</button>
                             </span>
-                            <span *ngIf="isUpdated && !isEditRowPa">
+                            <span *ngIf="isUpdated && !isEditRowSg && !isAddSg && !isEditRowMv && !isAddMv && !isEditRowPa && !isAddPa">
                               <button mat-flat-button class="btn-info btn-dimension" (click)="onAddShowSuivi({src: 'mep-pa', data: element, index_: i})">Af_</button>
                             </span>
                           </td>
@@ -726,7 +726,7 @@
                                 <!--Action-->
                                 <ng-container matColumnDef="action">
                                   <th mat-header-cell *matHeaderCellDef> 
-                                    <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'add', src: 'mep-pa', row_mep:  element, index_mep: ind_mep})">Ajouter</button>
+                                    <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'add', src: 'mep-pa', row_mep:  element, index_mep: ind_mep})" [disabled]="isAddSvSg || isEditSvSg || isAddSvMv || isEditSvMv || isAddSvPa || isEditSvPa">Ajouter</button>
                                   </th>
                                   <td mat-cell *matCellDef="let row; index as ind_suivi">
                                     <span *ngIf="indexRowMepSvPa == ind_suivi && indexRowMepPa == ind_mep && isEditSvPa">
@@ -739,7 +739,7 @@
                                         </div>
                                       </div>
                                     </span>
-                                    <span *ngIf="!isEditSvPa">
+                                    <span *ngIf="!isEditSvMv && !isAddSvMv && !isEditSvSg && !isAddSvSg && !isEditSvPa && !isAddSvPa">
                                       <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'edit', src: 'mep-pa', row_mep: element, row_suivi: row, index_mep_suivi: ind_suivi, index_mep: ind_mep})">Editer</button>
                                     </span>
                                   </td>
@@ -791,7 +791,7 @@
               <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
                 <!--Column Bouton-->
                 <div class="child-column">
-                  <ion-button (click)="onAdd('mep-mv')" *ngIf="isUpdated" [disabled]="isAddMv">Ajouter</ion-button>
+                  <ion-button (click)="onAdd('mep-mv')" *ngIf="isUpdated" [disabled]="isAddSg || isEditRowSg || isAddPa || isEditRowPa || isAddMv || isEditRowMv">Ajouter</ion-button>
                   <ion-button (click)="onExportCateg('mep-mv')" *ngIf="!isUpdated" [disabled]="mep_mv.length == 0 || isAddMv">Exporter</ion-button>
                   <button mat-raised-button (click)="toggleTableRows({src: 'mep-mv'})" color="primary">Tout afficher</button>
                 </div>
@@ -946,10 +946,10 @@
                             <span *ngIf="!isUpdated">
                               <button mat-flat-button class="btn-info btn-dimension" (click)="element.isExpanded = !element.isExpanded">suivi</button>
                             </span>
-                            <span *ngIf="isUpdated && !isEditRowMv">
+                            <span *ngIf="isUpdated && !isEditRowSg && !isAddSg && !isEditRowMv && !isAddMv && !isEditRowPa && !isAddPa">
                               <button mat-flat-button class="btn-info btn-dimension" (click)="onEditRow({src: 'mep-mv', action: 'edit', row: element, index: i, data_initial: null})">Editer</button>
                             </span>
-                            <span *ngIf="isUpdated && !isEditRowMv">
+                            <span *ngIf="isUpdated && !isEditRowSg && !isAddSg && !isEditRowMv && !isAddMv && !isEditRowPa && !isAddPa">
                               <button mat-flat-button class="btn-info btn-dimension" (click)="onAddShowSuivi({src: 'mep-mv', data: element, index_: i})">Af_</button>
                             </span>
                           </td>
@@ -1079,7 +1079,7 @@
                                 <!--Action-->
                                 <ng-container matColumnDef="action">
                                   <th mat-header-cell *matHeaderCellDef> 
-                                    <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'add', src: 'mep-mv', row_mep:  element, index_mep: ind_mep})">Ajouter</button>
+                                    <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'add', src: 'mep-mv', row_mep:  element, index_mep: ind_mep})" [disabled]="isAddSvSg || isEditSvSg || isAddSvMv || isEditSvMv || isAddSvPa || isEditSvPa">Ajouter</button>
                                   </th>
                                   <td mat-cell *matCellDef="let row; index as ind_suivi">
                                     <span *ngIf="indexRowMepSvMv == ind_suivi && indexRowMepMv == ind_mep && isEditSvMv">
@@ -1092,7 +1092,7 @@
                                         </div>
                                       </div>
                                     </span>
-                                    <span *ngIf="!isEditSvMv">
+                                    <span *ngIf="!isEditSvMv && !isAddSvMv && !isEditSvSg && !isAddSvSg && !isEditSvPa && !isAddSvPa">
                                       <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'edit', src: 'mep-mv', row_mep: element, row_suivi: row, index_mep_suivi: ind_suivi, index_mep: ind_mep})">Editer</button>
                                     </span>
                                   </td>

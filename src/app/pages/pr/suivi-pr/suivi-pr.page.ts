@@ -535,16 +535,15 @@ export class SuiviPrPage implements OnInit {
       id_equipe: elem_mep.id_equipe,
       type: elem_mep.type
     }
-    let data_mep_update: any = {
-      isUpdateMepSuivi: true,
-      data_mep: update_Mep
-    }
     switch(data.src) {
       case 'mep-sg':
         update_Mep.id_var = this.updated_Mep.variette.code_var;
-        data_mep_update.data_mep = update_Mep;
-        console.log("::::DATA TO SG UPDATE:::", data_mep_update);
-        this.crudDb.UpdatedMepPR(data_mep_update).then(res => {
+        let data_mep_update_sg: any = {
+          isUpdateMepSuivi: true,
+          data_mep: update_Mep
+        }
+        console.log("::::DATA TO SG UPDATE:::", data_mep_update_sg);
+        this.crudDb.UpdatedMepPR(data_mep_update_sg).then(res => {
           console.log(":::Update SG::::", res);
           this.loadMep();
           this.indexRowMepSg = null;
@@ -553,9 +552,12 @@ export class SuiviPrPage implements OnInit {
         break;
       case 'mep-pa':
         update_Mep.id_espece = this.updated_Mep.espece.code_espece;
-        data_mep_update.data_mep = update_Mep;
-        console.log("::::DATA TO PA UPDATE:::", data_mep_update);
-        this.crudDb.UpdatedMepPR(data_mep_update).then(res => {
+        let data_mep_update_pa: any = {
+          isUpdateMepSuivi: true,
+          data_mep: update_Mep
+        }
+        console.log("::::DATA TO PA UPDATE:::", data_mep_update_pa);
+        this.crudDb.UpdatedMepPR(data_mep_update_pa).then(res => {
           console.log(":::Update SG::::", res);
           this.loadMep();
           this.indexRowMepPa = null;
@@ -564,9 +566,12 @@ export class SuiviPrPage implements OnInit {
         break;
       case 'mep-mv':
         update_Mep.id_espece = this.updated_Mep.espece.code_espece;
-        data_mep_update.data_mep = update_Mep;
-        console.log("::::DATA TO MV UPDATE:::", data_mep_update);
-        this.crudDb.UpdatedMepPR(data_mep_update).then(res => {
+        let data_mep_update_mv: any = {
+          isUpdateMepSuivi: true,
+          data_mep: update_Mep
+        }
+        console.log("::::DATA TO MV UPDATE:::", data_mep_update_mv);
+        this.crudDb.UpdatedMepPR(data_mep_update_mv).then(res => {
           console.log(":::Update SG::::", res);
           this.loadMep();
           this.indexRowMepMv = null;
@@ -930,7 +935,7 @@ export class SuiviPrPage implements OnInit {
         this.updated_Mep.ddp = data_modal.data.ddp.format("YYYY-MM-DD");
         this.updated_Mep.dds = data_modal.data.dds.format("YYYY-MM-DD");
         this.updated_Mep.dt_distribution = data_modal.data.dt_distribution != null?data_modal.data.dt_distribution.format("YYYY-MM-DD"):null;
-        this.updated_Mep.autreCultureEa = data_modal.data.autreCultureEa != null?data_modal.data.autreCultureEa:data_modal.data.espece_ea != null?data_modal.data.espece_ea.nom_espece:null
+        //this.updated_Mep.autreCultureEa = data_modal.data.autreCultureEa != null?data_modal.data.autreCultureEa:data_modal.data.espece_ea != null?data_modal.data.espece_ea.nom_espece:null
         
         if (data.action === 'add') {
           if (data.src === 'mep-sg') {

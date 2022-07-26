@@ -15,6 +15,15 @@ interface LocalFile {
   data: string;
 }
 
+interface BlocEquipe {
+  code_bloc: string, 
+  nom: string, 
+  ancronyme: string, 
+  id_prjt: string, 
+  id_tech: string, 
+  status: string
+}
+
 @Component({
   selector: 'app-modal-pr',
   templateUrl: './modal-pr.page.html',
@@ -25,6 +34,7 @@ export class ModalPrPage implements OnInit {
   animeVeForm: FormGroup;
   mepForm: FormGroup;
   suiviMepForm: FormGroup;
+  cepForm: FormGroup;
 
   data_sexe: any[] = SEXE;
   // zone 
@@ -74,6 +84,7 @@ export class ModalPrPage implements OnInit {
   data_variette_filter: Loc_variette[] = [];
   data_variette_filter_ea: Loc_variette[] = [];
   data_categ: Loc_categEspece[] = [];
+  data_categ_ea: Loc_categEspece[] = [];
 
   selected_categorie: Loc_categEspece = null;
   selected_espece: Loc_Espece = null;
@@ -119,6 +130,14 @@ export class ModalPrPage implements OnInit {
   data_stc: any[] = STC;
   data_ec: any[] = EC_CULTURAL;
 
+  data_bloc: BlocEquipe[] = [];
+
+  isCepPr: boolean = false;
+  isAddCepPr: boolean = false;
+  isEditCepPr: boolean = false;
+
+  element_cep: Loc_cep_PR;
+
   constructor(
     private modalCtrl: ModalController,
     private navParams: NavParams,
@@ -145,6 +164,30 @@ export class ModalPrPage implements OnInit {
         this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.element_benef.code_commune});
       } else if (this.navParams.get('isAdd')) {
         this.isAddBenef = this.navParams.get('isAdd');
+      }
+    }
+
+    // get Parcelle PR
+    if (this.navParams.get('isCepPr')) {
+      this.isCepPr = this.navParams.get('isCepPr');
+      this.element_benef = this.navParams.get('elem_pr');
+      
+      let zone = this.navParams.get('zone');
+      this.data_region = zone.region;
+      this.data_district = zone.district;
+      this.data_commune = zone.commune;
+      this.data_fokontany = zone.fokontany;
+      this.data_bloc = this.navParams.get('bloc');
+
+      if (this.navParams.get('isAddCep')) {
+        this.isAddCepPr = this.navParams.get('isAddCep');
+      } else if (this.navParams.get('isEditCep')) {
+        this.isEditCepPr = this.navParams.get('isEditCep');
+        this.element_cep = this.navParams.get('elem_cep');
+
+        this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_benef.code_region});
+        this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_benef.code_dist});
+        this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.element_benef.code_commune});
       }
     }
 
@@ -184,6 +227,7 @@ export class ModalPrPage implements OnInit {
       this.data_categ = data_initial.categorie;
       this.data_pr = data_initial.pr;
       this.data_cep = data_initial.parcelle;
+      this.data_categ_ea = this.data_categ.filter(item => {return item.code_cat === 1});
       // Add
       if (this.navParams.get('isAddMepSg')) {
         this.isAddMepSG = this.navParams.get('isAddMepSg');
@@ -353,6 +397,9 @@ export class ModalPrPage implements OnInit {
       this.initFormSuiviMepPr();
     }
     //  
+    if (this.isCepPr) {
+      this.initFormCepPr();
+    }
   }
 
   loadZone() {
@@ -411,6 +458,8 @@ export class ModalPrPage implements OnInit {
       reg = this.beneficiaireForm.value;
     } else if (this.isAddAnimeVe || this.isEditAnimeVe) {
       reg = this.animeVeForm.value;
+    } else if (this.isCepPr) {
+      reg = this.cepForm.value;
     }
     this.data_district_filter = this.data_district.filter(item => {return item.id_reg === reg.region.code_reg});
     // initialized
@@ -426,6 +475,12 @@ export class ModalPrPage implements OnInit {
         commune: null,
         fokontany: null
       });
+    } else if (this.isCepPr) {
+      this.cepForm.patchValue({
+        district: null,
+        commune: null,
+        fokontany: null
+      });
     }
     this.data_commune_filter = [];
     this.data_fokontany_filter = [];
@@ -437,6 +492,8 @@ export class ModalPrPage implements OnInit {
       dist = this.beneficiaireForm.value;
     } else if (this.isAddAnimeVe || this.isEditAnimeVe) {
       dist = this.animeVeForm.value;
+    } else if (this.isCepPr) {
+      dist =  this.cepForm.value;
     }
     this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === dist.district.code_dist});
     // initialized
@@ -450,6 +507,11 @@ export class ModalPrPage implements OnInit {
         commune: null,
         fokontany: null
       });
+    } else if (this.isCepPr) {
+      this.cepForm.patchValue({
+        commune: null,
+        fokontany: null
+      });
     }
     this.data_fokontany_filter = [];
   }
@@ -460,6 +522,8 @@ export class ModalPrPage implements OnInit {
       com = this.beneficiaireForm.value;
     } else if (this.isAddAnimeVe || this.isEditAnimeVe) {
       com = this.animeVeForm.value;
+    } else if (this.isCepPr) {
+      com = this.cepForm.value;
     }
     this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com === com.commune.code_com});
     // initialized
@@ -469,6 +533,10 @@ export class ModalPrPage implements OnInit {
       });
     } else if (this.isAddAnimeVe || this.isEditAnimeVe) {
       this.animeVeForm.patchValue({
+        fokontany: null
+      });
+    } else if (this.isCepPr) {
+      this.cepForm.patchValue({
         fokontany: null
       });
     }
@@ -485,6 +553,10 @@ export class ModalPrPage implements OnInit {
         this.animeVeForm.patchValue({
           village: null
         });
+      } else if (this.isCepPr) {
+        this.cepForm.patchValue({
+          village: null
+        });
       }
     } else if (data === 'autres') {
       this.isAutresFkt = true;
@@ -494,6 +566,10 @@ export class ModalPrPage implements OnInit {
         });
       } else if (this.isAddAnimeVe || this.isEditAnimeVe) {
         this.animeVeForm.patchValue({
+          fokontany: null
+        });
+      } else if (this.isCepPr) {
+        this.cepForm.patchValue({
           fokontany: null
         });
       }
@@ -507,6 +583,10 @@ export class ModalPrPage implements OnInit {
       });
     } else if (this.isAddAnimeVe || this.isEditAnimeVe) {
       this.animeVeForm.patchValue({
+        fokontany: null
+      });
+    } else if (this.isCepPr) {
+      this.cepForm.patchValue({
         fokontany: null
       });
     }
@@ -604,6 +684,11 @@ export class ModalPrPage implements OnInit {
     if (data === 'ec') {
       this.suiviMepForm.patchValue({
         ec: null
+      });
+    }
+    if (data === 'bloc-cep') {
+      this.cepForm.patchValue({
+        bloc: null
       });
     }
    }
@@ -819,25 +904,11 @@ export class ModalPrPage implements OnInit {
           }
         }
       });
-      this.data_sc.forEach(elem_sc => {
-        if (this.data_Mep_Pr_edit.sc != null) {
-          if (elem_sc.value === this.data_Mep_Pr_edit.sc) {
-            sc_ = elem_sc;
-            if (elem_sc.value === 'C.associé') {
-              this.isAssocie = true;
-            } else {
-              this.isAssocie = false;
-              // Culture bande
-              if (elem_sc.value === 'C.bande') {
-                this.isCultureBande = true;
-              } else this.isCultureBande = false;
-            }
-          }
-        }
-      });
       if (this.data_Mep_Pr_edit.sc != null) {
         this.data_sc.forEach(elem_sc => {
-          sc_ = elem_sc;
+          if (elem_sc.value.toLowerCase() === this.data_Mep_Pr_edit.sc.toLowerCase()) {
+            sc_ = elem_sc;
+          }
         });
         if (this.data_Mep_Pr_edit.sc.toLowerCase() === 'c.associé') {
           this.isAssocie = true;
@@ -876,7 +947,7 @@ export class ModalPrPage implements OnInit {
 
       this.mepForm = this.formBuilder.group({
         annee: [this.data_Mep_Pr_edit.annee_du, Validators.required],
-        saison: this.isEditMepSG?[saison_, Validators.required]:null,
+        saison: this.isEditMepSG?[saison_, Validators.required]:saison_,
         beneficiaire: [pr_, Validators.required],
         parcelle: [cep_, Validators.required],
         ddp: [moment(this.data_Mep_Pr_edit.ddp, "YYYY-MM-DD"), Validators.required],
@@ -886,11 +957,11 @@ export class ModalPrPage implements OnInit {
         sfce: this.data_Mep_Pr_edit.sfce_emb,
         nbre_ligne: this.isEditMepPa?[this.data_Mep_Pr_edit.nbre_ligne, Validators.required]:this.data_Mep_Pr_edit.nbre_ligne,
         long_ligne: this.data_Mep_Pr_edit.long_ligne,
-        sc: this.isEditMepSG? [sc_, Validators.required]: null,
+        sc: this.isEditMepSG? [sc_, Validators.required]: sc_,
         categorie_ea: categ_ea,
         espece: [espece_, Validators.required],
         espece_ea: espece_ea,
-        variette: this.isEditMepSG? [var_, Validators.required] : null,
+        variette: this.isEditMepSG? [var_, Validators.required] : var_,
         variette_ea: var_ea,
         autreCultureEa: this.data_Mep_Pr_edit.ea_autres
       });
@@ -943,6 +1014,79 @@ export class ModalPrPage implements OnInit {
         nbre_pied: this.data_Mep_suivi_PR.nbre_pied,
         estimation: this.data_Mep_suivi_PR.ex,
         img_culture: this.data_Mep_suivi_PR.img_cult
+      });
+    }
+  }
+  initFormCepPr() {
+    if (this.isAddCepPr) {
+      this.cepForm = this.formBuilder.group({
+        bloc: null,
+        ref_gps: null,
+        latitude: null,
+        longitude: null,
+        superficie: [null, Validators.required],
+        region: [null, Validators.required],
+        district: [null, Validators.required],
+        commune: [null, Validators.required],
+        fokontany: null,
+        village: null
+      });
+    } else if (this.isEditCepPr) {
+      console.log(":::Data Edit cep::", this.element_cep);
+      let fkt: Loc_Fokontany = null;
+      let commune: Loc_Commune = null;
+      let district: Loc_district = null;
+      let region: Loc_region = null;
+      let bloc_equipe: BlocEquipe = null;
+
+        // filtre
+      this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_cep.code_region});
+      this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_cep.code_district});
+      this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com === this.element_cep.code_commune});
+
+      this.data_fokontany_filter.forEach(item => {
+        if (item.code_fkt === this.element_cep.id_fkt) {
+          fkt = item;
+        }
+      });
+      this.data_commune_filter.forEach(item => {
+        if (item.code_com === this.element_cep.code_commune) {
+          commune = item;
+        }
+      });
+      this.data_district_filter.forEach(item => {
+        if (item.code_dist === this.element_cep.code_district) {
+          district = item;
+        }
+      });
+      this.data_region.forEach(item => {
+        console.log(":::::id_reg:::", item.code_reg, "::::code_reg:::", this.element_cep.code_region);
+        if (item.code_reg === this.element_cep.code_region) {
+          region = item
+        }
+      });
+
+      this.data_bloc.forEach(elem => {
+        if (elem.code_bloc === this.element_cep.id_bloc) {
+          bloc_equipe = elem
+        }
+      });
+      
+      if (this.element_cep.village != null) {
+        this.isAutresFkt = true;
+      }
+      
+      this.cepForm = this.formBuilder.group({
+        bloc: bloc_equipe,
+        ref_gps: this.element_cep.ref_gps,
+        latitude: this.element_cep.lat,
+        longitude: this.element_cep.log,
+        superficie: this.element_cep.superficie,
+        region: region,
+        district: district,
+        commune: commune,
+        fokontany: fkt,
+        village: this.element_cep.village
       });
     }
   }
@@ -1087,6 +1231,11 @@ export class ModalPrPage implements OnInit {
   onSaveSuviPr() {
     let dismiss = this.suiviMepForm.value;
     console.log("::::Data dismissed:::", dismiss);
+    this.modalCtrl.dismiss(dismiss);
+  }
+
+  onSaveCep() {
+    let dismiss = this.cepForm.value;
     this.modalCtrl.dismiss(dismiss);
   }
 }

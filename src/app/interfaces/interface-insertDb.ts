@@ -116,7 +116,7 @@ export interface UpdateParcePr {
     code_parce: string, 
     id_bloc: string, 
     id_benef: string, 
-    ref_gps: number, 
+    ref_gps: string, 
     lat: number, 
     log: number, 
     superficie: number, 

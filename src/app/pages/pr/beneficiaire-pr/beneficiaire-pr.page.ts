@@ -16,6 +16,14 @@ import { ExportExcelService } from 'src/app/services/export-excel.service';
 import * as _moment from 'moment';
 const moment = _moment;
 
+interface BlocEquipe {
+  code_bloc: string, 
+  nom: string, 
+  ancronyme: string, 
+  id_prjt: string, 
+  id_tech: string, 
+  status: string
+}
 interface Update_pr {
   img_pr: LocalFile,
   nom: string,
@@ -37,14 +45,17 @@ interface Update_pr {
   fokontany: Loc_Fokontany,
   village: string
 }
-
-interface BlocEquipe {
-  code_bloc: string, 
-  nom: string, 
-  ancronyme: string, 
-  id_prjt: string, 
-  id_tech: string, 
-  status: string
+interface Update_Cep {
+  bloc: BlocEquipe,
+  ref_gps: string,
+  latitude: number,
+  longitude: number,
+  superficie: number,
+  region: Loc_region,
+  district: Loc_district,
+  commune: Loc_Commune,
+  fokontany: Loc_Fokontany,
+  village: string
 }
 
 @Component({
@@ -75,14 +86,14 @@ export class BeneficiairePrPage implements OnInit {
     img_cin_1: null,
     img_cin_2: null,
     dt_delivrance: null,
+    lieu_delivrance: null,
+    code_achat: null,
     contact: null,
     region: null,
     district: null,
     commune: null,
     fokontany: null,
-    village: null,
-    lieu_delivrance: null,
-    code_achat: null
+    village: null
   };
 
   private projet: Loc_projet;
@@ -124,6 +135,7 @@ export class BeneficiairePrPage implements OnInit {
   data_bloc: BlocEquipe[] = [];
 
   isAutresFkt: boolean = false;
+  private update_cep: Update_Cep = <Update_Cep>{};
 
   constructor(
       private router: Router,
@@ -148,7 +160,12 @@ export class BeneficiairePrPage implements OnInit {
         }
      }
 
-  ngOnInit() {
+  async ngOnInit() {
+    const loading = await this.loadingCtrl.create();
+    await loading.present();
+    this.loadCollabo();
+    this.loadPRBloc();
+    this.loadZone();
     this.cepForm = this.formBuilder.group({
       bloc: null,
       ref_gps: null,
@@ -162,13 +179,8 @@ export class BeneficiairePrPage implements OnInit {
       village: null
     });
     setTimeout(async () => {
-      const loading = await this.loadingCtrl.create();
-      await loading.present();
-      this.loadCollabo();
-      this.loadPRBloc();
-      this.loadZone();
       this.loadingCtrl.dismiss();
-    }, 2000);
+    }, 200);
   }
 
   ionViewDidEnter() {
@@ -192,12 +204,12 @@ export class BeneficiairePrPage implements OnInit {
         this.isRowEditCep = false;
         this.indeRowEdit = null;
       }
-      this.cepForm.reset();
+      this.update_cep = <Update_Cep>{};
       this.initUpdatedBenef();
       // remov last element 
       this.displayedColumnsParce.pop();
-        this.loadingCtrl.dismiss();
-    }, 1000);
+      this.loadingCtrl.dismiss();
+    }, 300);
   }
 
   onExport() {
@@ -233,18 +245,6 @@ export class BeneficiairePrPage implements OnInit {
       element: data_.data
     };
     this.onPresentModal(_data_);
-  }
-
-  onAddCep(data: any) {
-    //let data_ = {data: row, index_: i}
-    console.log(data);
-    this.isAddCep = true;
-    this.indeRowEdit = data.index_;
-    this.dataSourcePR.data.forEach((row, ind) => {
-      if (ind === data.index_) {
-        row.isExpanded = true;
-      }
-    });
   }
 
   // Edit Cep
@@ -461,20 +461,20 @@ export class BeneficiairePrPage implements OnInit {
     this.indeRowEdit = null;
 
     let element: Loc_PR = row;
-    console.log("value:::", this.cepForm.value);
-    let value: any = this.cepForm.value;
+    console.log(":::DATA CEP:::", this.update_cep);
+
     let code_parce: string = 'CEP' + '-' + this.user[this.user.length - 1].id_equipe + this.projet.ancronyme + '-' + moment().format('YYYYMMDD-HHmmss');
     let add_pr: UpdateParcePr = {
       code_parce: code_parce,
-      id_bloc: value.bloc != null?value.bloc.code_bloc:null,
+      id_bloc: this.update_cep.bloc != null?this.update_cep.bloc.code_bloc:null,
       id_benef: element.id_benef,
-      ref_gps: value.ref_gps,
-      lat: value.latitude,
-      log: value.longitude,
-      superficie: value.superficie,
-      id_commune: value.commune != null?value.commune.code_com:null,
-      id_fkt: value.fokontany != null?value.fokontany.code_fkt:null,
-      village: value.village,
+      ref_gps: this.update_cep.ref_gps,
+      lat: this.update_cep.latitude,
+      log: this.update_cep.longitude,
+      superficie: this.update_cep.superficie,
+      id_commune: this.update_cep.commune != null?this.update_cep.commune.code_com:null,
+      id_fkt: this.update_cep.fokontany != null?this.update_cep.fokontany.code_fkt:null,
+      village: this.update_cep.village,
       anne_adheran: null,
       dt_creation: moment().format('YYYY-MM-DD'),
       etat: SYNC,
@@ -488,28 +488,28 @@ export class BeneficiairePrPage implements OnInit {
     });
   }
   onCancelAddCep() {
+    console.log(":::Added CEP:::", this.update_cep);
     this.isAddCep = false;
     this.indeRowEdit = null;
-    this.cepForm.reset();
+    this.update_cep = <Update_Cep>{};
   }
 
   // Edit Cep
   onSaveEditCep(element: Loc_cep_PR) {
-    console.log("::::Edit data::::", this.cepForm.value);
+    console.log("::::Edit data::::", this.update_cep);
     this.indeRowEditCep = null;
     this.isRowEditCep = false;
-    let value: any = this.cepForm.value;
     let update_cep: UpdateParcePr = {
       code_parce: element.code_parce,
-      id_bloc: value.bloc != null?value.bloc.code_bloc:null,
+      id_bloc: this.update_cep.bloc != null?this.update_cep.bloc.code_bloc:null,
       id_benef: element.id_benef,
-      ref_gps: value.ref_gps,
-      lat: value.latitude,
-      log: value.longitude,
-      superficie: value.superficie,
-      id_commune: value.commune != null?value.commune.code_com:null,
-      id_fkt: value.fokontany != null?value.fokontany.code_fkt:null,
-      village: value.village,
+      ref_gps: this.update_cep.ref_gps,
+      lat: this.update_cep.latitude,
+      log: this.update_cep.longitude,
+      superficie: this.update_cep.superficie,
+      id_commune: this.update_cep.commune != null?this.update_cep.commune.code_com:null,
+      id_fkt: this.update_cep.fokontany != null?this.update_cep.fokontany.code_fkt:null,
+      village: this.update_cep.village,
       anne_adheran: null,
       dt_creation: moment().format('YYYY-MM-DD'),
       etat: element.etat === SYNC?SYNC:UPDATE,
@@ -527,13 +527,6 @@ export class BeneficiairePrPage implements OnInit {
     this.isRowEditCep = false;
     this.indeRowEdit = null;
     this.cepForm.reset();
-  }
-
-  // on select aucun bloc
-  onNoneBloc(){
-    this.cepForm.patchValue({
-      bloc: null
-    });
   }
 
   // loadCollaborateur
@@ -616,61 +609,6 @@ export class BeneficiairePrPage implements OnInit {
     });
   }
 
-  onSelectRegion() {
-    // filter district
-    let reg = this.cepForm.value;
-    this.data_district_filter = this.data_district.filter(item => {return item.id_reg === reg.region.code_reg});
-    // initialized
-    this.cepForm.patchValue({
-      district: null,
-      commune: null,
-      fokontany: null
-    });
-    this.data_commune_filter = [];
-    this.data_fokontany_filter = [];
-  }
-  onSelectDistrict() {
-    // filter commune
-    let dist = this.cepForm.value;
-    this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === dist.district.code_dist});
-    // initialized
-    this.cepForm.patchValue({
-      commune: null,
-      fokontany: null
-    });
-    this.data_fokontany_filter = [];
-  }
-  onSelectCommune() {
-    // filter fokontany
-    let com = this.cepForm.value;
-    this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com === com.commune.code_com});
-    console
-    // initialized
-    this.cepForm.patchValue({
-      fokontany: null
-    });
-  }
-  onSelectFokontany(data: string) {
-    // Autres
-    if (data === 'fokontany') {
-      this.isAutresFkt = false;
-      this.cepForm.patchValue({
-        village: null
-      });
-    } else if (data === 'autres') {
-      this.isAutresFkt = true;
-      this.cepForm.patchValue({
-        fokontany: null
-      });
-    }
-  }
-  onSelectAutres() {
-    // Autres
-    this.cepForm.patchValue({
-      fokontany: null
-    });
-  }
-
   async onPresentModal(data: any) {
     let data_: any;
     if (data.src === 'add') {
@@ -720,6 +658,61 @@ export class BeneficiairePrPage implements OnInit {
     });
     await modal.present();
   }
+  async onUpdatedCep(data: any) {
+    //{src: 'add', data_pr: element, index_: i}
+    let data_: any;
+    if (data.src === 'add') {
+      data_ = {
+        isCepPr: true,
+        isAddCep: true,
+        zone: {
+          region: this.data_region,
+          district: this.data_district,
+          commune: this.data_commune,
+          fokontany: this.data_fokontany
+        },
+        bloc: this.data_bloc,
+        elem_pr: data.data_pr
+      }
+    } else if (data.src === 'edit') {
+      //{src: 'edit', data_pr: element, data_cep: row, index_cep: inde, index_pr: i}
+      data_ = {
+        isCepPr: true,
+        isEditCep: true,
+        zone: {
+          region: this.data_region,
+          district: this.data_district,
+          commune: this.data_commune,
+          fokontany: this.data_fokontany
+        },
+        bloc: this.data_bloc,
+        elem_pr: data.data_pr,
+        elem_cep: data.data_cep
+      }
+    }
+    let modal = await this.modalCtrl.create({
+      component: ModalPrPage,
+      cssClass: 'modal-custum-pr-cep',
+      backdropDismiss: true,
+      componentProps: data_
+    });
+    modal.onDidDismiss().then(modal_data => {
+      console.log("::::Data Cep Dismissed:::", modal_data.data);
+      if (modal_data.data != undefined) {
+        this.update_cep = modal_data.data;
+        if (data.src === 'add') {
+          this.isAddCep = true;
+          this.indeRowEdit = data.index_;
+        } else if (data.src === 'edit') {
+          this.indeRowEditCep = data.index_cep;
+          this.indeRowEdit = data.index_pr;
+          this.isRowEditCep = true;
+        }
+      }
+    });
+    await modal.present();
+  }
+
 
   onRefresh() {
     console.log("::::Date now::::::", moment().format('YYYYMMDD') + '-' + moment().format('HHmmss'));
@@ -783,6 +776,16 @@ export class BeneficiairePrPage implements OnInit {
         if (row.isExpanded) {
           row.isExpanded = false;
         }
+      }
+    });
+  }
+
+  onAddShowPR(data: any) {
+    //let data_ = {data: row, index_: i}
+    console.log(data);
+    this.dataSourcePR.data.forEach((row, ind) => {
+      if (ind === data.index_) {
+        row.isExpanded = true;
       }
     });
   }
