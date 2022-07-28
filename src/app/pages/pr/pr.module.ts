@@ -8,6 +8,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { BeneficiairePrPage } from './beneficiaire-pr/beneficiaire-pr.page';
 import { SuiviPrPage } from './suivi-pr/suivi-pr.page';
 import { CustomDatePipe } from 'src/app/utils/custom.datepipe';
+import { DefaultModule } from '../default/default.module';
 
 
 
@@ -15,8 +16,7 @@ import { CustomDatePipe } from 'src/app/utils/custom.datepipe';
   declarations: [
     BeneficiairePrPage,
     AnimationVePage,
-    SuiviPrPage,
-    CustomDatePipe
+    SuiviPrPage
   ],
   imports: [
     CommonModule,
@@ -24,7 +24,8 @@ import { CustomDatePipe } from 'src/app/utils/custom.datepipe';
     ReactiveFormsModule,
     IonicModule,
     AngularMaterialModule,
-    FlexLayoutModule
+    FlexLayoutModule,
+    DefaultModule
   ]
 })
 export class PrModule { }

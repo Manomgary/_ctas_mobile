@@ -4,7 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { UpdateBenef, UpdateBenefActivPr, UpdateParcePr } from 'src/app/interfaces/interface-insertDb';
-import { LocalFile, Loc_activ_projet, Loc_cep_PR, Loc_collaborateur, Loc_Commune, Loc_district, Loc_export_excel, Loc_Fokontany, Loc_PR, Loc_projet, Loc_region } from 'src/app/interfaces/interfaces-local';
+import { LocalFile, Loc_activ_projet, Loc_cep_PR, Loc_collaborateur, Loc_Commune, Loc_district, Loc_export_excel, Loc_Fokontany, Loc_PR, Loc_projet, Loc_region, Update_infos_benef } from 'src/app/interfaces/interfaces-local';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
@@ -23,27 +23,6 @@ interface BlocEquipe {
   id_prjt: string, 
   id_tech: string, 
   status: string
-}
-interface Update_pr {
-  img_pr: LocalFile,
-  nom: string,
-  prenom: string,
-  surnom: string,
-  sexe: string,
-  dt_naissance: string,
-  dt_naissance_vers: string,
-  cin: number,
-  img_cin_1: LocalFile,
-  img_cin_2: LocalFile,
-  dt_delivrance: string,
-  lieu_delivrance: string,
-  code_achat: string,
-  contact: string,
-  region: Loc_region,
-  district: Loc_district,
-  commune: Loc_Commune,
-  fokontany: Loc_Fokontany,
-  village: string
 }
 interface Update_Cep {
   bloc: BlocEquipe,
@@ -74,7 +53,7 @@ export class BeneficiairePrPage implements OnInit {
 
   cepForm: FormGroup;
 
-  private update_benef: Update_pr = {
+  private update_benef: Update_infos_benef = {
     img_pr: null,
     nom: null,
     prenom: null,
@@ -93,7 +72,9 @@ export class BeneficiairePrPage implements OnInit {
     district: null,
     commune: null,
     fokontany: null,
-    village: null
+    village: null,
+    association: null,
+    collaborateur: null
   };
 
   private projet: Loc_projet;
@@ -717,30 +698,6 @@ export class BeneficiairePrPage implements OnInit {
   onRefresh() {
     console.log("::::Date now::::::", moment().format('YYYYMMDD') + '-' + moment().format('HHmmss'));
     console.log("::::Date now Time::::::", moment().format('YYYYMMDD-HHmmss'));
-    /**this.loadService.loadAllTable('participe_proj_volet').then(res => {
-      console.log(":::::Projet Volety:::::", res);
-    });
-    this.loadService.loadAllTable('animation_ve').then(res => {
-      console.log(":::::Animation Ve:::::", res);
-    });
-    this.loadService.loadAllTable('animation_ve_specu').then(res => {
-      console.log(":::::Animation Speculation:::::", res);
-    });
-    this.loadService.loadAllTable('projet').then(res => {
-      console.log(":::::Projet:::::", res);
-    });
-    this.loadService.loadAllTable('equipe').then(res => {
-      console.log(":::::Equipe:::::", res);
-    });
-    this.loadService.loadAllTable('participe_proj_volet').then(res => {
-      console.log(":::::participe_proj_volet:::::", res);
-    });
-    this.loadService.loadAllTable('projet_equipe').then(res => {
-      console.log(":::::projet_equipe:::::", res);
-    });
-    this.loadService.loadAllTable('projet_equipe_volet').then(res => {
-      console.log(":::::Projet Equipe Volet:::::", res);
-    });*/
   }
 
   initUpdatedBenef() {
@@ -763,7 +720,9 @@ export class BeneficiairePrPage implements OnInit {
       fokontany: null,
       village: null,
       lieu_delivrance: null,
-      code_achat: null
+      code_achat: null,
+      association: null,
+      collaborateur: null
     }
   }
 

@@ -155,10 +155,9 @@
 
     </mat-tab>
     <mat-tab label="PMS">
-      <h1>Liste des bénéficiaires</h1>
-      <div class="container-matTab mat-elevation-z8">
-
-        <div class="demo-button-container">
+      <div class="content-flex" fxLayout="column width100">
+        <!--Column 1 Filtre-->
+        <div class="child-column">
           <mat-form-field>
             <mat-label>Selectionner une association</mat-label>
             <mat-select [(ngModel)]="selectedAssocPms" (ngModelChange)="applyFilterSelect($event, 'pms')">
@@ -168,180 +167,230 @@
               </mat-option>
             </mat-select>
           </mat-form-field>
-          <button mat-raised-button (click)="addData()" class="demo-button">
-            Modification
-          </button>
         </div>
-        <div class="table-container">
-          <table mat-table [dataSource]="dataSourceBenef" matSort #benefSort="matSort">
-
-            <!-- Association Column -->
-            <ng-container matColumnDef="association" sticky>
-              <th mat-header-cell *matHeaderCellDef mat-sort-header> Association </th>
-              <td mat-cell *matCellDef="let row"> {{row.nom_ass}} </td>
-            </ng-container>
-  
-            <!-- Fokontany Column -->
-            <ng-container matColumnDef="fokontany">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header> Fokontany </th>
-              <td mat-cell *matCellDef="let row"> {{row.fkt_association}} </td>
-            </ng-container>
-  
-            <!-- Code PA Column -->
-            <ng-container matColumnDef="code_pms">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header> code PMS </th>
-              <td mat-cell *matCellDef="let row"> {{row.code_benef_pms}} </td>
-            </ng-container>
-
-            <!-- Code Achat Column -->
-            <ng-container matColumnDef="code_ahat">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>code Achat</th>
-              <td mat-cell *matCellDef="let row"> {{row.code_achat}} </td>
-            </ng-container>
-  
-            <!-- Nom PA Column -->
-            <ng-container matColumnDef="pms">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header> Nom PMS </th>
-              <td mat-cell *matCellDef="let row"> {{row.nom_benef}} - {{row.prenom}} </td>
-            </ng-container>
-  
-            <!-- Sexe PA Column -->
-            <ng-container matColumnDef="sexe">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header> Sexe </th>
-              <td mat-cell *matCellDef="let row"> {{row.sexe}} </td>
-            </ng-container>
-  
-            <!-- cin PA Column -->
-            <ng-container matColumnDef="age">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header> Dt_nais </th>
-              <td mat-cell *matCellDef="let row"> {{row.dt_nais}} </td>
-            </ng-container>
-  
-            <!-- cin PA Column -->
-            <ng-container matColumnDef="cin">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header> Cin </th>
-              <td mat-cell *matCellDef="let row"> {{row.cin}} </td>
-            </ng-container>
-  
-            <!-- village PA Column -->
-            <ng-container matColumnDef="village">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header> résidence </th>
-              <td mat-cell *matCellDef="let row"> {{row.adress}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="collaborateur">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header> Type </th>
-              <td mat-cell *matCellDef="let row"> {{row.nom_collab}} </td>
-            </ng-container>
-
-            <!-- village PA Column -->
-            <ng-container matColumnDef="nb_parcelle">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header> nb_parcelle </th>
-              <td mat-cell *matCellDef="let row"> {{row.nb_parcelle}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="sum_parce">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header> superficie </th>
-              <td mat-cell *matCellDef="let row"> {{row.sum_superf}} </td>
-            </ng-container>
-        
-            <tr mat-header-row *matHeaderRowDef="displayedColumnsBenef; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumnsBenef;"
-              class="example-element-row" 
-              [class.example-expanded-row]="expandedElement === row"
-              (click)="onRowClickedBenef(row)">
-            </tr>
-        
-            <!-- Row shown when there is no matching data. -->
-            <tr class="mat-row" *matNoDataRow>
-              <td class="mat-cell" colspan="4">Aucun enregistrement"</td>
-            </tr>
-          </table>
+        <!--Column btn-->
+        <div class="child-column" fxLayout="row">
+          <div class="child-row">
+            <button mat-raised-button (click)="onToggleTableRows()" class="demo-button">Tout afficher</button>
+          </div>
+          <div class="child-row">
+            <button mat-raised-button (click)="onUpdate()" class="demo-button" *ngIf="!isUpdate">Modifier</button>
+            <button mat-raised-button (click)="onFinish()" class="demo-button" *ngIf="isUpdate">Terminer</button>
+          </div>
+          <div class="child-row">
+            <button mat-raised-button (click)="onExport()" class="demo-button" *ngIf="!isUpdate">Exporter</button>
+          </div>
+          <div class="child-row">
+            <button mat-raised-button (click)="onUpdatePms({src: 'add'})" class="demo-button" *ngIf="isUpdate" [disabled]="isAddPms || isEditRowPms">Ajouter</button>
+          </div>
         </div>
+      </div>
+      <!--Column content-->
+      <div class="child-column" fxLayout="column width100">
+        <!--Table-->
+        <div class="child-column-2 container-matTab mat-elevation-z8">
+          <div class="table-container">
+            <table mat-table [dataSource]="dataSourceBenef" multiTemplateDataRows matSort #benefSort="matSort"> <!--matSort #benefSort="matSort"-->
+
+              <!-- Association Column -->
+              <ng-container matColumnDef="association" sticky>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Association </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.nom_ass}} </td>
+              </ng-container>
+              <!-- Association Column -->
+              <ng-container matColumnDef="new_association" sticky>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>new_ass</th>
+              </ng-container>
+    
+              <!-- Fokontany Column -->
+              <ng-container matColumnDef="fokontany">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Fokontany </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.fkt_association}} </td>
+              </ng-container>
+              <ng-container matColumnDef="new_fokontany">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>new_fkt</th>
+              </ng-container>
+    
+              <!-- Code PA Column -->
+              <ng-container matColumnDef="code_pms">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> code PMS </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.code_benef_pms}} </td>
+              </ng-container>
+              <ng-container matColumnDef="new_code_pms">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>new_cd_pms</th>
+              </ng-container>
+  
+              <!-- Code Achat Column -->
+              <ng-container matColumnDef="code_ahat">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>code Achat</th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.code_achat}} </td>
+              </ng-container>
+              <ng-container matColumnDef="new_code_ahat">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>new_cd_ach</th>
+              </ng-container>
+    
+              <!-- Nom PA Column -->
+              <ng-container matColumnDef="pms">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Nom PMS </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.nom_benef}} - {{row.prenom}} </td>
+              </ng-container>
+              <ng-container matColumnDef="new_pms">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>--</th>
+              </ng-container>
+    
+              <!-- Sexe PA Column -->
+              <ng-container matColumnDef="sexe">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Sexe </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.sexe}} </td>
+              </ng-container>
+              <ng-container matColumnDef="new_sexe">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> new_ </th>
+              </ng-container>
+    
+              <!-- cin PA Column -->
+              <ng-container matColumnDef="age">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Dt_nais </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.dt_nais}} </td>
+              </ng-container>
+              <ng-container matColumnDef="new_age">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> -- </th>
+              </ng-container>
+    
+              <!-- cin PA Column -->
+              <ng-container matColumnDef="cin">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Cin </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.cin}} </td>
+              </ng-container>
+              <ng-container matColumnDef="new_cin">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> new_Cin </th>
+              </ng-container>
+    
+              <!-- village PA Column -->
+              <ng-container matColumnDef="village">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> résidence </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.adress}} </td>
+              </ng-container>
+              <ng-container matColumnDef="new_village">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> new_res</th>
+              </ng-container>
+  
+              <ng-container matColumnDef="collaborateur">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Type </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.nom_collab}} </td>
+              </ng-container>
+              <ng-container matColumnDef="new_collaborateur">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>new_col</th>
+              </ng-container>
+
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Action </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;">
+                  <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
+                    <a (click)="onCancelAddPms({src: 'edit'})">Annuler</a> |
+                    <a (click)="onSaveAddPms({src: 'edit'})">modifier</a>
+                  </span>
+                  <span *ngIf="!isUpdate">
+                    <button mat-flat-button class="btn-info btn-dimension" (click)="row.isExpanded = !row.isExpanded">Parcelle</button>
+                  </span>
+                  <div *ngIf="isUpdate && !isAddPms && !isEditRowPms" fxLayout="row">
+                    <div class="child-row-btn">
+                      <a (click)="onUpdatePms({src: 'edit', element: row, ind_pms: i})">Editer</a>
+                    </div>
+                    <div class="child-row-btn">
+                      <button mat-flat-button class="btn-info btn-dimension" (click)="onAddShowPms({index_: i})">Afficher</button>
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+              <!--Column New Action-->
+              <ng-container matColumnDef="new_action">
+                <th mat-header-cell *matHeaderCellDef>
+                  <span>
+                    <a (click)="onCancelAddPms({src: 'add'})">Cancel</a> |
+                    <a (click)="onSaveAddPms({src: 'add'})">Done</a>
+                  </span>
+                </th>
+              </ng-container>
+
+              <!-- Template for details row -->
+              <ng-container matColumnDef="expandedDetail">
+                <td mat-cell *matCellDef="let element; dataIndex as i;" [attr.colspan]="displayedColumnsBenef.length">
+                  <div class="row sv-element-detail" [@detailExpand]="element.isExpanded && element.parcelle.length > 0 || isUpdate && element.isExpanded? 'expanded' : 'collapsed'">
+                    <table mat-table [dataSource]="element.parcelle">
+            
+                      <!-- Code_parce Column -->
+                      <ng-container matColumnDef="code_parce">
+                        <th mat-header-cell *matHeaderCellDef> code parce </th>
+                        <td mat-cell *matCellDef="let row"> {{row.code_parce}} </td>
+                      </ng-container>
+            
+                      <!-- ref_gps Column -->
+                      <ng-container matColumnDef="ref_gps">
+                        <th mat-header-cell *matHeaderCellDef> ref_gps </th>
+                        <td mat-cell *matCellDef="let row"> {{row.ref_gps}} </td>
+                      </ng-container>
+            
+                      <!-- Sexe PA Column -->
+                      <ng-container matColumnDef="lat">
+                        <th mat-header-cell *matHeaderCellDef> lat </th>
+                        <td mat-cell *matCellDef="let row"> {{row.lat}} </td>
+                      </ng-container>
+            
+                      <!-- cin PA Column -->
+                      <ng-container matColumnDef="log">
+                        <th mat-header-cell *matHeaderCellDef> log </th>
+                        <td mat-cell *matCellDef="let row"> {{row.log}} </td>
+                      </ng-container>
+            
+                      <!-- surnom PA Column -->
+                      <ng-container matColumnDef="superficie">
+                        <th mat-header-cell *matHeaderCellDef> superficie </th>
+                        <td mat-cell *matCellDef="let row"> {{row.superficie}} </td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="action">
+                        <th mat-header-cell *matHeaderCellDef> Action </th>
+                        <td mat-cell *matCellDef="let row">  </td>
+                      </ng-container>
+
+                      <tr mat-header-row *matHeaderRowDef="displayedColumnsParcePms; sticky: true"></tr>
+                      <tr mat-row *matRowDef="let row; columns: displayedColumnsParcePms;"></tr>
+                  
+                      <!-- Row shown when there is no matching data. -->
+                      <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" colspan="4">Aucun enregistrement"</td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div class="row sv-element-detail-vide" [@detailExpand]="!isUpdate && element.isExpanded && element.parcelle.length == 0? 'expanded' : 'collapsed'">
+                    <div mat-line>Aucun champs Ecole Enregistrer pour PR {{element.code_pr}}</div>
+                  </div>
       
-        <mat-paginator 
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumnsBenef; sticky: true"></tr>
+              <tr [hidden]="!isAddPms" mat-header-row *matHeaderRowDef="displayedColumnsAddBenef; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumnsBenef;" [class.sv-expanded-row]="row.isExpanded" [class.sv-row-vide]="row.parcelle.length == 0"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+          
+              <!-- Row shown when there is no matching data. -->
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell" colspan="4">Aucun enregistrement"</td>
+              </tr>
+            </table>            
+          </div>
+        </div>
+        <!--Pagination table-->
+        <div class="child-column-2">
+          <mat-paginator 
           #benfPaginator 
-          [pageSizeOptions]="[5, 10, 25]" 
+          [pageSizeOptions]="[25, 50]" 
           aria-label="Select page of pms" 
           showFirstLastButtons
         ></mat-paginator>
-        <h4>Parcelle Beneficiaire</h4>
-        <div *ngIf = "isClickedBenef" class="table-container">
-          <table mat-table [dataSource]="dataSourceParceSingle" matSort>
-
-            <!-- Code pms Column -->
-            <ng-container matColumnDef="code_pms" sticky>
-              <th mat-header-cell *matHeaderCellDef> code_pms </th>
-              <td mat-cell *matCellDef="let row"> {{row.code_benef_pms}} </td>
-            </ng-container>
-
-            <!-- Code Achat Column -->
-            <ng-container matColumnDef="code_ahat">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>code Achat</th>
-              <td mat-cell *matCellDef="let row"> {{row.code_achat}} </td>
-            </ng-container>
-  
-            <!-- nom_pms Column -->
-            <ng-container matColumnDef="nom">
-              <th mat-header-cell *matHeaderCellDef> Nom </th>
-              <td mat-cell *matCellDef="let row"> {{row.nom}} {{row.prenom}}  </td>
-            </ng-container>
-  
-            <!-- Code_parce Column -->
-            <ng-container matColumnDef="code_parce">
-              <th mat-header-cell *matHeaderCellDef> code parce </th>
-              <td mat-cell *matCellDef="let row"> {{row.code_parce}} </td>
-            </ng-container>
-  
-            <!-- ref_gps Column -->
-            <ng-container matColumnDef="ref_gps">
-              <th mat-header-cell *matHeaderCellDef> ref_gps </th>
-              <td mat-cell *matCellDef="let row"> {{row.ref_gps}} </td>
-            </ng-container>
-  
-            <!-- Sexe PA Column -->
-            <ng-container matColumnDef="lat">
-              <th mat-header-cell *matHeaderCellDef> lat </th>
-              <td mat-cell *matCellDef="let row"> {{row.lat}} </td>
-            </ng-container>
-  
-            <!-- cin PA Column -->
-            <ng-container matColumnDef="log">
-              <th mat-header-cell *matHeaderCellDef> log </th>
-              <td mat-cell *matCellDef="let row"> {{row.log}} </td>
-            </ng-container>
-  
-            <!-- surnom PA Column -->
-            <ng-container matColumnDef="superficie">
-              <th mat-header-cell *matHeaderCellDef> superficie </th>
-              <td mat-cell *matCellDef="let row"> {{row.superficie}} </td>
-            </ng-container>
-  
-            <!-- Nombre PMS Column -->
-            <ng-container matColumnDef="nb_cultures">
-              <th mat-header-cell *matHeaderCellDef> nb_cultures </th>
-              <td mat-cell *matCellDef="let row"> 0 </td>
-            </ng-container>
-  
-            <!-- Technicien Responsable Column -->
-            <ng-container matColumnDef="cultures">
-              <th mat-header-cell *matHeaderCellDef> cultures </th>
-              <td mat-cell *matCellDef="let row"> non definit </td>
-            </ng-container>
-        
-  
-            <tr mat-header-row *matHeaderRowDef="displayedColumnsParceSingle; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumnsParceSingle;"></tr>
-        
-            <!-- Row shown when there is no matching data. -->
-            <tr class="mat-row" *matNoDataRow>
-              <td class="mat-cell" colspan="4">Aucun enregistrement"</td>
-            </tr>
-          </table>
         </div>
-      </div> 
-      
-      
+      </div>
     </mat-tab>
     <mat-tab label="Parcelle">
       <h1>Liste des Parcelle</h1>

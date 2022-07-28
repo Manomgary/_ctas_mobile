@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
-import { AddMepBloc, Db_Culture_pms, Db_suivi_pms, UpdateAnimationVe, UpdateAnimeSpecu, UpdateBenef, UpdateBenefActivPr, UpdateMepPR, UpdateParcePr, UpdateSuiviBloc, UpdateSuiviMepPR } from 'src/app/interfaces/interface-insertDb';
+import { AddMepBloc, Db_Culture_pms, Db_suivi_pms, UpdateAnimationVe, UpdateAnimeSpecu, UpdateBenef, UpdateBenefActivPr, UpdatedBenefActivPms, UpdateMepPR, UpdateParcePr, UpdateSuiviBloc, UpdateSuiviMepPR } from 'src/app/interfaces/interface-insertDb';
 import { Loc_AnimationSpecu } from 'src/app/interfaces/interfaces-local';
 import { DB_NAME } from 'src/app/utils/global-variables';
 import { DatabaseService } from '../database.service';
@@ -232,16 +232,16 @@ export class CrudDbService {
     }
   }
   // Add Mep PR
-  AddMepPR(data: UpdateMepPR) {
+  async AddMepPR(data: UpdateMepPR) {
     if (this.db_ready.dbReady.value) {
       let data_ = [data.code_culture, data.id_parce, data.id_espece, data.id_var, data.id_saison, data.annee_du, data.ddp, data.qso, data.dt_distribution, data.dds, data.sfce, data.nbre_ligne, data.long_ligne, data.sc, data.ea_autres, data.ea_id_variette, data.dt_creation, data.dt_modification, data.status, data.etat, data.id_equipe, data.type];
       const state_ = `INSERT INTO culture_pr(code_culture, id_parce, id_espece, id_var, id_saison, annee_du, ddp, qso, dt_distribution, dds, sfce, nbre_ligne, long_ligne, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-      return this.db.query(state_, data_);
+      return await this.db.query(state_, data_);
     }
   }
   // Add Mep PR
-  UpdatedMepPR(data: any) {
+  async UpdatedMepPR(data: any) {
     if (this.db_ready.dbReady.value) {
       let data_: any;
       let state_: any;
@@ -255,19 +255,19 @@ export class CrudDbService {
         data_ = [data.status, data.etat];
         state_ = `UPDATE culture_pr SET status= ?, etat= ? WHERE code_culture= "${data.code_culture}"`;
       }
-      return this.db.query(state_, data_);
+      return await this.db.query(state_, data_);
     }
   }
   // Add suivi Mep PR
-  AddSuiviMepPR(data: UpdateSuiviMepPR) { 
+  async AddSuiviMepPR(data: UpdateSuiviMepPR) { 
     if (this.db_ready.dbReady.value) {
       let data_ = [data.code_sv, data.id_culture, data.ddp, data.stc, data.ql, data.qr, data.long_ligne, data.nbre_ligne, data.nbre_pied, data.hauteur, data.ec, data.img_cult, data.dt_capture, data.ex, data.dt_creation, data.dt_modification, data.etat];
       let state_ = `INSERT INTO suivi_pr(code_sv, id_culture, ddp, stc, ql, qr, long_ligne, nbre_ligne, nbre_pied, hauteur, ec, img_cult, dt_capture, ex, dt_creation, dt_modification, etat) 
                   VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-      return this.db.query(state_, data_);
+      return await this.db.query(state_, data_);
     }
   }
-  UpdateSuiviMepPR(data: any) {
+  async UpdateSuiviMepPR(data: any) {
     if (this.db_ready.dbReady.value) {
       let data_: any;
       let state_: any;
@@ -282,7 +282,32 @@ export class CrudDbService {
         data_ = [data_suivi.etat];
         state_ = `UPDATE suivi_pr SET etat= ? WHERE code_sv= "${data_suivi.code_sv}"`;
       }
-      return this.db.query(state_, data_);
+      return await this.db.query(state_, data_);
+    }
+  }
+  async AddPms(data: UpdatedBenefActivPms) {
+    if (this.db_ready.dbReady.value) {
+      let data_to_add = [data.code_benef_pms, data.code_achat, data.id_proj, data.id_benef, data.id_activ, data.id_association, data.id_collaborateur, data.etat, data.status];
+      let state_ = `INSERT INTO benef_activ_pms(code_benef_pms, code_achat, id_proj, id_benef, id_activ, id_association, id_collaborateur, etat, status) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      return await this.db.query(state_, data_to_add);
+    }
+  }
+  async UpdatePms(data: any) {
+    if (this.db_ready.dbReady.value) {
+      let data_update: any;
+      let state_: any;
+      if (data.isUpdatePms) {
+        let data_pms: UpdatedBenefActivPms = data.data_pms;
+        data_update = [data_pms.code_achat, data_pms.id_proj, data_pms.id_benef, data_pms.id_activ, data_pms.id_association, data_pms.id_collaborateur, data.etat, data_pms.status];
+        state_ = `UPDATE benef_activ_pms SET code_achat=?, id_proj=?, id_benef=?, id_activ=?, id_association=?, id_collaborateur=?, etat =?, status=? WHERE code_benef_pms = "${data_pms.code_benef_pms}"`;
+      }
+      if (data.isUpdatePmsSync) {
+        let data_pms: any = data.data_pms;
+        data_update = [data.etat, data_pms.status];
+        state_ = `UPDATE benef_activ_pms SET etat =?, status=? WHERE code_benef_pms = "${data_pms.code_benef_pms}"`;
+      }
+      return await this.db.query(state_, data_update);
     }
   }
 }

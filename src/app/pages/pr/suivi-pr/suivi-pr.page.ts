@@ -4,7 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { UpdateMepPR, UpdateSuiviMepPR } from 'src/app/interfaces/interface-insertDb';
-import { LocalFile, Loc_activ_projet, Loc_categEspece, Loc_cep_PR, Loc_Espece, Loc_MepPR, Loc_PR, Loc_projet, Loc_saison, Loc_Suivi_MepPR, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { Loc_activ_projet, Loc_categEspece, Loc_cep_PR, Loc_Espece, Loc_MepPR, Loc_PR, Loc_projet, Loc_saison, Loc_Suivi_MepPR, Loc_variette, Update_FormModal_Suivi_Mep_Bloc } from 'src/app/interfaces/interfaces-local';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { ACTIVE, EC_CULTURAL, MV, PA, SG, STC, SYNC, UPDATE } from 'src/app/utils/global-variables';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
@@ -35,19 +35,6 @@ interface Update_Mep {
   variette_ea: Loc_variette,
   autreCultureEa: string
 }
-interface Update_Suivi {
-  ddp: string,
-  stc: any,
-  ec: any,
-  ql: number,
-  qr: number,
-  hauteur: number,
-  long_ligne: number,
-  nbre_ligne: number,
-  nbre_pied: number,
-  estimation: number,
-  img_culture: string
-}
 
 @Component({
   selector: 'app-suivi-pr',
@@ -66,8 +53,27 @@ export class SuiviPrPage implements OnInit {
   private user: Utilisateurs[];
   private activite: Loc_activ_projet;
 
-  updated_Mep: Update_Mep = <Update_Mep>{};
-  updated_Suivi: Update_Suivi = <Update_Suivi>{};
+  updated_Mep: Update_Mep = {
+    annee: null,
+    saison: null,
+    beneficiaire: null,
+    parcelle: null,
+    ddp: null,
+    qso: null,
+    dt_distribution: null,
+    dds: null,
+    sfce: null,
+    nbre_ligne: null,
+    long_ligne: null,
+    sc: null,
+    categorie_ea: null,
+    espece: null,
+    espece_ea: null,
+    variette: null,
+    variette_ea: null,
+    autreCultureEa: null
+  };
+  updated_Suivi: Update_FormModal_Suivi_Mep_Bloc = <Update_FormModal_Suivi_Mep_Bloc>{};
 
   data_saison: Loc_saison[]  = [];
   data_espece: Loc_Espece[] = [];
@@ -215,17 +221,17 @@ export class SuiviPrPage implements OnInit {
       /////
       if ( this.isAddSvSg) {
         this.isAddSvSg = false;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         this.indexRowMepSg = null;
       }
       if (this.isAddSvPa) {
         this.isAddSvPa = false;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         this.indexRowMepPa = null;
       }
       if (this.isAddSvMv) {
         this.isAddSvMv = false;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         this.indexRowMepMv = null;
       }
       //
@@ -233,19 +239,19 @@ export class SuiviPrPage implements OnInit {
         this.isEditSvSg = false;
         this.indexRowMepSvSg = null;
         this.indexRowMepSg = null;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
       }
       if (this.isEditSvPa) {
         this.isEditSvPa = false;
         this.indexRowMepSvPa = null;
         this.indexRowMepPa = null;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
       }
       if (this.isEditSvMv) {
         this.isEditSvMv = false;
         this.indexRowMepSvMv = null;
         this.indexRowMepMv = null;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
       }
       
       // 
@@ -588,17 +594,17 @@ export class SuiviPrPage implements OnInit {
     switch(data) {
       case 'mep-sg':
         this.isAddSvSg = false;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         this.indexRowMepSg = null;
         break;
       case 'mep-pa':
         this.isAddSvPa = false;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         this.indexRowMepPa = null;
         break;
       case 'mep-mv':
         this.isAddSvMv = false;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         this.indexRowMepMv = null;
         break;
       default:
@@ -634,7 +640,7 @@ export class SuiviPrPage implements OnInit {
         this.crudDb.AddSuiviMepPR(insert_suivi).then(res => {
           console.log("::::SUIVI SG ADDED::");
           this.isAddSvSg = false;
-          this.updated_Suivi = <Update_Suivi>{};
+          this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
           this.indexRowMepSg = null;
           this.loadMep();
           console.log(":::Updated_Suivi::::", this.updated_Suivi);
@@ -645,7 +651,7 @@ export class SuiviPrPage implements OnInit {
           console.log("::::SUIVI MV ADDED::");
           this.isAddSvPa = false;
           this.indexRowMepPa = null;
-          this.updated_Suivi = <Update_Suivi>{};
+          this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
           this.loadMep();
           console.log(":::Updated_Suivi::::", this.updated_Suivi);
         });
@@ -655,7 +661,7 @@ export class SuiviPrPage implements OnInit {
           console.log("::::SUIVI MV ADDED::");
           this.isAddSvMv = false;
           this.indexRowMepMv = null;
-          this.updated_Suivi = <Update_Suivi>{};
+          this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
           this.loadMep();
           console.log(":::Updated_Suivi::::", this.updated_Suivi);
         });
@@ -672,19 +678,19 @@ export class SuiviPrPage implements OnInit {
         this.isEditSvSg = false;
         this.indexRowMepSvSg = null;
         this.indexRowMepSg = null;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         break;
       case 'mep-pa':
         this.isEditSvPa = false;
         this.indexRowMepSvPa = null;
         this.indexRowMepPa = null;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         break;
       case 'mep-mv':
         this.isEditSvMv = false;
         this.indexRowMepSvMv = null;
         this.indexRowMepMv = null;
-        this.updated_Suivi = <Update_Suivi>{};
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         break;
       default:
         console.log("default");
@@ -725,7 +731,7 @@ export class SuiviPrPage implements OnInit {
           this.isEditSvSg = false;
           this.indexRowMepSvSg = null;
           this.indexRowMepSg = null;
-          this.updated_Suivi = <Update_Suivi>{};
+          this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
           this.loadMep();
         });
         break;
@@ -735,7 +741,7 @@ export class SuiviPrPage implements OnInit {
           this.isEditSvPa = false;
           this.indexRowMepSvPa = null;
           this.indexRowMepPa = null;
-          this.updated_Suivi = <Update_Suivi>{};
+          this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
           this.loadMep();
         });
         break;
@@ -745,7 +751,7 @@ export class SuiviPrPage implements OnInit {
           this.isEditSvMv = false;
           this.indexRowMepSvMv = null;
           this.indexRowMepMv = null;
-          this.updated_Suivi = <Update_Suivi>{};
+          this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
           this.loadMep();
         });
         break;

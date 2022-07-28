@@ -263,7 +263,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
         parcelle: [parce_, Validators.required],
         ddp: [moment(this.data_Mep_edit.ddp, "YYYY-MM-DD"), Validators.required],
         qso: [this.data_Mep_edit.qso, Validators.required],
-        dt_distribution: this.data_Mep_edit.dt_distribution,
+        dt_distribution: this.data_Mep_edit.dt_distribution != null?moment(this.data_Mep_edit.dt_distribution, "YYYY-MM-DD"):null,
         dds: [moment(this.data_Mep_edit.dds, "YYYY-MM-DD"), Validators.required],
         sfce: this.isEditMepSg?[this.data_Mep_edit.sfce, Validators.required]:this.data_Mep_edit.sfce,
         nbre_ligne: this.isEditMepPa?[this.data_Mep_edit.nbre_ligne, Validators.required]:this.data_Mep_edit.nbre_ligne,

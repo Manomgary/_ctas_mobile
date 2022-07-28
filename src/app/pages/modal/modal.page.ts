@@ -246,11 +246,11 @@ export class ModalPage implements OnInit {
     console.log(pms2);
     return pms1 && pms2? pms1.code_benef_pms === pms2.code_benef_pms : pms1 === pms2;
   }
-  compareObjectsParce(prc1: Benef_activ_pms, prc2: Benef_activ_pms) {
+  /**compareObjectsParce(prc1: Benef_activ_pms, prc2: Benef_activ_pms) {
     console.log(prc1);
     console.log(prc2);
     return prc1 && prc2? prc1.code_parce === prc2.code_parce : prc1 === prc2;
-  }
+  }*/
   compareObjectsEspece(esp1: Loc_Espece, esp2: Loc_Espece) {
     return esp1 && esp2? esp1.code_espece === esp2.code_espece: esp1 === esp2;
   }

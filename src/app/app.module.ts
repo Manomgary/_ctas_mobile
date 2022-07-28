@@ -49,10 +49,9 @@ import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, } from '@angular/ma
 import {DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE} from '@angular/material/core';
 import { MY_DATE_FORMATS } from 'src/app/utils/my-date-formats';
 import { ModalPrPage } from './pages/modals/modal-pr/modal-pr.page';
-import { AnimationVePage } from './pages/pr/animation-ve/animation-ve.page';
-import { BeneficiairePrPage } from './pages/pr/beneficiaire-pr/beneficiaire-pr.page';
-import { SuiviPrPage } from './pages/pr/suivi-pr/suivi-pr.page';
 import { PrModule } from './pages/pr/pr.module';
+import { CustomDatePipe } from './utils/custom.datepipe';
+import { BlocModule } from './pages/bloc.module';
 
 
 
@@ -62,9 +61,7 @@ import { PrModule } from './pages/pr/pr.module';
     HomePage,
     MenuPage,
     BeneficiairePage,
-    BeneficiaireBlocPage,
     SuiviPage,
-    SuiviBlocPage,
     TabsPage,
     LoginPage,
     ModalPage,
@@ -83,7 +80,8 @@ import { PrModule } from './pages/pr/pr.module';
             BrowserAnimationsModule,
             HttpClientModule,
             FlexLayoutModule,
-            PrModule
+            PrModule,
+            BlocModule
           ],
   providers: [
     HttpClient,

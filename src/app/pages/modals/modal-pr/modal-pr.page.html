@@ -9,6 +9,32 @@
   <div  *ngIf="isAddBenef || isEditBenef">
     <form [formGroup]="beneficiaireForm" class="contonair-flex">
       <div fxLayout="column width100">
+        <!--Column 0-->
+        <div class="child-column-flex" fxLayout="row" *ngIf="isBenefPms">
+          <div class="child-column">
+            <mat-form-field>
+              <mat-label>Association</mat-label>
+              <mat-select formControlName="association">
+                <mat-option *ngFor="let assoc of data_association" [value]="assoc">
+                  {{ assoc.nom_ass }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="child-column">
+            <mat-form-field>
+              <mat-label>Type</mat-label>
+              <mat-select formControlName="collaborateur">
+                <mat-option *ngFor="let collab of data_collaborateur" [value]="collab">
+                  {{ collab.description }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="child-column">
+
+          </div>
+        </div>
         <!--Column 1-->
         <div class="child-column-flex" fxLayout="row">
           <!--Formulaire Nom-->
@@ -726,7 +752,7 @@
     </div>
   </div>
   <!--SUIVI MEP PR-->
-  <div [formGroup]="suiviMepForm" *ngIf="isSuiviMepPr" fxLayout="column">
+  <div [formGroup]="suiviMepForm" *ngIf="isSuiviMepPr || isSuiviMepBloc" fxLayout="column">
     <!--Forms ddp: string, stc: any, ec: any; 
       PA::: ddp: string, ql: number, ec: number; 
       MV::: ddp: string, nbre_pied: number, long_ligne: number-->

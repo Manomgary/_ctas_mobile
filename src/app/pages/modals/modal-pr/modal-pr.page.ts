@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ModalController, NavParams, Platform } from '@ionic/angular';
-import { Loc_AnimationSpecu, Loc_AnimationVe, Loc_categEspece, Loc_cep_PR, Loc_Commune, Loc_district, Loc_Espece, Loc_Fokontany, Loc_MepPR, Loc_PR, Loc_region, Loc_saison, Loc_Suivi_MepPR, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { Benef_activ_pms, Loc_all_suivi_bloc, Loc_AnimationSpecu, Loc_AnimationVe, Loc_association, Loc_categEspece, Loc_cep_PR, Loc_Collabo_Activite, Loc_Commune, Loc_district, Loc_Espece, Loc_Fokontany, Loc_MepPR, Loc_mep_bloc, Loc_PR, Loc_region, Loc_saison, Loc_Suivi_MepPR, Loc_variette } from 'src/app/interfaces/interfaces-local';
 import { CaptureImageService } from 'src/app/services/capture-image.service';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { EC_CULTURAL, SC, SEXE, STC } from 'src/app/utils/global-variables';
@@ -35,6 +35,7 @@ export class ModalPrPage implements OnInit {
   mepForm: FormGroup;
   suiviMepForm: FormGroup;
   cepForm: FormGroup;
+  
 
   data_sexe: any[] = SEXE;
   // zone 
@@ -47,6 +48,9 @@ export class ModalPrPage implements OnInit {
   data_fokontany_filter: Loc_Fokontany[] = [];
   //
   isAutresFkt: boolean = false;
+
+  isBenefPr: boolean = false;
+  isBenefPms: boolean = false;
 
   // image
   fileImage_cin1: LocalFile = {
@@ -69,6 +73,7 @@ export class ModalPrPage implements OnInit {
   isAddBenef = false;
   isEditBenef = false;
   element_benef: Loc_PR;
+  element_pms: Benef_activ_pms;
 
   isAddAnimeVe: boolean = false;
   isEditAnimeVe: boolean = false;
@@ -139,6 +144,13 @@ export class ModalPrPage implements OnInit {
 
   element_cep: Loc_cep_PR;
 
+  isSuiviMepBloc: boolean = false;
+  data_Mep_bloc_edit: Loc_mep_bloc;
+  data_Mep_suivi_Bloc: Loc_all_suivi_bloc;
+
+  data_association: Loc_association[] = [];
+  data_collaborateur: Loc_Collabo_Activite[] = [];
+
   constructor(
     private modalCtrl: ModalController,
     private navParams: NavParams,
@@ -147,8 +159,15 @@ export class ModalPrPage implements OnInit {
     private captureImg: CaptureImageService,
     private plt: Platform
   ) {
-    if (this.navParams.get('isBenefPr')) {
+    if (this.navParams.get('isBenefPr') || this.navParams.get('isPms')) {
       console.log(":::::::::Modal From PR element:::::::", this.navParams.get('element'));
+      if (this.navParams.get('isBenefPr')) {
+        this.isBenefPr = this.navParams.get('isBenefPr');
+      } else if (this.navParams.get('isPms')) {
+        this.isBenefPms = this.navParams.get('isPms');
+        this.data_association = this.navParams.get('association');
+        this.data_collaborateur = this.navParams.get('collaborateur');
+      }
 
       let zone = this.navParams.get('zone');
       this.data_region = zone.region;
@@ -158,11 +177,17 @@ export class ModalPrPage implements OnInit {
 
       if (this.navParams.get('isEdit')) {
         this.isEditBenef = this.navParams.get('isEdit');
-        this.element_benef = this.navParams.get('element');
-      
-        this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_benef.code_region});
-        this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_benef.code_dist});
-        this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.element_benef.code_commune});
+        if (this.isBenefPr) {
+          this.element_benef = this.navParams.get('element');
+          this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_benef.code_region});
+          this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_benef.code_dist});
+          this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.element_benef.code_commune});
+        } else if (this.isBenefPms) {
+          this.element_pms = this.navParams.get('element');
+          this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_pms.code_region});
+          this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_pms.code_district});
+          this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com ===this.element_pms.code_commune});
+        }
       } else if (this.navParams.get('isAdd')) {
         this.isAddBenef = this.navParams.get('isAdd');
       }
@@ -259,12 +284,17 @@ export class ModalPrPage implements OnInit {
       }
     }
     /****************
-     * suivi Mep PR
+     * suivi Mep PR // Bloc
      *******************/
-    if (this.navParams.get('isSuiviSvPR')) {
+    if (this.navParams.get('isSuiviSvPR') || this.navParams.get('isSuiviMepBloc')) {
       // Add 
-      this.isSuiviMepPr = this.navParams.get('isSuiviSvPR');
-      this.data_Mep_Pr_edit = this.navParams.get('data_mep');
+      if (this.navParams.get('isSuiviSvPR')) {
+        this.isSuiviMepPr = this.navParams.get('isSuiviSvPR');
+        this.data_Mep_Pr_edit = this.navParams.get('data_mep');
+      } else if (this.navParams.get('isSuiviMepBloc')) {
+        this.isSuiviMepBloc = this.navParams.get('isSuiviMepBloc');
+        this.data_Mep_bloc_edit = this.navParams.get('data_mep');
+      }
       console.log(":::Elem Mep PR::::", this.data_Mep_Pr_edit);
       if (this.navParams.get('isAddSvSg')) {
         this.isAddMepSvSG = this.navParams.get('isAddSvSg');
@@ -276,116 +306,35 @@ export class ModalPrPage implements OnInit {
       // Edit
       if (this.navParams.get('isEditSvSg')) {
         this.isEditMepSvSG = this.navParams.get('isEditSvSg');
-        this.data_Mep_suivi_PR = this.navParams.get('data_elem_suivi');
+        if (this.isSuiviMepPr) {
+          this.data_Mep_suivi_PR = this.navParams.get('data_elem_suivi');
+        } else if (this.isSuiviMepBloc) {
+          this.data_Mep_suivi_Bloc = this.navParams.get('data_elem_suivi');
+        }
+
       } else if (this.navParams.get('isEditSvPa')) {
         this.isEditMepSvPa = this.navParams.get('isEditSvPa');
-        this.data_Mep_suivi_PR = this.navParams.get('data_elem_suivi');
+        if (this.isSuiviMepPr) {
+          this.data_Mep_suivi_PR = this.navParams.get('data_elem_suivi');
+        } else if (this.isSuiviMepBloc) {
+          this.data_Mep_suivi_Bloc = this.navParams.get('data_elem_suivi');
+        }
+
       } else if (this.navParams.get('isEditSvMv')) {
         this.isEditMepSvMv = this.navParams.get('isEditSvMv'); 
-        this.data_Mep_suivi_PR = this.navParams.get('data_elem_suivi');
+        if (this.isSuiviMepPr) {
+          this.data_Mep_suivi_PR = this.navParams.get('data_elem_suivi');
+        } else if (this.isSuiviMepBloc) {
+          this.data_Mep_suivi_Bloc = this.navParams.get('data_elem_suivi');
+        }
       }
       console.log(":::Elem Mep Suivi PR::::", this.data_Mep_suivi_PR);
     }
   }
 
   ngOnInit() {
-    if (this.isAddBenef) {
-      this.beneficiaireForm = this.formBuilder.group({
-        nom: [null, Validators.required],
-        prenom: null,
-        surnom: null,
-        sexe: [null, Validators.required],
-        isDtVers: false,
-        //dt_naissance: [{value: null, disabled: true}],
-        dt_naissance: null,
-        dt_naissance_vers: null,
-        cin: null,
-        dt_delivrance: null,
-        lieu_delivrance: null,
-        code_achat: null,
-        contact: [null, Validators.maxLength(10)],
-        region: null,
-        district: null,
-        commune: null,
-        fokontany: null,
-        village: null
-      });
-    }
-    if (this.isEditBenef) {
-      let fkt: Loc_Fokontany = null;
-      let commune: Loc_Commune = null;
-      let district: Loc_district = null;
-      let region: Loc_region = null;
-
-      this.data_region.forEach(item => {
-        console.log(":::::id_reg:::", item.code_reg, "::::code_reg:::", this.element_benef.code_region);
-        if (item.code_reg === this.element_benef.code_region) {
-          region = item
-        }
-      });
-
-      console.log("::::::::::::D:", this.data_district, "::", this.data_district.length);
-      console.log("::::::::::::C:", this.data_commune, "::", this.data_commune.length);
-      console.log("::::::::::::F:", this.data_fokontany, "::", this.data_fokontany.length);
-      console.log("::::::::::::Dist::::", this.data_district_filter);
-      console.log("::::::::::::Commune::::", this.data_commune_filter);
-      console.log("::::::::::::Fokontany::::", this.data_fokontany_filter);
-
-      this.data_fokontany_filter.forEach(item => {
-        if (item.code_fkt === this.element_benef.id_fkt) {
-          fkt = item;
-        }
-      });
-      this.data_commune_filter.forEach(item => {
-        if (item.code_com === this.element_benef.code_commune) {
-          commune = item;
-        }
-      });
-      this.data_district_filter.forEach(item => {
-        if (item.code_dist === this.element_benef.code_dist) {
-          district = item;
-        }
-      });
-      
-      if (this.element_benef.village != null) {
-        this.isAutresFkt = true;
-      }
-      if (this.element_benef.img_benef != null) {
-        this.fileImage_pr.data = this.element_benef.img_benef;
-      }
-      if (this.element_benef.img_cin != null) {
-        let parse_img_cin = JSON.parse(this.element_benef.img_cin);
-        let img_cins = parse_img_cin.split('-');
-        console.log(":::img_cin JSON Parse::::", parse_img_cin);
-        console.log(":::img_cin Length::::", img_cins.length);
-        console.log(":::img_cin Length 1::::", img_cins[0]);
-        img_cins.forEach((item, inde) =>  {
-          if (inde == 0) {
-            this.fileImage_cin1.data = item;
-          } else if (inde == 1) {
-            this.fileImage_cin2.data = item;
-          }
-        });
-      }
-      this.beneficiaireForm = this.formBuilder.group({
-        nom: [this.element_benef.nom, Validators.required],
-        prenom: this.element_benef.prenom,
-        surnom: this.element_benef.surnom,
-        sexe: [this.element_benef.sexe, Validators.required],
-        isDtVers: this.element_benef.dt_nais_vers != null?true:false,
-        dt_naissance: this.element_benef.dt_nais != null? moment(this.element_benef.dt_nais, "YYYY-MM-DD"):null,
-        dt_naissance_vers: this.element_benef.dt_nais_vers,
-        cin: this.element_benef.cin,
-        dt_delivrance: this.element_benef.dt_delivrance != null?moment(this.element_benef.dt_delivrance, "YYYY-MM-DD"):null,
-        lieu_delivrance: this.element_benef.lieu_delivrance,
-        code_achat: this.element_benef.code_achat,
-        contact: [this.element_benef.contact, Validators.maxLength(10)],
-        region: region,
-        district: district,
-        commune: commune,
-        fokontany: fkt,
-        village: this.element_benef.village
-      });
+    if (this.isBenefPms || this.isBenefPr) {
+      this.initFormInfosBenef();
     }
 
     if (this.isAddAnimeVe || this.isEditAnimeVe) {
@@ -394,7 +343,7 @@ export class ModalPrPage implements OnInit {
     if (this.isMepPr) {
       this.initFormMepPr();
     }
-    if (this.isSuiviMepPr) {
+    if (this.isSuiviMepPr || this.isSuiviMepBloc) {
       this.initFormSuiviMepPr();
     }
     //  
@@ -988,36 +937,69 @@ export class ModalPrPage implements OnInit {
     } else if (this.isEditMepSvSG || this.isEditMepSvPa || this.isEditMepSvMv) {
       let stc_: any = null;
       let ec_: any = null;
-      if (this.data_Mep_suivi_PR.img_cult != null) {
-        this.fileImage_pr.data = this.data_Mep_suivi_PR.img_cult
-      }
-      if (this.data_Mep_suivi_PR.sc != null) {
-        this.data_stc.forEach(item => {
-          if (item.value === this.data_Mep_suivi_PR.stc) {
-            stc_ = item;
-          }
+      if (this.isSuiviMepPr) {
+        if (this.data_Mep_suivi_PR.img_cult != null) {
+          this.fileImage_pr.data = this.data_Mep_suivi_PR.img_cult
+        }
+        if (this.data_Mep_suivi_PR.sc != null) {
+          this.data_stc.forEach(item => {
+            if (item.value === this.data_Mep_suivi_PR.stc) {
+              stc_ = item;
+            }
+          });
+        }
+        if (this.data_Mep_suivi_PR.ec != null) {
+          this.data_ec.forEach(item => {
+            if (item.value === this.data_Mep_suivi_PR.ec) {
+              ec_ = item;
+            }
+          });
+        }
+        this.suiviMepForm = this.formBuilder.group({
+          ddp: [moment(this.data_Mep_suivi_PR.ddp, "YYYY-MM-DD"), Validators.required],
+          stc: this.isEditMepSvSG?[stc_, Validators.required]:null,
+          ec: ec_,
+          ql: this.isEditMepSvPa?[this.data_Mep_suivi_PR.ql, Validators.required]:null,
+          qr: this.data_Mep_suivi_PR.qr,
+          hauteur: this.data_Mep_suivi_PR.hauteur,
+          long_ligne: this.data_Mep_suivi_PR.long_ligne,
+          nbre_ligne: this.data_Mep_suivi_PR.nbre_ligne,
+          nbre_pied: this.data_Mep_suivi_PR.nbre_pied,
+          estimation: this.data_Mep_suivi_PR.ex,
+          img_culture: this.data_Mep_suivi_PR.img_cult
+        });
+      } else if (this.isSuiviMepBloc) {
+        if (this.data_Mep_suivi_Bloc.img_cult != null) {
+          this.fileImage_pr.data = this.data_Mep_suivi_Bloc.img_cult
+        }
+        if (this.data_Mep_suivi_Bloc.stc != null) {
+          this.data_stc.forEach(item => {
+            if (item.value === this.data_Mep_suivi_Bloc.stc) {
+              stc_ = item;
+            }
+          });
+        }
+        if (this.data_Mep_suivi_Bloc.ec != null) {
+          this.data_ec.forEach(item => {
+            if (item.value === this.data_Mep_suivi_Bloc.ec) {
+              ec_ = item;
+            }
+          });
+        }
+        this.suiviMepForm = this.formBuilder.group({
+          ddp: [moment(this.data_Mep_suivi_Bloc.ddp, "YYYY-MM-DD"), Validators.required],
+          stc: this.isEditMepSvSG?[stc_, Validators.required]:null,
+          ec: ec_,
+          ql: this.isEditMepSvPa?[this.data_Mep_suivi_Bloc.ql, Validators.required]:null,
+          qr: this.data_Mep_suivi_Bloc.qr,
+          hauteur: this.data_Mep_suivi_Bloc.hauteur,
+          long_ligne: this.data_Mep_suivi_Bloc.long_ligne,
+          nbre_ligne: this.data_Mep_suivi_Bloc.nbre_ligne,
+          nbre_pied: this.data_Mep_suivi_Bloc.nbre_pied,
+          estimation: this.data_Mep_suivi_Bloc.ex,
+          img_culture: this.data_Mep_suivi_Bloc.img_cult
         });
       }
-      if (this.data_Mep_suivi_PR.ec != null) {
-        this.data_ec.forEach(item => {
-          if (item.value === this.data_Mep_suivi_PR.ec) {
-            ec_ = item;
-          }
-        });
-      }
-      this.suiviMepForm = this.formBuilder.group({
-        ddp: [moment(this.data_Mep_suivi_PR.ddp, "YYYY-MM-DD"), Validators.required],
-        stc: this.isEditMepSvSG?[stc_, Validators.required]:null,
-        ec: ec_,
-        ql: this.isEditMepSvPa?[this.data_Mep_suivi_PR.ql, Validators.required]:null,
-        qr: this.data_Mep_suivi_PR.qr,
-        hauteur: this.data_Mep_suivi_PR.hauteur,
-        long_ligne: this.data_Mep_suivi_PR.long_ligne,
-        nbre_ligne: this.data_Mep_suivi_PR.nbre_ligne,
-        nbre_pied: this.data_Mep_suivi_PR.nbre_pied,
-        estimation: this.data_Mep_suivi_PR.ex,
-        img_culture: this.data_Mep_suivi_PR.img_cult
-      });
     }
   }
   initFormCepPr() {
@@ -1093,13 +1075,162 @@ export class ModalPrPage implements OnInit {
       });
     }
   }
+  initFormInfosBenef() {
+    if (this.isAddBenef) {
+      this.beneficiaireForm = this.formBuilder.group({
+        association: this.isBenefPms?[null, Validators.required]:null,
+        collaborateur: this.isBenefPms?[null, Validators.required]:null,
+        nom: [null, Validators.required],
+        prenom: null,
+        surnom: null,
+        sexe: [null, Validators.required],
+        isDtVers: false,
+        dt_naissance: null,
+        dt_naissance_vers: null,
+        cin: null,
+        dt_delivrance: null,
+        lieu_delivrance: null,
+        code_achat: null,
+        contact: [null, Validators.maxLength(10)],
+        region: null,
+        district: null,
+        commune: null,
+        fokontany: null,
+        village: null
+      });
+    }
+    if (this.isEditBenef) {
+      let fkt: Loc_Fokontany = null;
+      let commune: Loc_Commune = null;
+      let district: Loc_district = null;
+      let region: Loc_region = null;
+      let assoc: Loc_association = null;
+      let collabo_: Loc_Collabo_Activite
+
+      this.data_region.forEach(item => {
+        if (this.isBenefPms) {
+          if (item.code_reg === this.element_pms.code_region) {
+            region = item
+          }
+        } else if (this.isBenefPr) {
+          if (item.code_reg === this.element_benef.code_region) {
+            region = item
+          }
+        }
+      });
+
+      this.data_fokontany_filter.forEach(item => {
+        if (this.isBenefPms) {
+          if (item.code_fkt === this.element_pms.id_fkt) {
+            fkt = item;
+          }
+        } else if (this.isBenefPr) {
+          if (item.code_fkt === this.element_benef.id_fkt) {
+            fkt = item;
+          }
+        }
+      });
+      this.data_commune_filter.forEach(item => {
+        if (this.isBenefPms) {
+          if (item.code_com === this.element_pms.code_commune) {
+            commune = item;
+          }
+        } else if (this.isBenefPr) {
+          if (item.code_com === this.element_benef.code_commune) {
+            commune = item;
+          }
+        }
+      });
+      this.data_district_filter.forEach(item => {
+        if (this.isBenefPms) {
+          if (item.code_dist === this.element_pms.code_district) {
+            district = item;
+          }
+        } else if (this.isBenefPr) {
+          if (item.code_dist === this.element_benef.code_dist) {
+            district = item;
+          }
+        }
+      });
+      
+      if (this.isBenefPr) {
+        if (this.element_benef.village != null) {
+          this.isAutresFkt = true;
+        }
+        if (this.element_benef.img_benef != null) {
+          this.fileImage_pr.data = this.element_benef.img_benef;
+        }
+        if (this.element_benef.img_cin != null) {
+          let parse_img_cin = JSON.parse(this.element_benef.img_cin);
+          let img_cins = parse_img_cin.split('-');
+          img_cins.forEach((item, inde) =>  {
+            if (inde == 0) {
+              this.fileImage_cin1.data = item;
+            } else if (inde == 1) {
+              this.fileImage_cin2.data = item;
+            }
+          });
+        }
+      } else if (this.isBenefPms) {
+        this.data_association.forEach(item_assoc => {
+          if (item_assoc.code_ass === this.element_pms.id_association) {
+            assoc = item_assoc;
+          }
+        });
+        this.data_collaborateur.forEach(item_collabo => {
+          if (item_collabo.id_col === this.element_pms.id_collaborateur) {
+            collabo_ = item_collabo;
+          }
+        });
+        if (this.element_pms.village != null) {
+          this.isAutresFkt = true;
+        }
+        if (this.element_pms.img_benef != null) {
+          this.fileImage_pr.data = this.element_pms.img_benef;
+        }
+        if (this.element_pms.img_cin != null) {
+          let parse_img_cin = JSON.parse(this.element_pms.img_cin);
+          let img_cins = parse_img_cin.split('-');
+          img_cins.forEach((item, inde) =>  {
+            if (inde == 0) {
+              this.fileImage_cin1.data = item;
+            } else if (inde == 1) {
+              this.fileImage_cin2.data = item;
+            }
+          });
+        }
+      }
+
+      this.beneficiaireForm = this.formBuilder.group({
+        association: this.isBenefPms?[assoc, Validators.required]:null,
+        collaborateur: this.isBenefPms?[collabo_, Validators.required]:null,
+        nom: this.isBenefPr?[this.element_benef.nom, Validators.required]:[this.element_pms.nom_benef, Validators.required],
+        prenom: this.isBenefPr?this.element_benef.prenom:this.element_pms.prenom,
+        surnom: this.isBenefPr?this.element_benef.surnom:this.element_pms.surnom,
+        sexe: this.isBenefPr?[this.element_benef.sexe, Validators.required]:this.element_pms.sexe,
+        isDtVers: this.isBenefPr?this.element_benef.dt_nais_vers != null?true:false:this.element_pms.dt_nais_vers != null?true:false,
+        dt_naissance: this.isBenefPr?this.element_benef.dt_nais != null? moment(this.element_benef.dt_nais, "YYYY-MM-DD"):null:this.element_pms.dt_nais != null? moment(this.element_pms.dt_nais, "YYYY-MM-DD"):null,
+        dt_naissance_vers: this.isBenefPr?this.element_benef.dt_nais_vers:this.element_pms.dt_nais_vers,
+        cin: this.isBenefPr?this.element_benef.cin:this.element_pms.cin,
+        dt_delivrance: this.isBenefPr?this.element_benef.dt_delivrance != null?moment(this.element_benef.dt_delivrance, "YYYY-MM-DD"):null:this.element_pms.dt_delivrance != null?moment(this.element_pms.dt_delivrance, "YYYY-MM-DD"):null,
+        lieu_delivrance: this.isBenefPr?this.element_benef.lieu_delivrance:this.element_pms.lieu_delivrance,
+        code_achat: this.isBenefPr?this.element_benef.code_achat:this.element_pms.code_achat,
+        contact: this.isBenefPr?this.element_benef.contact:this.element_pms.contact,
+        region: region,
+        district: district,
+        commune: commune,
+        fokontany: fkt,
+        village: this.isBenefPr?this.element_benef.village:this.element_pms.village
+      });
+    }
+  }
   // Image
   async takeImage(src: string) {
     this.captureImg.getImage().then(res => {
       console.log(":::Res Image:::", res);
       if (src === 'img-pr') {
         this.fileImage_pr = res;
-        if (this.isSuiviMepPr) {
+        if (this.isSuiviMepPr || this.isSuiviMepBloc) {
           this.suiviMepForm.patchValue({
             img_culture: this.fileImage_pr.data
           });
@@ -1192,6 +1323,8 @@ export class ModalPrPage implements OnInit {
     if (src === 'beneficiaire') {
       let val = this.beneficiaireForm.value;
       dismiss = {
+        association: val.association,
+        collaborateur: val.collaborateur,
         img_pr: this.fileImage_pr,
         nom: val.nom,
         prenom: val.prenom,

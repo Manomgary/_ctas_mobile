@@ -44,10 +44,16 @@
             <div slot="content">
               <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
                 <!--Column Bouton-->
-                <div class="child-column">
-                  <ion-button (click)="onAdd('mep-sg')" *ngIf="isUpdated" [disabled]="isAddSg || isEditRowSg || isAddPa || isEditRowPa || isAddMv || isEditRowMv">Ajouter</ion-button>
-                  <ion-button (click)="onExportCateg('mep-sg')" *ngIf="!isUpdated" [disabled]="mep_sg.length == 0 || isAddSg">Exporter</ion-button>
-                  <button mat-raised-button (click)="toggleTableRows({src: 'mep-sg'})" color="primary">Tout afficher</button>
+                <div class="child-column" fxLayout="row">
+                  <div class="child-row">
+                    <button mat-raised-button (click)="toggleTableRows({src: 'mep-sg'})" color="primary">Tout afficher</button>
+                  </div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onExportCateg('mep-sg')" *ngIf="!isUpdated" [disabled]="mep_sg.length == 0 || isAddSg">Exporter</button>
+                  </div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onAdd('mep-sg')" *ngIf="isUpdated" [disabled]="isAddSg || isEditRowSg || isAddPa || isEditRowPa || isAddMv || isEditRowMv">Ajouter</button>
+                  </div>
                 </div>
                 <!--Table modifier-->
                 <div class="child-column">
@@ -116,7 +122,7 @@
                           <td mat-cell *matCellDef="let row">{{row.ddp | customDate}}</td>
                         </ng-container>
                         <ng-container matColumnDef="new_ddp">
-                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.ddp | customDate}}</th>
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.ddp}}</th>
                         </ng-container>
                 
                         <!--Column Variette-->
@@ -141,7 +147,7 @@
                           <td mat-cell *matCellDef="let row">{{row.dds | customDate}}</td>
                         </ng-container>
                         <ng-container matColumnDef="new_dds">
-                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dds | customDate}}</th>
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dds}}</th>
                         </ng-container>
                         <!--Column Sfce-->
                         <ng-container matColumnDef="sfce_embl">
@@ -359,7 +365,7 @@
                                 </ng-container>
                                 <!--Action-->
                                 <ng-container matColumnDef="action">
-                                  <th mat-header-cell *matHeaderCellDef> 
+                                  <th mat-header-cell *matHeaderCellDef>
                                     <button mat-flat-button class="btn-info btn-dimension" (click)="onPresentMadalSuivi({action: 'add', src: 'mep-sg', row_mep:  element_mep, index_mep: ind_mep})" [disabled]="isAddSvSg || isEditSvSg || isAddSvMv || isEditSvMv || isAddSvPa || isEditSvPa">Ajouter</button>
                                   </th>
                                   <td mat-cell *matCellDef="let row; index as ind_suivi">
@@ -423,10 +429,16 @@
             <div slot="content">
               <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
                 <!--Column Bouton-->
-                <div class="child-column">
-                  <ion-button (click)="onAdd('mep-pa')" *ngIf="isUpdated" [disabled]="isAddSg || isEditRowSg || isAddPa || isEditRowPa || isAddMv || isEditRowMv">Ajouter</ion-button>
-                  <ion-button (click)="onExportCateg('mep-pa')" *ngIf="!isUpdated" [disabled]="mep_pa.length == 0 || isAddPa">Exporter</ion-button>
-                  <button mat-raised-button (click)="toggleTableRows({src: 'mep-pa'})" color="primary">Tout afficher</button>
+                <div class="child-column" fxLayout="row">
+                  <div class="child-row">
+                    <button mat-raised-button (click)="toggleTableRows({src: 'mep-pa'})" color="primary">Tout afficher</button>
+                  </div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onExportCateg('mep-pa')" *ngIf="!isUpdated" [disabled]="mep_pa.length == 0 || isAddPa">Exporter</button>
+                  </div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onAdd('mep-pa')" *ngIf="isUpdated" [disabled]="isAddSg || isEditRowSg || isAddPa || isEditRowPa || isAddMv || isEditRowMv">Ajouter</button>
+                  </div>
                 </div>
                 <!--Table modifier-->
                 <div class="child-column">
@@ -487,7 +499,7 @@
                           <td mat-cell *matCellDef="let row">{{row.ddp | customDate}}</td>
                         </ng-container>
                         <ng-container matColumnDef="new_ddp">
-                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.ddp | customDate}}</th>
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.ddp}}</th>
                         </ng-container>
                   
                         <!--Column Espece-->
@@ -504,7 +516,7 @@
                           <td mat-cell *matCellDef="let row">{{row.dt_distribution | customDate}}</td>
                         </ng-container>
                         <ng-container matColumnDef="new_dt_dist">
-                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dt_distribution | customDate}}</th>
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dt_distribution}}</th>
                         </ng-container>
                          <!--Column QSO-->
                         <ng-container matColumnDef="qso">
@@ -520,7 +532,7 @@
                           <td mat-cell *matCellDef="let row">{{row.dds | customDate}}</td>
                         </ng-container>
                         <ng-container matColumnDef="new_dds">
-                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dds | customDate}}</th>
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dds}}</th>
                         </ng-container>
                         <!--Column Sfce-->
                         <ng-container matColumnDef="nbre_ligne">
@@ -790,10 +802,16 @@
             <div slot="content">
               <div class="flex-container width100" fxLayout="column" style="padding-left: 5px;">
                 <!--Column Bouton-->
-                <div class="child-column">
-                  <ion-button (click)="onAdd('mep-mv')" *ngIf="isUpdated" [disabled]="isAddSg || isEditRowSg || isAddPa || isEditRowPa || isAddMv || isEditRowMv">Ajouter</ion-button>
-                  <ion-button (click)="onExportCateg('mep-mv')" *ngIf="!isUpdated" [disabled]="mep_mv.length == 0 || isAddMv">Exporter</ion-button>
-                  <button mat-raised-button (click)="toggleTableRows({src: 'mep-mv'})" color="primary">Tout afficher</button>
+                <div class="child-column" fxLayout="row">
+                  <div class="child-flex">
+                    <button mat-raised-button (click)="toggleTableRows({src: 'mep-mv'})" color="primary">Tout afficher</button>
+                  </div>
+                  <div class="child-flex">
+                    <button mat-raised-button (click)="onExportCateg('mep-mv')" *ngIf="!isUpdated" [disabled]="mep_mv.length == 0 || isAddMv">Exporter</button>
+                  </div>
+                  <div class="child-flex">
+                    <button mat-raised-button (click)="onAdd('mep-mv')" *ngIf="isUpdated" [disabled]="isAddSg || isEditRowSg || isAddPa || isEditRowPa || isAddMv || isEditRowMv">Ajouter</button>
+                  </div>
                 </div>
                 <!--Table modifier-->
                 <div class="child-column">
@@ -863,7 +881,7 @@
                           <td mat-cell *matCellDef="let row">{{row.ddp | customDate}}</td>
                         </ng-container>
                         <ng-container matColumnDef="new_ddp">
-                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.ddp | customDate}}</th>
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.ddp}}</th>
                         </ng-container>
                   
                         <!--Column Espece-->
@@ -889,7 +907,7 @@
                           <td mat-cell *matCellDef="let row">{{row.dds | customDate}}</td>
                         </ng-container>
                         <ng-container matColumnDef="new_dds">
-                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dds | customDate}}</th>
+                          <th mat-header-cell *matHeaderCellDef>{{updated_Mep.dds}}</th>
                         </ng-container>
                         
                         <!--Column Sfce-->

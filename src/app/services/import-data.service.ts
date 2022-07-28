@@ -716,8 +716,8 @@ export class ImportDataService implements OnInit, OnDestroy {
             this.select("beneficiaire", data_benef);
 
             data_benef.forEach((item, index) => {
-              const insert_pms = `INSERT OR IGNORE INTO benef_activ_pms(code_benef_pms, code_achat, id_proj, id_activ, id_benef, id_association, id_collaborateur , status) 
-                                  VALUES ("${item.code_benef_pms}", ${item.code_achat != null?`"${item.code_achat}"`:null}, "${item.id_proj}", ${item.id_activ}, "${item.id_benef}", "${item.id_association}", "${item.id_collaborateur}","${item.status_pms}");`;
+              const insert_pms = `INSERT OR IGNORE INTO benef_activ_pms(code_benef_pms, code_achat, id_proj, id_activ, id_benef, id_association, id_collaborateur, etat, status) 
+                                  VALUES ("${item.code_benef_pms}", ${item.code_achat != null?`"${item.code_achat}"`:null}, "${item.id_proj}", ${item.id_activ}, "${item.id_benef}", "${item.id_association}", "${item.id_collaborateur}", "${item.etat_pms}", "${item.status_pms}");`;
               this.insertData(insert_pms);  
               
               if (index == (data_benef.length - 1)) {

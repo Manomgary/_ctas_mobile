@@ -3,6 +3,42 @@ export interface LocalFile {
     date: string;
     data: string;
   }
+export interface Update_FormModal_Suivi_Mep_Bloc {
+    ddp: string,
+    stc: any,
+    ec: any,
+    ql: number,
+    qr: number,
+    hauteur: number,
+    long_ligne: number,
+    nbre_ligne: number,
+    nbre_pied: number,
+    estimation: number,
+    img_culture: string
+  }
+export interface Update_infos_benef {
+    association: Loc_association,
+    collaborateur: Loc_Collabo_Activite,
+    img_pr: LocalFile,
+    nom: string,
+    prenom: string,
+    surnom: string,
+    sexe: string,
+    dt_naissance: string,
+    dt_naissance_vers: string,
+    cin: number,
+    img_cin_1: LocalFile,
+    img_cin_2: LocalFile,
+    dt_delivrance: string,
+    lieu_delivrance: string,
+    code_achat: string,
+    contact: string,
+    region: Loc_region,
+    district: Loc_district,
+    commune: Loc_Commune,
+    fokontany: Loc_Fokontany,
+    village: string
+  }
 export interface Loc_export_excel {
     data: any[],
     name_feuille: string,
@@ -22,6 +58,14 @@ export interface Loc_collaborateur {
     nom: string, 
     description: string, 
     ancronyme: string
+}
+export interface Loc_Collabo_Activite {
+    code: number, 
+    id_col: string, 
+    nom: string, 
+    description: string, 
+    ancronyme: string, 
+    id_activ: number
 }
 export interface Loc_activ_projet {
     code: number, 
@@ -57,38 +101,6 @@ export interface Loc_association {
     surnom: string,
     status: string
 }
-export interface Benef_activ_pms {
-    id_activ: number,
-    intitule: string,
-    id_proj: string,
-    nom_pr: string,
-    fkt_association: string,
-    id_association: string,
-    nom_ass: string,
-    code_benef_pms: string,
-    code_achat: string,
-    code_parce: string,
-    nb_parcelle: number,
-    sum_superf: number,
-    id_benef: string,
-    code_benef: string,
-    img_benef: string,
-    nom_benef: string,
-    prenom: string,
-    sexe: string,
-    dt_nais: string,
-    surnom: string,
-    cin: number,
-    dt_delivrance: string,
-    lieu_delivrance: string,
-    img_cin: Blob,
-    contact: string,
-    id_fkt: string,
-    adress: string,
-    id_collaborateur: string,
-    nom_collab: string,
-    statut: string
-}
 export interface Local_Parcelle {
     fkt_association: string,
     id_association: string,
@@ -105,6 +117,44 @@ export interface Local_Parcelle {
     superficie: string,
     id_fkt: string,
     status: string
+}
+export interface Benef_activ_pms {
+    id_activ: number,
+    intitule: string,
+    id_proj: string,
+    nom_pr: string,
+    fkt_association: string,
+    id_association: string,
+    nom_ass: string,
+    code_benef_pms: string,
+    code_achat: string,
+    id_benef: string,
+    code_benef: string,
+    img_benef: string,
+    nom_benef: string,
+    prenom: string,
+    sexe: string,
+    dt_nais: string,
+    dt_nais_vers: string,
+    surnom: string,
+    cin: number,
+    dt_delivrance: string,
+    lieu_delivrance: string,
+    img_cin: string,
+    contact: string,
+    code_region: string,
+    code_district: string,
+    nom_district: string,
+    code_commune: string,
+    nom_commune: string,
+    id_fkt: string,
+    village: string,
+    adress: string,
+    id_collaborateur: string,
+    nom_collab: string,
+    statut: string,
+    parcelle: Local_Parcelle[],
+    isExpanded: boolean,
 }
 
 export interface Loc_Bloc {
@@ -275,6 +325,26 @@ export interface Loc_all_suivi_mep {
     controle: string,
     declaration: string
 }
+export interface Loc_sv_bloc {
+    code_sv: string, 
+    id_culture: string, 
+    ddp: string,
+    sc: string, 
+    ea_autre: string, 
+    ea_id_var: string, 
+    stc: string, 
+    ql: number, 
+    qr: number, 
+    long_ligne: number, 
+    nbre_ligne: number, 
+    nbre_pied: number, 
+    hauteur: number,
+    ec: string,
+    img_cult: string,
+    dt_capture: string,
+    ex: string,
+    etat: string
+}
 export interface Loc_mep_bloc {
     code_culture: string,
     code_bloc: string,
@@ -310,27 +380,9 @@ export interface Loc_mep_bloc {
     nom_var: string, 
     code_espece_ea: string,
     nom_espece: string,
-    ea: string
-}
-export interface Loc_sv_bloc {
-    code_sv: string, 
-    id_culture: string, 
-    ddp: string,
-    sc: string, 
-    ea_autre: string, 
-    ea_id_var: string, 
-    stc: string, 
-    ql: number, 
-    qr: number, 
-    long_ligne: number, 
-    nbre_ligne: number, 
-    nbre_pied: number, 
-    hauteur: number,
-    ec: string,
-    img_cult: string,
-    dt_capture: string,
-    ex: string,
-    etat: string
+    ea: string,
+    suivi_Mep: Loc_all_suivi_bloc[],
+    isExpanded: boolean
 }
 export interface Loc_all_suivi_bloc {
     code_sv: string, 

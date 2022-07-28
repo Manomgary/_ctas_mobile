@@ -132,7 +132,7 @@
                     <div class="child-row-flex">
                       <mat-form-field appearance="outline" floatLabel="auto">
                         <mat-label>parcelle</mat-label>
-                        <mat-select  [(value)]="selected_parcelle" [compareWith]="compareObjectsParce">
+                        <mat-select  [(value)]="selected_parcelle"><!-- [compareWith]="compareObjectsParce"-->
                           <mat-option>none</mat-option>
                           <mat-option *ngFor="let parce of data_parcelle_Filtre" [value]="parce">
                             {{ parce.code_parce }}

@@ -7,9 +7,8 @@ import { Directory, Filesystem } from '@capacitor/filesystem';
 // Import
 import { IonAccordionGroup, LoadingController, ModalController, Platform } from '@ionic/angular';
 import * as _moment from 'moment';
-import { BehaviorSubject } from 'rxjs';
 import { AddMepBloc, UpdateSuiviBloc } from 'src/app/interfaces/interface-insertDb';
-import { Local_benef_activ_bl, Local_bloc_parce, Local_bloc_zone, Loc_all_suivi_bloc, Loc_all_suivi_mep, Loc_Bloc, Loc_categEspece, Loc_Commune, Loc_Espece, Loc_mep_bloc, Loc_saison, Loc_suivi_mep, Loc_sv_bloc, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { Local_benef_activ_bl, Local_bloc_parce, Local_bloc_zone, Loc_all_suivi_bloc, Loc_all_suivi_mep, Loc_Bloc, Loc_categEspece, Loc_Commune, Loc_Espece, Loc_export_excel, Loc_mep_bloc, Loc_saison, Loc_suivi_mep, Loc_sv_bloc, Loc_variette, Update_FormModal_Suivi_Mep_Bloc } from 'src/app/interfaces/interfaces-local';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { ACTIVE, EC, EC_CULTURAL, IMAGE_DIR, MV, PA, SC, SG, STC, SYNC, UPDATE } from 'src/app/utils/global-variables';
@@ -17,35 +16,31 @@ import { Utilisateurs } from 'src/app/utils/interface-bd';
 import { ModalBlocPage } from '../../modals/modal-bloc/modal-bloc.page';
 
 // import excelle
-import * as XLSX from 'xlsx';
-import { File } from '@ionic-native/file/ngx';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { ModalPrPage } from '../../modals/modal-pr/modal-pr.page';
+import { ExportExcelService } from 'src/app/services/export-excel.service';
 
 const moment = _moment;
-
-interface LocalFile {
-  name: string;
-  path: string;
-  data: string;
-}
 
 @Component({
   selector: 'app-suivi-bloc',
   templateUrl: './suivi-bloc.page.html',
   styleUrls: ['./suivi-bloc.page.scss'],
+  animations: [ //utiliser pour @detailExpand (table expendable)
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ])
+  ]
 })
 export class SuiviBlocPage implements OnInit {
-  private isRouterActive: BehaviorSubject<boolean> = new BehaviorSubject(false);
-  suivi_sgForm: FormGroup;
-  suivi_paForm: FormGroup;
-  suivi_mvForm: FormGroup;
   // Aliment data source
   private src_MepSg: Loc_mep_bloc[] = [];
-  private src_SvSg: Loc_sv_bloc[] = [];
   private src_MepPa: Loc_mep_bloc[] = [];
-  private src_SvPa: Loc_sv_bloc[] = [];
   private src_MepMv: Loc_mep_bloc[] = [];
-  private src_SvMv: Loc_sv_bloc[] = [];
   private data_Mep: Loc_mep_bloc[] = [];
+  private updated_Suivi: Update_FormModal_Suivi_Mep_Bloc = <Update_FormModal_Suivi_Mep_Bloc>{};
 
   private data_all_suivi_mep: Loc_all_suivi_bloc[] = [];
   private src_AllSvSg: Loc_all_suivi_bloc[] = [];
@@ -54,15 +49,17 @@ export class SuiviBlocPage implements OnInit {
 
   
   // Displayed column
-  private displayedColumnsMepSg: string[] = ['annee', 'saison', 'bloc', 'parcelle', 'code_benef', 'nom_benef', 'ddp', 'variette', 'qso', 'dds', 'sfce_embl', 'sc', 'ea', 'nbre_ligne', 'long_ligne',];
+  private displayedColumnsMepSg: string[] = ['annee', 'saison', 'bloc', 'parcelle', 'code_benef', 'nom_benef', 'ddp', 'variette', 'qso', 'dds', 'sfce_embl', 'sc', 'ea', 'nbre_ligne', 'long_ligne', 'action'];
   private displayedColumnsAddMepSg: string[] = ['new_annee', 'new_saison', 'new_bloc', 'new_parcelle', 'new_code_benef', 'new_nom_benef', 'new_ddp', 'new_variette', 'new_qso', 'new_dds', 'new_sfce_embl', 'new_sc', 'new_ea', 'new_nbre_ligne', 'new_long_ligne', 'new_action'];
   private displayedColumnsSuiviSg: string[] = ['ddp', 'stc', 'ec', 'long_ligne', 'nbre_ligne', 'img_cult', 'estimation', 'action'];
   private displayedColumnsAddSuiviSg: string[] = ['new_ddp', 'new_stc', 'new_ec', 'new_long_ligne', 'new_nbre_ligne', 'new_img_cult', 'new_estimation', 'new_action'];
-  private displayedColumnsMepPa: string[] = ['annee', 'bloc', 'parcelle', 'code_benef', 'nom_benef', 'ddp', 'espece', 'qo', 'dt_dist', 'dt_mep', 'nbre_ligne', 'long_ligne'];
+  //
+  private displayedColumnsMepPa: string[] = ['annee', 'bloc', 'parcelle', 'code_benef', 'nom_benef', 'ddp', 'espece', 'qo', 'dt_dist', 'dt_mep', 'nbre_ligne', 'long_ligne', 'action'];
   private displayedColumnsAddMepPa: string[] = ['new_annee', 'new_bloc', 'new_parcelle', 'new_code_benef', 'new_nom_benef', 'new_ddp', 'new_espece', 'new_qo', 'new_dt_dist', 'new_dt_mep', 'new_nbre_ligne', 'new_long_ligne', 'new_action'];
   private displayedColumnsSuiviPa: string[] = ['ddp', 'ql', 'ec', 'nbre_ligne', 'hauteur', 'img_cult', 'qr', 'action'];
   private displayedColumnsAddSuiviPa: string[] = ['new_ddp', 'new_ql', 'new_ec', 'new_nbre_ligne', 'new_hauteur', 'new_img_cult', 'new_qr', 'new_action'];
-  private displayedColumnsMepMv: string[] = ['annee', 'saison', 'bloc', 'parcelle', 'code_benef', 'nom_benef', 'ddp', 'espece', 'qso', 'dt_mep', 'sfce_embl', 'nbre_ligne', 'long_ligne', 'sc', 'ea'];
+
+  private displayedColumnsMepMv: string[] = ['annee', 'saison', 'bloc', 'parcelle', 'code_benef', 'nom_benef', 'ddp', 'espece', 'qso', 'dt_mep', 'sfce_embl', 'nbre_ligne', 'long_ligne', 'sc', 'ea', 'action'];
   private displayedColumnsAddMepMv: string[] = ['new_annee', 'new_saison', 'new_bloc', 'new_parcelle', 'new_code_benef', 'new_nom_benef', 'new_ddp', 'new_espece', 'new_qso', 'new_dt_mep', 'new_sfce_embl', 'new_nbre_ligne', 'new_long_ligne', 'new_sc', 'new_ea', 'new_action'];
   private displayedColumnsSuiviMv: string[] = ['ddp', 'nbre_pieds', 'long_ligne', 'nbre_ligne', 'estimation', 'action'];
   private displayedColumnsAddSuiviMv: string[] = ['new_ddp', 'new_nbre_pieds', 'new_long_ligne', 'new_nbre_ligne', 'new_estimation', 'new_action'];
@@ -76,11 +73,8 @@ export class SuiviBlocPage implements OnInit {
    * Data Source
    ***************************/
   private dataSourceMepSg = new MatTableDataSource<Loc_mep_bloc>();
-  private dataSourceSuiviSg = new MatTableDataSource<Loc_sv_bloc>();
   private dataSourceMepPa = new MatTableDataSource<Loc_mep_bloc>();
-  private dataSourceSuiviPa = new MatTableDataSource<Loc_sv_bloc>();
   private dataSourceMepMv = new MatTableDataSource<Loc_mep_bloc>();
-  private dataSourceSuiviMv = new MatTableDataSource<Loc_sv_bloc>();
 
   private dataSourceAllSuiviSg= new MatTableDataSource<Loc_all_suivi_bloc>();
   private dataSourceAllSuiviMv= new MatTableDataSource<Loc_all_suivi_bloc>();
@@ -90,13 +84,7 @@ export class SuiviBlocPage implements OnInit {
    * boolean button
    ********************/ 
   isUpdated: boolean = false;
-  isSuiviSg: boolean = false;
-  isSuiviPa: boolean = false;
-  isSuiviMv: boolean = false;
-  // row Mep Suivi
-  isRowMepSgSv: boolean = false;
-  isRowMepPaSv: boolean = false;
-  isRowMepMvSv: boolean = false;
+
   // row Mep Edit
   isRowMepSgEdit: boolean = false;
   isRowMepPaEdit: boolean = false;
@@ -113,6 +101,10 @@ export class SuiviBlocPage implements OnInit {
   isAddSuiviSg: boolean = false;
   isAddSuiviPa: boolean = false;
   isAddSuiviMv: boolean = false;
+  // expanded btn
+  isTableSgExpanded = false;
+  isTablePaExpanded = false;
+  isTableMvExpanded = false;
 
   // Index
   indexSg: number;
@@ -124,10 +116,6 @@ export class SuiviBlocPage implements OnInit {
   indexRowEditMepPa: number;
   indexRowEditMepMv: number;
 
-  // Accordion value level 2
-  accordion_val_sg: string = 'mep-sg';
-  accordion_val_pa: string = 'mep-pa';
-  accordion_val_mep: string = 'mep-mv';
 
   /*********************************
    * Autre
@@ -144,26 +132,11 @@ export class SuiviBlocPage implements OnInit {
    data_var: Loc_variette[] = [];
    data_categ: Loc_categEspece[] = [];
 
-   // Filter Data
-   filterBeneficiaire: Local_benef_activ_bl[] = [];
-   filterParcelle: Local_bloc_parce[] = [];
-   // Mep
-   mep_selected_sg: Loc_mep_bloc;
-   mep_selected_mv: Loc_mep_bloc;
-   mep_selected_pa: Loc_mep_bloc;
-
    data_sc: any[] = SC;
    data_stc: any[] = STC;
    data_ec: any[] = EC_CULTURAL;
 
    update_mep: any = {};
-
-   // image
-  fileImgSvSg: LocalFile = {
-    name: null,
-    path: null,
-    data: null
-  };
 
   // Export
   mep_export_sg: any[] = [];
@@ -175,15 +148,14 @@ export class SuiviBlocPage implements OnInit {
   sv_export_mv: any[] = [];
   
   @ViewChild(IonAccordionGroup, { static: true }) accordionGroup: IonAccordionGroup;
+
   constructor(
     private modalCtrl: ModalController,
     private loadData: LoadDataService,
     private router: Router,
     private crudDb: CrudDbService,
     private loadingCtrl: LoadingController,
-    private formBuilder: FormBuilder,
-    private plt: Platform,
-    private file: File,
+    private exportExcel: ExportExcelService
   ) {
     if (this.router.getCurrentNavigation().extras.state) {
       let data: any;
@@ -201,29 +173,6 @@ export class SuiviBlocPage implements OnInit {
    }
 
   ngOnInit() {
-    this.suivi_sgForm = this.formBuilder.group({
-      ddp: [null, Validators.required],
-      stc: null,
-      ec: null,
-      long_ligne: null,
-      nbre_ligne: null,
-      estimation: null
-    });
-    this.suivi_paForm = this.formBuilder.group({
-      ddp: [null, Validators.required],
-      ql: null,
-      ec: null,
-      nbre_ligne: null,
-      hauteur: null,
-      qr: null
-    });
-    this.suivi_mvForm = this.formBuilder.group({
-      ddp: [null, Validators.required],
-      nbre_pied: null,
-      long_ligne: null,
-      nbre_ligne: null,
-      estimation: null
-    });
     setTimeout(async () => {
       const loading = await this.loadingCtrl.create();
       await loading.present();
@@ -232,7 +181,10 @@ export class SuiviBlocPage implements OnInit {
       this.loadDataExportPa();
       this.loadDataExportMv();
       this.loadingCtrl.dismiss();
-    }, 2000);
+    }, 1000);
+  }
+  ionViewDidEnter() {
+    console.log(":::::LifeCycle Suivi bLOC function:::: ionViewDidEnter:::");
   }
   /************************************
    * Load Data
@@ -247,74 +199,48 @@ export class SuiviBlocPage implements OnInit {
     this.loadData.loadCommune(id_dist).then(res_com => {
       console.log(res_com);
       if (res_com.values.length > 0) {
-        res_com.values.forEach(elem_val => {
-          commune.push(elem_val);
-        });
-        if (commune.length > 0) {
-          // forEach commune
-          commune.forEach((elem_com, i) => {
-            code_equipe = this.user[this.user.length - 1].id_equipe;
-            console.log("Code equipe::", code_equipe);
-            // load Bloc BY ZONE BY EQUIPE
-            const data = {
-              code_com: elem_com.code_com,
-              code_projet: this.projet.code_proj,
-              id_tech: code_equipe
-            }
-            this.loadData.loadBlocEquipeZone(data).then(res_bloc => {
-              if (res_bloc.values.length > 0) {
-                res_bloc.values.forEach(elem_bloc => {
-                  let code_bloc = {
-                    code_bloc: elem_bloc.code_bloc
-                  }
-                  this.data_bloc.push(elem_bloc);
-                  this.loadData.loadBenefBloc(elem_bloc.code_bloc).then(res_benef => {
-                    console.log(res_benef);
-                    res_benef.values.forEach(elem_benef => {
-                      this.data_benef.push(elem_benef);
-                      this.data_benef[0].nom;
-                    });
-                  });
-                  this.loadData.loadBlocParce(code_bloc).then(parce_bloc => {
-                    console.log(parce_bloc);
-                    if (parce_bloc.values.length > 0) {
-                      parce_bloc.values.forEach(elem_parce => {
-                        console.log(elem_parce);
-                        this.data_bloc_parce.push(elem_parce);
-                      });
-                    }
-                  });
-                  this.loadData.loadMepBloc({id_bloc: elem_bloc.code_bloc}).then(res_mep => {
-                    console.log("Response load Mep Bloc:::", res_mep);
-                    if (res_mep.values.length > 0) {
-                      res_mep.values.forEach(elem_mep => {
-                        this.data_Mep.push(elem_mep);
-                      });
-                      console.log("data_mep::::: ", this.data_Mep);
-                    }
-                  });
-                  this.loadData.loadAllSuiviBloc({id_bloc: elem_bloc.code_bloc}).then(res_suivi => {
-                    console.log("Response All suivi Bloc::::", res_suivi);
-                    if (res_suivi.values.length > 0) {
-                      res_suivi.values.forEach((elem_suivi, index) => {
-                        this.data_all_suivi_mep.push(elem_suivi);
-                      });
-                      // filter data
-                      this.src_AllSvSg = this.data_all_suivi_mep.filter(item => {return item.type === SG});
-                      this.src_AllSvMv = this.data_all_suivi_mep.filter(item => {return item.type === MV});
-                      this.src_AllSvPa = this.data_all_suivi_mep.filter(item => {return item.type === PA});
-                    }
+        res_com.values.forEach((elem_com, ind) => {
+          code_equipe = this.user[this.user.length - 1].id_equipe;
+          console.log("Code equipe::", code_equipe);
+          // load Bloc BY ZONE BY EQUIPE
+          const data = {
+            code_com: elem_com.code_com,
+            code_projet: this.projet.code_proj,
+            id_tech: code_equipe
+          }
+          this.loadData.loadBlocEquipeZone(data).then(res_bloc => {
+            if (res_bloc.values.length > 0) {
+              res_bloc.values.forEach((elem_bloc, ind_bloc) => {
+                let code_bloc = {
+                  code_bloc: elem_bloc.code_bloc
+                }
+                this.data_bloc.push(elem_bloc);
+                this.loadData.loadBenefBloc(elem_bloc.code_bloc).then(res_benef => {
+                  console.log(res_benef);
+                  res_benef.values.forEach(elem_benef => {
+                    this.data_benef.push(elem_benef);
+                    this.data_benef[0].nom;
                   });
                 });
-              } else {
-                console.log("Bloc non identifié!!!!!, commune :::", elem_com.nom_com);
-              }
-            });
-            if((commune.length - 1) === i) {
-              console.log("Data bloc::::" , this.data_bloc);
+                this.loadData.loadBlocParce(code_bloc).then(parce_bloc => {
+                  console.log(parce_bloc);
+                  if (parce_bloc.values.length > 0) {
+                    parce_bloc.values.forEach(elem_parce => {
+                      console.log(elem_parce);
+                      this.data_bloc_parce.push(elem_parce);
+                    });
+                  }
+                });
+              });
+            } else {
+              console.log("Bloc non identifié!!!!!, commune :::", elem_com.nom_com);
+            }
+            if((res_com.values.length - 1) === ind) {
+              console.log(":::::FIN du BOUCLE COMMUNE Data bloc::::" , this.data_bloc);
+              this.loadMepBloc();
             }
           });
-        }
+        });
       }
     });
   }
@@ -361,17 +287,35 @@ export class SuiviBlocPage implements OnInit {
   loadMepBloc() {
     if (this.data_bloc.length > 0) {
       this.data_Mep = [];
-      this.data_bloc.forEach((elem_bloc, i) => {
+      this.data_all_suivi_mep = [];
+      
+      this.data_bloc.forEach((elem_bloc, ind) => {
         let data = {
           id_bloc: elem_bloc.code_bloc
         }
+        // loadAll suivi
+        this.loadData.loadAllSuiviBloc({id_bloc: elem_bloc.code_bloc}).then(res_suivi => {
+          console.log("Response All suivi Bloc::::", res_suivi);
+          if (res_suivi.values.length > 0) {
+            res_suivi.values.forEach((elem_suivi, index) => {
+              this.data_all_suivi_mep.push(elem_suivi);
+            });
+          }
+        });
         this.loadData.loadMepBloc(data).then(res_mep => {
           console.log("Response load Mep Bloc:::", res_mep);
           if (res_mep.values.length > 0) {
             res_mep.values.forEach(elem_mep => {
               this.data_Mep.push(elem_mep);
+              /**this.data_Mep.forEach(item_mep => {
+                item_mep.suivi_Mep = [];
+              });*/
             });
             console.log("data_mep::::: ", this.data_Mep);
+          }
+            // fin du boucle
+          if ((this.data_bloc.length - 1) === ind) {
+            console.log("::::Data Mep With element:::", this.data_Mep);
           }
         });
       });
@@ -420,9 +364,6 @@ export class SuiviBlocPage implements OnInit {
    **************************/
   onUpdate() {
     this.isUpdated = true;
-    this.displayedColumnsMepMv.push('action');
-    this.displayedColumnsMepPa.push('action');
-    this.displayedColumnsMepSg.push('action');
   }
   // Add MEP
   onAdd(src) {
@@ -448,23 +389,7 @@ export class SuiviBlocPage implements OnInit {
       this.presentModal(data);
     }
   }
-  // Add Suivi
-  onAddSuivi(source: any) {
-    switch(source.src) {
-      case 'sv-sg':
-        this.isAddSuiviSg = true;
-        break;
-      case 'sv-pa':
-        this.isAddSuiviPa = true;
-        break;
-      case 'sv-mv':
-        this.isAddSuiviMv = true;
-        break;
-      default:
-        console.log("Default Addsuivi");
-        break;
-    }
-  }
+
   onEditElem(data: any) {
     // Element
     console.log("Edit Element MEP", data.data);
@@ -501,140 +426,6 @@ export class SuiviBlocPage implements OnInit {
         console.log("default")
         break;
     }
-  }
-  onEditElemSv(data: any) {
-    // Element
-    console.log("Suivi Data Edit:::",data.data);
-    let data_: Loc_sv_bloc = data.data;
-    switch(data.src) {
-      case 'sv-sg':
-        // load Data Suivi sg
-        let stc: any = {};
-        let ec: any = {};
-        this.data_stc.filter(item => {
-          if (item.value === data_.stc) {
-            stc = item;
-          }
-        });
-        this.data_ec.filter(item => {
-          if (item.value === data_.ec) {
-            ec = item
-          }
-        });
-        this.suivi_sgForm.patchValue({
-          ddp: moment(data_.ddp, "YYYY-MM-DD"),
-          stc: stc,
-          ec: ec,
-          estimation: data_.ex,
-          long_ligne: data_.long_ligne,
-          nbre_ligne: data_.nbre_ligne,
-          data: data_.img_cult
-        });
-        this.isRowSvSgEdit = true;
-        this.indexSg = data.index;
-        break;
-      case 'sv-pa':
-        // load Data Mep PA
-        let ec_pa: any = {};
-        this.data_ec.filter(item => {
-          if (item.value === data_.ec) {
-            ec_pa = item
-          }
-        });
-        this.suivi_paForm.patchValue({
-          ddp: moment(data_.ddp, "YYYY-MM-DD"),
-          ql: data_.ql,
-          ec: ec_pa,
-          nbre_ligne: data_.nbre_ligne,
-          hauteur: data_.hauteur,
-          qr: data_.qr
-        });
-        this.isRowSvPaEdit = true;
-        this.indexPa = data.index;
-        break;
-      case 'sv-mv':
-        //load Data Suivi MV
-        this.suivi_mvForm.patchValue({
-          ddp: moment(data_.ddp, "YYYY-MM-DD"),
-          nbre_pied: data_.nbre_pied,
-          long_ligne: data_.long_ligne,
-          nbre_ligne: data_.nbre_ligne,
-          estimation: data_.ex
-        });
-        this.isRowSvMvEdit = true;
-        this.indexMv = data.index;
-        break;
-      default:
-        console.log("default")
-        break;
-    }
-  }
-  onSuivi(src: any) {
-    switch(src) {
-      case 'mep-sg':
-        this.isSuiviSg = true;
-        this.displayedColumnsMepSg.push('action');
-        break;
-      case 'mep-pa':
-        this.isSuiviPa = true;
-        this.displayedColumnsMepPa.push('action');
-        break;
-      case 'mep-mv':
-        this.isSuiviMv = true;
-        this.displayedColumnsMepMv.push('action');
-        break;
-      default:
-        console.log("default")
-        break;
-    }
-  }
-  // clicked row mep suivi
-  onRowMepSuivi(data: any) {
-    console.log("Data Row Mep clicked::::", data.data);
-    let data_: Loc_mep_bloc = data.data;
-    this.loadData.loadSuiviBloc(data_.code_culture).then(res_suivi => {
-      console.log("Response load Suivi Mep bloc::: ", res_suivi);
-      switch(data.src) {
-        case 'mep-sg':
-          this.isRowMepSgSv = true;
-          this.src_SvSg = [];
-          this.mep_selected_sg = data.data;
-          if (res_suivi.values.length > 0) {
-            res_suivi.values.forEach(elem => {
-              this.src_SvSg.push(elem);
-            });
-          }
-          this.dataSourceSuiviSg.data = this.src_SvSg;
-          this.accordion_val_sg = undefined;
-          this.accordion_val_sg = "suivi-sg";
-          console.log(this.accordionGroup.value);
-          break;
-        case 'mep-pa':
-          // load Data Mep PA
-          this.isRowMepPaSv = true;
-          this.src_SvPa = [];
-          this.mep_selected_pa = data.data;
-          if (res_suivi.values.length > 0) {
-            res_suivi.values.forEach(elem => {
-              this.src_SvPa.push(elem);
-            });
-          }
-          this.dataSourceSuiviPa.data = this.src_SvPa;
-          break;
-        case 'mep-mv':
-          //load Data Suivi MV
-          this.isRowMepMvSv = true;
-          this.src_SvMv = [];
-          this.mep_selected_mv = data.data;
-          if (res_suivi.values.length > 0) {
-            res_suivi.values.forEach(elem => {
-              this.src_SvMv.push(elem);
-            });
-          }
-          this.dataSourceSuiviMv.data = this.src_SvMv;
-          break;
-      }
-    });
   }
   // Save Add Mep
   async onSaveAddMep(source) {
@@ -709,6 +500,7 @@ export class SuiviBlocPage implements OnInit {
                     this.src_MepSg = [elem_mep, ...this.src_MepSg]; // push item first position
                   }
                 });
+                this.src_MepSg[0].suivi_Mep = [];
                 this.dataSourceMepSg.data = this.src_MepSg;
               }
             });
@@ -765,6 +557,7 @@ export class SuiviBlocPage implements OnInit {
                     this.src_MepPa = [elem_mep, ...this.src_MepPa]; // push item first position
                   }
                 });
+                this.src_MepPa[0].suivi_Mep = [];
                 this.dataSourceMepPa.data = this.src_MepPa;
               }
             });
@@ -830,6 +623,7 @@ export class SuiviBlocPage implements OnInit {
                     this.src_MepMv = [elem_mep, ...this.src_MepMv]; // push item first position
                   }
                 });
+                this.src_MepMv[0].suivi_Mep = [];
                 this.dataSourceMepMv.data = this.src_MepMv;
               }
             });
@@ -954,173 +748,86 @@ export class SuiviBlocPage implements OnInit {
   }
   // Save Add suivi
   onSaveAddSuivi(src: any) {
+    // {src: 'sv-sg', row_mep: element_mep}
+    let row_mep_selected: Loc_mep_bloc = src.row_mep;
     let add_suivi: UpdateSuiviBloc = {
-      code_sv: null,
-      id_culture: null,
-      ddp: null,
-      stc: null,
-      ec: null,
-      ql: null,
-      qr: null,
-      long_ligne: null,
-      nbre_ligne: null,
-      nbre_pied: null,
-      hauteur: null,
-      dt_creation: null,
-      dt_modification: null,
-      img_cult: null,
+      code_sv: row_mep_selected.code_culture + '_' + moment().format('YYMMDD:HHmmss'),
+      id_culture: row_mep_selected.code_culture,
+      ddp: this.updated_Suivi.ddp,
+      stc: this.updated_Suivi.stc != null?this.updated_Suivi.stc.value:null,
+      ec: this.updated_Suivi.ec != null?this.updated_Suivi.ec.value:null,
+      ql: this.updated_Suivi.ql,
+      qr: this.updated_Suivi.qr,
+      long_ligne: this.updated_Suivi.long_ligne,
+      nbre_ligne: this.updated_Suivi.nbre_ligne,
+      nbre_pied: this.updated_Suivi.nbre_pied,
+      hauteur: this.updated_Suivi.hauteur,
+      dt_creation: moment().format('YYYY-MM-DD'),
+      dt_modification: moment().format('YYYY-MM-DD'),
+      img_cult: this.updated_Suivi.img_culture,
       dt_capture: null,
-      ex: null,
+      ex: this.updated_Suivi.estimation,
       etat: SYNC
     }
-    switch(src) {
+    switch(src.src) {
       case 'sv-sg':
-        let val_sg = this.suivi_sgForm.value;
-        add_suivi.code_sv = this.mep_selected_sg.code_culture.concat("_1");
-        add_suivi.id_culture = this.mep_selected_sg.code_culture;
-        add_suivi.ddp = val_sg.ddp.format("YYYY-MM-DD");
-        add_suivi.long_ligne = val_sg.long_ligne;
-        add_suivi.nbre_ligne = val_sg.nbre_ligne;
-        add_suivi.stc = val_sg.stc != null? val_sg.stc.value:null;
-        add_suivi.ec = val_sg.ec != null? val_sg.ec.value:null;
-        add_suivi.ex = val_sg.estimation;
-        add_suivi.img_cult = this.fileImgSvSg.data;
-        add_suivi.dt_capture = this.fileImgSvSg.data != null? moment().format("YYYY-MM-DD"):null;
-        add_suivi.dt_creation = moment().format("YYYY-MM-DD");
-        add_suivi.dt_modification = moment().format("YYYY-MM-DD");
-
-        if (this.src_SvSg.length > 0) {
-          let code_cult: string = this.src_SvSg[this.src_SvSg.length - 1].code_sv;
-          let arr_code = code_cult.trim().split("_");
-          console.log("Array code_cult", arr_code);
-
-          arr_code.forEach((elem_, i) => {
-            if ((arr_code.length - 1) === i) {
-              let last_id = parseInt(elem_) + 1;
-              add_suivi.code_sv = this.mep_selected_sg.code_culture.concat("_" + last_id.toString());
-            }
-          });
-        } 
         this.crudDb.AddSuiviBl(add_suivi).then(res => {
           console.log("Res_ponse Add suivi:::", res);
-          this.suivi_sgForm.reset();
-          this.fileImgSvSg = {
-            name: null,
-            path: null,
-            data: null
-          };
-          this.loadData.loadSuiviBloc(this.mep_selected_sg.code_culture).then(res_suivi => {
+          //this.suivi_sgForm.reset();
+
+          this.loadData.loadAllSuiviBloc({code_suivi: add_suivi.code_sv}).then(res_suivi => {
             console.log("Response load Suivi Mep bloc::: ", res_suivi);
-            this.src_SvSg = [];
+            this.isAddSuiviSg = false;
+            this.indexRowEditMepSg = null;
+            this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
             if (res_suivi.values.length > 0) {
-              res_suivi.values.forEach(elem => {
-                this.src_SvSg.push(elem);
+              this.dataSourceMepSg.data.forEach(elem_sg => {
+                if (elem_sg.code_culture === row_mep_selected.code_culture) {
+                  elem_sg.suivi_Mep = [res_suivi.values[0], ...elem_sg.suivi_Mep];
+                }
               });
             }
-            this.dataSourceSuiviSg.data = this.src_SvSg;
           });
-          //this.mep_selected_sg = null;
         });
-        this.isAddSuiviSg = false;
-        console.log("value suivi Add SG:::",this.suivi_sgForm.value);
-        console.log("value suivi TO Add SG:::",add_suivi);
         break;
       case 'sv-pa':
-        let val_pa = this.suivi_paForm.value;
-        add_suivi.code_sv = this.mep_selected_pa.code_culture.concat("_1");
-        add_suivi.id_culture = this.mep_selected_pa.code_culture;
-        add_suivi.ddp = val_pa.ddp.format("YYYY-MM-DD");
-        add_suivi.ql = val_pa.ql;
-        add_suivi.ec = val_pa.ec != null? val_pa.ec.value:null;
-        add_suivi.nbre_ligne = val_pa.nbre_ligne;
-        add_suivi.hauteur = val_pa.hauteur;
-        add_suivi.qr = val_pa.qr;
-        add_suivi.img_cult = this.fileImgSvSg.data;
-        add_suivi.dt_capture = this.fileImgSvSg.data != null? moment().format("YYYY-MM-DD"):null;
-        add_suivi.dt_creation = moment().format("YYYY-MM-DD");
-        add_suivi.dt_modification = moment().format("YYYY-MM-DD");
-
-        if (this.src_SvPa.length > 0) {
-          let code_cult: string = this.src_SvPa[this.src_SvPa.length - 1].code_sv;
-          let arr_code = code_cult.trim().split("_");
-          console.log("Array code_cult", arr_code);
-
-          arr_code.forEach((elem_, i) => {
-            if ((arr_code.length - 1) === i) {
-              let last_id = parseInt(elem_) + 1;
-              add_suivi.code_sv = this.mep_selected_pa.code_culture.concat("_" + last_id.toString());
-            }
-          });
-        } 
-
         this.crudDb.AddSuiviBl(add_suivi).then(res => {
           console.log("Res_ponse Add suivi:::", res);
-          this.suivi_paForm.reset();
-          this.fileImgSvSg = {
-            name: null,
-            path: null,
-            data: null
-          };
-          this.loadData.loadSuiviBloc(this.mep_selected_pa.code_culture).then(res_suivi => {
+          //this.suivi_paForm.reset();
+          this.loadData.loadAllSuiviBloc({code_suivi: add_suivi.code_sv}).then(res_suivi => {
             console.log("Response load Suivi Mep bloc::: ", res_suivi);
-            this.src_SvPa = [];
+            this.isAddSuiviPa = false;
+            this.indexRowEditMepPa = null;
+            this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
             if (res_suivi.values.length > 0) {
-              res_suivi.values.forEach(elem => {
-                this.src_SvPa.push(elem);
+              this.dataSourceMepPa.data.forEach(elem_pa => {
+                if (elem_pa.code_culture === row_mep_selected.code_culture) {
+                  elem_pa.suivi_Mep = [res_suivi.values[0], ...elem_pa.suivi_Mep];
+                }
               });
             }
-            this.dataSourceSuiviPa.data = this.src_SvPa;
           });
-          //this.mep_selected_pa = null;
         });
-        this.isAddSuiviPa = false;
-        console.log("value suivi PA:::", this.suivi_paForm.value);
-        console.log("value suivi TO Add PA:::",add_suivi);
         break;
       case 'sv-mv':
-        let val_mv = this.suivi_mvForm.value;
-        add_suivi.code_sv = this.mep_selected_mv.code_culture.concat("_1");
-        add_suivi.id_culture = this.mep_selected_mv.code_culture;
-        add_suivi.ddp = val_mv.ddp.format("YYYY-MM-DD");
-        add_suivi.nbre_pied = val_mv.nbre_pied;
-        add_suivi.long_ligne = val_mv.long_ligne;
-        add_suivi.nbre_ligne = val_mv.nbre_ligne;
-        add_suivi.ex = val_mv.estimation;
-        add_suivi.dt_creation = moment().format("YYYY-MM-DD");
-        add_suivi.dt_modification = moment().format("YYYY-MM-DD");
-        
-        if (this.src_SvMv.length > 0) {
-          let code_cult: string = this.src_SvMv[this.src_SvMv.length - 1].code_sv;
-          let arr_code = code_cult.trim().split("_");
-          console.log("Array code_cult", arr_code);
-
-          arr_code.forEach((elem_, i) => {
-            if ((arr_code.length - 1) === i) {
-              let last_id = parseInt(elem_) + 1;
-              add_suivi.code_sv = this.mep_selected_mv.code_culture.concat("_" + last_id.toString());
-            }
-          });
-        } 
 
         this.crudDb.AddSuiviBl(add_suivi).then(res => {
           console.log("Res_ponse Add suivi:::", res);
-          this.suivi_mvForm.reset();
-          this.loadData.loadSuiviBloc(this.mep_selected_mv.code_culture).then(res_suivi => {
+
+          this.loadData.loadAllSuiviBloc({code_suivi: add_suivi.code_sv}).then(res_suivi => {
             console.log("Response load Suivi Mep bloc::: ", res_suivi);
-            this.src_SvMv = [];
+            this.isAddSuiviMv = false;
+            this.indexRowEditMepMv = null;
+            this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
             if (res_suivi.values.length > 0) {
-              res_suivi.values.forEach(elem => {
-                this.src_SvMv.push(elem);
+              this.dataSourceMepMv.data.forEach(elem_mv => {
+                if (elem_mv.code_culture === row_mep_selected.code_culture) {
+                  elem_mv.suivi_Mep = [res_suivi.values[0], ...elem_mv.suivi_Mep];
+                }
               });
             }
-            this.dataSourceSuiviMv.data = this.src_SvMv;
           });
-          //this.mep_selected_mv = null;
         });
-
-        this.isAddSuiviMv = false;
-        console.log("value suivi MV:::", this.suivi_mvForm.value);
-        console.log("value suivi TO Add MV:::",add_suivi);
         break;
       default:
         console.log('default Caancel suivi')
@@ -1131,16 +838,18 @@ export class SuiviBlocPage implements OnInit {
     switch(src) {
       case 'sv-sg':
         this.isAddSuiviSg = false;
-        this.mep_selected_sg = null;
-        this.suivi_sgForm.reset();
+        this.indexRowEditMepSg = null;
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         break;
       case 'sv-pa':
         this.isAddSuiviPa = false;
-        this.suivi_paForm.reset();
+        this.indexRowEditMepPa = null;
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         break;
       case 'sv-mv':
         this.isAddSuiviMv = false;
-        this.suivi_mvForm.reset();
+        this.indexRowEditMepMv = null;
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         break;
       default:
         console.log('default Caancel suivi')
@@ -1150,141 +859,94 @@ export class SuiviBlocPage implements OnInit {
   // Save Edit suivi
   onSaveEditSuivi(_data_: any) {
     let data_row: Loc_sv_bloc = _data_.data;
-    let update_suivi: UpdateSuiviBloc = {
-      code_sv: null,
-      id_culture: null,
-      ddp: null,
-      stc: null,
-      ec: null,
-      ql: null,
-      qr: null,
-      long_ligne: null,
-      nbre_ligne: null,
-      nbre_pied: null,
-      hauteur: null,
-      dt_creation: null,
-      dt_modification: null,
-      img_cult: null,
+    let data_update: UpdateSuiviBloc = {
+      code_sv: data_row.code_sv,
+      id_culture: data_row.id_culture,
+      ddp: this.updated_Suivi.ddp,
+      stc: this.updated_Suivi.stc != null?this.updated_Suivi.stc.value:null,
+      ec: this.updated_Suivi.ec != null?this.updated_Suivi.ec.value:null,
+      ql: this.updated_Suivi.ql,
+      qr: this.updated_Suivi.qr,
+      long_ligne: this.updated_Suivi.long_ligne,
+      nbre_ligne: this.updated_Suivi.nbre_ligne,
+      nbre_pied: this.updated_Suivi.nbre_pied,
+      hauteur: this.updated_Suivi.hauteur,
+      dt_creation: moment().format('YYYY-MM-DD'),
+      dt_modification: moment().format('YYYY-MM-DD'),
+      img_cult: this.updated_Suivi.img_culture,
       dt_capture: null,
-      ex: null,
+      ex: this.updated_Suivi.estimation,
       etat: data_row.etat === SYNC?SYNC:UPDATE
     }
     switch(_data_.src) {
       case 'sv-sg':
-        let val_sg = this.suivi_sgForm.value;
-        update_suivi.code_sv = data_row.code_sv
-        update_suivi.id_culture = data_row.id_culture;
-        update_suivi.ddp = val_sg.ddp.format("YYYY-MM-DD");
-        update_suivi.long_ligne = val_sg.long_ligne;
-        update_suivi.nbre_ligne = val_sg.nbre_ligne;
-        update_suivi.stc = val_sg.stc != null? val_sg.stc.value:null;
-        update_suivi.ec = val_sg.ec != null? val_sg.ec.value:null;
-        update_suivi.ex = val_sg.estimation;
-        update_suivi.img_cult = this.fileImgSvSg.data != null? this.fileImgSvSg.data:data_row.img_cult;
-        update_suivi.dt_capture = this.fileImgSvSg.data != null? moment().format("YYYY-MM-DD"):data_row.dt_capture;
-        update_suivi.dt_modification = moment().format("YYYY-MM-DD");
-
         let _data_update_sg = {
-          updated: update_suivi
+          updated: data_update
         }
-
         this.crudDb.UpdateSuiviBl(_data_update_sg).then(res => {
           console.log("Res_ponse Add suivi:::", res);
-          this.suivi_sgForm.reset();
-          this.fileImgSvSg = {
-            name: null,
-            path: null,
-            data: null
-          };
-          this.loadData.loadSuiviBloc(this.mep_selected_sg.code_culture).then(res_suivi => {
-            console.log("Response load Suivi bloc SG::: ", res_suivi);
-            this.src_SvSg = [];
+          this.isRowSvSgEdit = false;
+          this.indexRowEditMepSg = null;
+          this.indexSg = null;
+          this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
+          this.loadData.loadAllSuiviBloc({code_culture: data_update.id_culture}).then(res_suivi => {
+            console.log("Response load Suivi Mep bloc::: ", res_suivi);
             if (res_suivi.values.length > 0) {
-              res_suivi.values.forEach(elem => {
-                this.src_SvSg.push(elem);
+              this.dataSourceMepSg.data.forEach(elem_sg => {
+                if (elem_sg.code_culture === data_update.id_culture) {
+                  elem_sg.suivi_Mep = res_suivi.values;
+                }
               });
             }
-            this.dataSourceSuiviSg.data = this.src_SvSg;
-          });
+          });      
         });
-        this.isRowSvSgEdit = false;
-        this.indexSg = null;
-        console.log("Save Edit SG:::", this.suivi_sgForm);
+        
         break;
       case 'sv-pa':
-        let val_pa = this.suivi_paForm.value;
-        update_suivi.code_sv = data_row.code_sv;
-        update_suivi.id_culture = data_row.id_culture;
-        update_suivi.ddp = val_pa.ddp.format("YYYY-MM-DD");
-        update_suivi.ql = val_pa.ql;
-        update_suivi.ec = val_pa.ec != null? val_pa.ec.value:null;
-        update_suivi.nbre_ligne = val_pa.nbre_ligne;
-        update_suivi.hauteur = val_pa.hauteur;
-        update_suivi.qr = val_pa.qr;
-        update_suivi.img_cult = this.fileImgSvSg.data != null? this.fileImgSvSg.data:data_row.img_cult;
-        update_suivi.dt_capture = this.fileImgSvSg.data != null? moment().format("YYYY-MM-DD"):data_row.dt_capture;
-        update_suivi.dt_modification = moment().format("YYYY-MM-DD");
-
         let _data_update_pa = {
-          updated: update_suivi
+          updated: data_update
         }
-
         this.crudDb.UpdateSuiviBl(_data_update_pa).then(res => {
           console.log("Res_ponse Add suivi:::", res);
-          this.suivi_paForm.reset();
-          this.fileImgSvSg = {
-            name: null,
-            path: null,
-            data: null
-          };
-          this.loadData.loadSuiviBloc(this.mep_selected_pa.code_culture).then(res_suivi => {
-            console.log("Response load Suivi bloc PA::: ", res_suivi);
-            this.src_SvPa = [];
+          this.isRowSvPaEdit = false;
+          this.indexRowEditMepPa = null;
+          this.indexPa = null;
+          this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
+
+          this.loadData.loadAllSuiviBloc({code_culture: data_update.id_culture}).then(res_suivi => {
+            console.log("Response load Suivi Mep bloc::: ", res_suivi);
             if (res_suivi.values.length > 0) {
-              res_suivi.values.forEach(elem => {
-                this.src_SvPa.push(elem);
+              this.dataSourceMepPa.data.forEach(elem_pa => {
+                if (elem_pa.code_culture === data_update.id_culture) {
+                  elem_pa.suivi_Mep = res_suivi.values;
+                }
               });
             }
-            this.dataSourceSuiviPa.data = this.src_SvPa;
           });
         });
-
-        this.isRowSvPaEdit = false;
-        this.indexPa = null;
-        console.log("Save Edit PA:::", this.suivi_paForm);
         break;
       case 'sv-mv':
-        let val_mv = this.suivi_mvForm.value;
-        update_suivi.code_sv = data_row.code_sv;
-        update_suivi.id_culture = data_row.id_culture;
-        update_suivi.ddp = val_mv.ddp.format("YYYY-MM-DD");
-        update_suivi.nbre_pied = val_mv.nbre_pied;
-        update_suivi.long_ligne = val_mv.long_ligne;
-        update_suivi.nbre_ligne = val_mv.nbre_ligne;
-        update_suivi.ex = val_mv.estimation;
-        update_suivi.dt_modification = moment().format("YYYY-MM-DD");
-
         let _data_update_mv = {
-          updated: update_suivi
+          updated: data_update
         }
-
         this.crudDb.UpdateSuiviBl(_data_update_mv).then(res => {
           console.log("Res_ponse Add suivi:::", res);
-          this.suivi_mvForm.reset();
-          this.loadData.loadSuiviBloc(this.mep_selected_mv.code_culture).then(res_suivi => {
-            console.log("Response load Suivi bloc MV::: ", res_suivi);
-            this.src_SvMv = [];
+          this.isRowSvMvEdit = false;
+          this.indexRowEditMepMv = null;
+          this.indexMv = null;
+          this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
+          
+          this.loadData.loadAllSuiviBloc({code_culture: data_update.id_culture}).then(res_suivi => {
+            console.log("Response load Suivi Mep bloc::: ", res_suivi);
             if (res_suivi.values.length > 0) {
-              res_suivi.values.forEach(elem => {
-                this.src_SvMv.push(elem);
+              this.dataSourceMepMv.data.forEach(elem_mv => {
+                if (elem_mv.code_culture === data_update.id_culture) {
+                  elem_mv.suivi_Mep = res_suivi.values;
+                }
               });
             }
-            this.dataSourceSuiviMv.data = this.src_SvMv;
-          });
+          }); 
         });
-        this.isRowSvMvEdit = false;
-        this.indexMv = null;
-        console.log("Save Edit MV:::", this.suivi_mvForm);
         break;
       default:
         console.log('default Caancel suivi')
@@ -1295,42 +957,25 @@ export class SuiviBlocPage implements OnInit {
     switch(src) {
       case 'sv-sg':
         this.isRowSvSgEdit = false;
+        this.indexRowEditMepSg = null;
         this.indexSg = null;
-        this.suivi_sgForm.reset();
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         break;
       case 'sv-pa':
         this.isRowSvPaEdit = false;
+        this.indexRowEditMepPa = null;
         this.indexPa = null;
-        this.suivi_paForm.reset();
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         break;
       case 'sv-mv':
         this.isRowSvMvEdit = false;
+        this.indexRowEditMepMv = null;
         this.indexMv = null;
-        this.suivi_mvForm.reset();
+        this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
         break;
       default:
         console.log('default Caancel suivi')
         break;
-    }
-  }
-
-  onClickAucun(src: string) {
-    switch(src) {
-      case 'stc-sg':
-        this.suivi_sgForm.patchValue({
-          stc: null
-        });
-        break;
-      case 'ec-sg':
-        this.suivi_sgForm.patchValue({
-          ec: null
-        });
-        break;
-      case 'ec-pa':
-        this.suivi_paForm.patchValue({
-          ec: null
-        });
-        break;    
     }
   }
 
@@ -1340,234 +985,82 @@ export class SuiviBlocPage implements OnInit {
   onExport(parent: any) {
     switch(parent) {
     case 'mep-sg':
-      var ws = XLSX.utils.json_to_sheet(this.mep_export_sg);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "MEP SEMENCES EN GRAINS");
-
-      var buffer = XLSX.write(
-        wb,
+      let export_sg: Loc_export_excel[] = [
         {
-          bookType: 'xlsx',
-          type: 'array'
+          data: this.mep_export_sg,
+          name_feuille: 'MEP SG',
+          name_file: 'MEP_SG' + '_' + this.user[this.user.length - 1].id_equipe + this.projet.ancronyme
         }
-      );
-      this.saveToPhone(buffer);
+      ]
+      this.exportExcel.onExport(export_sg);
       break;
     case 'mep-pa':
-      var ws_pa = XLSX.utils.json_to_sheet(this.mep_export_pa);
-      const wb_pa = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb_pa, ws_pa, "MEP Plants d'Arbre");
-
-      var buffe_pa = XLSX.write(
-        wb_pa,
+      let export_pa: Loc_export_excel[] = [
         {
-          bookType: 'xlsx',
-          type: 'array'
+          data: this.mep_export_pa,
+          name_feuille: 'MEP PA',
+          name_file: 'MEP_PA' + '_' + this.user[this.user.length - 1].id_equipe + this.projet.ancronyme
         }
-      );
-      this.saveToPhone(buffe_pa);
+      ]
+      this.exportExcel.onExport(export_pa);
       break;
     case 'mep-mv':
-      var ws_mv = XLSX.utils.json_to_sheet(this.mep_export_mv);
-      const wb_mv = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb_mv, ws_mv, "MEP Materiels Vegetaux");
-
-      var buffe_mv = XLSX.write(
-        wb_mv,
+      let export_mv: Loc_export_excel[] = [
         {
-          bookType: 'xlsx',
-          type: 'array'
+          data: this.mep_export_mv,
+          name_feuille: 'MEP MV',
+          name_file: 'MEP_MV' + '_' + this.user[this.user.length - 1].id_equipe + this.projet.ancronyme
         }
-      );
-      this.saveToPhone(buffe_mv);
+      ]
+      this.exportExcel.onExport(export_mv);
       break;
     case 'sv-sg':
-      var ws_mep_sv = XLSX.utils.json_to_sheet(this.mep_export_sg);
-      var ws_sv = XLSX.utils.json_to_sheet(this.sv_export_sg);
-      const wb_sv = XLSX.utils.book_new();
-      
-      XLSX.utils.book_append_sheet(wb_sv, ws_mep_sv, "MEP SEMENCES EN GRAINS");
-      XLSX.utils.book_append_sheet(wb_sv, ws_sv, "SV SEMENCES EN GRAINS");
-
-      var buffer_sv = XLSX.write(
-        wb_sv,
+      let export_sv_sg: Loc_export_excel[] = [
         {
-          bookType: 'xlsx',
-          type: 'array'
+          data: this.mep_export_sg,
+          name_feuille: 'MEP SG',
+          name_file: 'SV_SG' + '_' + this.user[this.user.length - 1].id_equipe + this.projet.ancronyme
+        },
+        {
+          data: this.sv_export_sg,
+          name_feuille: 'SV SG',
+          name_file: 'SV_SG' + '_' + this.user[this.user.length - 1].id_equipe + this.projet.ancronyme
         }
-      );
-      this.saveToPhone(buffer_sv);
+      ]
+      this.exportExcel.onExport(export_sv_sg);
       break;
     case 'sv-mv':
-      var ws_mep_sv_mv = XLSX.utils.json_to_sheet(this.mep_export_mv);
-      var ws_sv_mv = XLSX.utils.json_to_sheet(this.sv_export_mv);
-      const wb_sv_mv = XLSX.utils.book_new();
-      
-      XLSX.utils.book_append_sheet(wb_sv_mv, ws_mep_sv_mv, "MEP Materiels vegetaux");
-      XLSX.utils.book_append_sheet(wb_sv_mv, ws_sv_mv, "SV Materiels vegetaux");
-
-      var buffer_sv = XLSX.write(
-        wb_sv_mv,
+      let export_sv_mv: Loc_export_excel[] = [
         {
-          bookType: 'xlsx',
-          type: 'array'
+          data: this.mep_export_mv,
+          name_feuille: 'MEP MV',
+          name_file: 'SV_MV' + '_' + this.user[this.user.length - 1].id_equipe + this.projet.ancronyme
+        },
+        {
+          data: this.sv_export_mv,
+          name_feuille: 'SV MV',
+          name_file: 'SV_MV' + '_' + this.user[this.user.length - 1].id_equipe + this.projet.ancronyme
         }
-      );
-      this.saveToPhone(buffer_sv);
+      ]
+      this.exportExcel.onExport(export_sv_mv);
       break;
     case 'sv-pa':
-      var ws_mep_sv_pa = XLSX.utils.json_to_sheet(this.mep_export_pa);
-      var ws_sv_pa = XLSX.utils.json_to_sheet(this.sv_export_pa);
-      const wb_sv_pa = XLSX.utils.book_new();
-      
-      XLSX.utils.book_append_sheet(wb_sv_pa, ws_mep_sv_pa, "MEP Plants d'arbre");
-      XLSX.utils.book_append_sheet(wb_sv_pa, ws_sv_pa, "SV Plants d'arbre");
-
-      var buffer_pa = XLSX.write(
-        wb_sv_pa,
+      let export_sv_pa: Loc_export_excel[] = [
         {
-          bookType: 'xlsx',
-          type: 'array'
+          data: this.mep_export_pa,
+          name_feuille: 'MEP PA',
+          name_file: 'SV_PA' + '_' + this.user[this.user.length - 1].id_equipe + this.projet.ancronyme
+        },
+        {
+          data: this.sv_export_pa,
+          name_feuille: 'SV PA',
+          name_file: 'SV_PA' + '_' + this.user[this.user.length - 1].id_equipe + this.projet.ancronyme
         }
-      );
-      this.saveToPhone(buffer_pa);
+      ]
+      this.exportExcel.onExport(export_sv_pa);
       break;
     }
   }
-   saveToPhone(buffer) {
-    var fileType= 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    var fileExtension = ".xlsx";
-    var fileName = Date.now().toString();
-    var data:Blob = new Blob([buffer], {type: fileType});
-    this.file.writeFile(this.file.externalRootDirectory, fileName+fileExtension,data,{replace: true})
-          .then(() => {
-            alert("Export Réussie");
-          });
-  }
-
-  // image
-  async selectImage(src: string) {
-    const image = await Camera.getPhoto({
-      quality: 40,
-      allowEditing: false,
-      resultType: CameraResultType.Uri,
-      source: CameraSource.Camera,
-      saveToGallery: false
-    });
-
-    if (image) {
-      let data_ = {
-        image: image,
-        src: src
-      }
-      this.saveImage(data_);
-    }
-  }
-  async saveImage(_data: any) {
-    const image: Photo = _data.image;
-    const base64 = await this.readAsBase64(image);
-    console.log("base64 file::::", base64);
-
-    const fileName = new Date().getTime() + 'jpeg';
-    const savedFile = await Filesystem.writeFile({
-      directory: Directory.Data,
-      path: `${IMAGE_DIR}/${fileName}`,
-      data: base64
-    }).then(res_success => {
-      console.log("File system write File sucess::: ",res_success);
-    }, (err) => {
-      // Folder does not yet exists!
-      console.log("error write File::: Folder does not yet exists! :::", err);
-    }).then(res => {
-      console.log("writed file success=========", res);
-        // Reload the file list
-        // Improve by only loading for the new image and unshifting array!
-        this.loadImage(_data);
-    });
-  }
-  // convert to base 64
-  async readAsBase64(image: Photo) {
-   console.log("***** convert to base64 Mode *****", image);
-   if (this.plt.is('hybrid')) {
-      console.log("-------------HYBRIDE TESTE--------------");
-      const file = await Filesystem.readFile({
-          path: image.path
-      });
-
-      return file.data;
-    } else {
-        // Fetch the photo, read as a blob, then convert to base64 format
-        console.log("------------web Path---------");
-        const response = await fetch(image.webPath);
-        const blob = await response.blob();
-
-        return await this.convertBlobToBase64(blob) as string;
-    }
-  }
-  // Helper function
-  convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
-    const reader = new FileReader;
-    reader.onerror = reject;
-    reader.onload = () => {
-        resolve(reader.result);
-    };
-    reader.readAsDataURL(blob);
-  });
-  // Load Image
-  loadImage(_data: any) {
-    const image: Photo = _data.image;
-    Filesystem.readdir({
-      path: IMAGE_DIR,
-      directory: Directory.Data
-    }).then(result => {
-      console.log('Load Image result::: ', result);
-      if (result.files.length > 0) {
-        // load Image
-        let data_ = {
-          src:  _data.src,
-          result: result.files
-        }
-        this.loadFileDataImage(data_);
-      } else console.log("Aucun Image enregistrer:::: ", result.files);
-      
-      // Delete image
-      this.deleteLocalImage(image);
-
-    }, async (err) => {
-      // Folder does not yet exists!
-      console.log("Folder doen't existe:: ", IMAGE_DIR);
-      this.deleteLocalImage(image);
-    });
-  }
-  async loadFileDataImage(_data) {
-    const fileNames: string[] = _data.result;
-    for (let f of fileNames) {
-      const filePath = `${IMAGE_DIR}/${f}`;
-
-      const readFile = await Filesystem.readFile({
-        path: filePath,
-        directory: Directory.Data
-      });
-
-      // condition 
-      switch(_data.src) {
-        case 'sv-sg':
-          this.fileImgSvSg = {
-            name: f,
-            path: filePath,
-            data: `data:image/jpeg;base64,${readFile.data}`
-          };
-          break;
-      }
-    }
-  }
-  // Delete loacal Image
-  async deleteLocalImage(photo: Photo) {
-    // Delete local image
-    await Filesystem.deleteFile({
-      path: photo.path
-    });
-}
   
   async onFinished() {
     const loading = await this.loadingCtrl.create();
@@ -1585,28 +1078,10 @@ export class SuiviBlocPage implements OnInit {
   // generate code Mep
   generateCodeMep() {
     let code_mep: string = '';
-    let nom_pr: string = this.projet.nom;
-    let code_pr: string = '';
-    let nom_bloc: string = this.update_mep.nom_bloc;
-    let code_bloc: string = '';
     let annee_ = this.update_mep.annee_du.charAt(2) + this.update_mep.annee_du.charAt(3);
     
     console.log("Ordre Bloc:::", this.update_mep.ordre_bloc, "Code bloc:::::", this.update_mep.ancronyme_bloc);
 
-    // generer code bloc
-    /**let arr_bl: string[] = nom_bloc.trim().split(" ");
-    arr_bl.forEach((elem, i) => {
-      if (arr_bl.length === 1) {
-        code_bloc = elem.charAt(0) + elem.charAt(1) + elem.charAt(2);
-      } else {
-        if (i === 0) {
-          code_bloc = elem.charAt(0) + elem.charAt(1);
-        } else if (i === 1) {
-          code_bloc += elem.charAt(0);
-        }
-      }
-    });*/
-    //return code_mep = code_pr.toUpperCase() + '-' + this.update_mep.nom_saison + annee_ + '-' + code_bloc.toUpperCase() + '-' + 'Mep'; 
     if (this.update_mep.nom_saison != null && this.update_mep.nom_saison != null) {
       return code_mep = this.update_mep.nom_saison + annee_ + '-' +  this.update_mep.ordre_bloc + this.update_mep.ancronyme_bloc.toUpperCase() + '-' + 'Mep'; 
     } else {
@@ -1853,11 +1328,113 @@ export class SuiviBlocPage implements OnInit {
     await modal.present();
   }
 
+  // modal updated suivi
+  async onUpdateSuivi(data: any) {
+    let data_: any;
+    if (data.action === 'add') {
+      if (data.src === 'mep-sg') {
+        data_ = {
+          isSuiviMepBloc: true,
+          isAddSvSg: true,
+          data_mep: data.row_mep
+        }
+      } else if (data.src === 'mep-pa') {
+        data_ = {
+          isSuiviMepBloc: true,
+          isAddSvPa: true,
+          data_mep: data.row_mep
+        }
+      } else if (data.src === 'mep-mv') {
+        data_ = {
+          isSuiviMepBloc: true,
+          isAddSvMv: true,
+          data_mep: data.row_mep
+        }
+      }
+    } else if (data.action === 'edit') {
+      //let data_ = {src: 'add', data: element, index: i};
+      if (data.src === 'mep-sg') {
+        data_ = {
+          isSuiviMepBloc: true,
+          isEditSvSg: true,
+          data_mep: data.row_mep,
+          data_elem_suivi: data.row_suivi
+        }
+      } else if (data.src === 'mep-pa') {
+        data_ = {
+          isSuiviMepBloc: true,
+          isEditSvPa: true,
+          data_mep: data.row_mep,
+          data_elem_suivi: data.row_suivi
+        }
+      } else if (data.src === 'mep-mv') {
+        data_ = {
+          isSuiviMepBloc: true,
+          isEditSvMv: true,
+          data_mep: data.row_mep,
+          data_elem_suivi: data.row_suivi
+        }
+      }
+    }
+    let modal = await this.modalCtrl.create({
+      component: ModalPrPage,
+      cssClass: 'modal-custum-suivi-sv-pr',
+      backdropDismiss: true,
+      componentProps: data_
+    });
+    modal.onDidDismiss().then(modal_data => {
+      console.log("::::Data modal Suivi::", modal_data.data);
+      if (modal_data.data != undefined) {
+        this.updated_Suivi = modal_data.data;
+        this.updated_Suivi.ddp = modal_data.data.ddp.format("YYYY-MM-DD");
+        if (data.action === 'add') {
+          switch(data.src) {
+            case 'mep-sg':
+              this.isAddSuiviSg = true;
+              this.indexRowEditMepSg = data.index_mep;
+              break;
+            case 'mep-pa':
+              this.isAddSuiviPa = true;
+              this.indexRowEditMepPa = data.index_mep;
+              break;
+            case 'mep-mv':
+              this.isAddSuiviMv = true;
+              this.indexRowEditMepMv = data.index_mep;
+              break;
+            default:
+              console.log("default");
+              break;
+          }
+        } else if (data.action === 'edit') {
+          //let data_ = {src: 'add', data: element, index: i};
+          switch(data.src) {
+            case 'mep-sg':
+              this.isRowSvSgEdit = true;
+              this.indexRowEditMepSg = data.index_mep;
+              this.indexSg = data.index_mep_suivi;
+              break;
+            case 'mep-pa':
+              this.isRowSvPaEdit = true;
+              this.indexRowEditMepPa = data.index_mep;
+              this.indexPa = data.index_mep_suivi;
+              break;
+            case 'mep-mv':
+              this.isRowSvMvEdit = true;
+              this.indexRowEditMepMv = data.index_mep;
+              this.indexMv = data.index_mep_suivi;
+              break;
+            default:
+              console.log("default");
+              break;
+          }
+        }
+      }
+    });
+    await modal.present();
+  }
+
   initAction() {
     if (this.isUpdated) {
-      this.displayedColumnsMepMv.pop();
-      this.displayedColumnsMepPa.pop();
-      this.displayedColumnsMepSg.pop();
       // remove action column
       this.isRowMepMvEdit = false;
       this.isRowMepPaEdit = false;
@@ -1872,66 +1449,42 @@ export class SuiviBlocPage implements OnInit {
       //this.update_mep = null;
     }
     // init Suivi semences en grains
-    if (this.isSuiviSg) {
-      if (this.isAddSuiviSg) {
-        this.isAddSuiviSg = false;
-      }
-      if (this.isRowSvSgEdit) {
-        this.isRowSvSgEdit = false;
-      }
-      // init image
-      this.fileImgSvSg = {
-        name: null,
-        path: null,
-        data: null
-      };
-
-      this.suivi_sgForm.reset();
-      this.mep_selected_sg = null;
-      this.src_SvSg = [];
-      this.indexSg = null;
-      this.isRowMepSgSv = false;
-      this.displayedColumnsMepSg.pop();
-      this.isSuiviSg = false;
+    if (this.isAddSuiviSg) {
+      this.isAddSuiviSg = false;
+      this.indexRowEditMepSg = null;
+      this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
     }
-    // init  Suivi plants d'arbres
-    if (this.isSuiviPa) {
-      if (this.isAddSuiviPa) {
-        this.isAddSuiviPa = false;
-      }
-      if (this.isRowSvPaEdit) {
-        this.isRowSvPaEdit = false;
-      }
-      // init image
-      this.fileImgSvSg = {
-        name: null,
-        path: null,
-        data: null
-      };
-      
-      this.suivi_paForm.reset();
-      this.mep_selected_pa = null;
-      this.src_SvPa = [];
-      this.indexPa = null;
-      this.isSuiviPa = false;
-      this.isRowMepPaSv = false;
-      this.displayedColumnsMepPa.pop();
-    }
-    // init Suivi Materials cultures
-    if (this.isSuiviMv) {
-      if (this.isAddSuiviMv) {
-        this.isAddSuiviMv = false;
-      }
-      if (this.isRowSvMvEdit) {
-        this.isRowSvMvEdit = false;
-      }
-      this.suivi_mvForm.reset();
-      this.mep_selected_mv = null;
-      this.src_SvMv = [];
+    if (this.isRowSvSgEdit) {
+      this.isRowSvSgEdit = false;
+      this.indexRowEditMepSg = null;
       this.indexMv = null;
-      this.isSuiviMv = false;
-      this.isRowMepMvSv = false;
-      this.displayedColumnsMepMv.pop();
+      this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
+    }
+    
+    // init  Suivi plants d'arbres
+    if (this.isAddSuiviPa) {
+      this.isAddSuiviPa = false;
+      this.indexRowEditMepPa = null;
+      this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
+    }
+    if (this.isRowSvPaEdit) {
+      this.isRowSvPaEdit = false;
+      this.indexRowEditMepPa = null;
+      this.indexPa = null;
+      this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
+    }
+
+    // init Suivi Materials cultures
+    if (this.isAddSuiviMv) {
+      this.isAddSuiviMv = false;
+      this.indexRowEditMepMv = null;
+      this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
+    }
+    if (this.isRowSvMvEdit) {
+      this.isRowSvMvEdit = false;
+      this.indexRowEditMepMv = null;
+      this.indexMv = null;
+      this.updated_Suivi = <Update_FormModal_Suivi_Mep_Bloc>{};
     }
   }
 
@@ -1940,6 +1493,13 @@ export class SuiviBlocPage implements OnInit {
     this.src_MepMv = [];
     this.src_MepPa = [];
     this.src_MepSg = [];
+    if (this.data_Mep.length > 0) {
+      this.data_Mep.forEach(item_mep => {
+        if (this.data_all_suivi_mep.length > 0) {
+          item_mep.suivi_Mep = this.data_all_suivi_mep.filter(item_suivi => {return item_suivi.id_culture === item_mep.code_culture});
+        } else item_mep.suivi_Mep = [];
+      });
+    }
     this.src_MepSg = this.data_Mep.length > 0? this.data_Mep.filter(item => {return item.type === SG}):[];
     this.src_MepPa = this.data_Mep.length > 0? this.data_Mep.filter(item => {return item.type === PA}):[];
     this.src_MepMv = this.data_Mep.length > 0? this.data_Mep.filter(item => {return item.type === MV}):[];
@@ -1949,6 +1509,8 @@ export class SuiviBlocPage implements OnInit {
     console.log("Data MV::::", this.src_MepMv);
     console.log("Data PA::::", this.src_MepPa);
     console.log("Data SG::::", this.src_MepSg);
+    console.log("::::Data Mep With element:::", this.data_Mep);
+    console.log("::::Data SUIVI data_all_suivi_mep With element:::", this.data_all_suivi_mep);
   }
 
   loadDataExportSg() {
@@ -2122,6 +1684,78 @@ export class SuiviBlocPage implements OnInit {
     }
   }
 
+  // Toggel Rows
+  toggleTableRows(src:any) {
+    switch(src.src) {
+      case 'mep-sg':
+        this.isTableSgExpanded = !this.isTableSgExpanded;
+        this.dataSourceMepSg.data.forEach((row: Loc_mep_bloc) => {
+          if (row.suivi_Mep.length > 0) {
+            row.isExpanded = this.isTableSgExpanded;
+          } else {
+            if (row.isExpanded) {
+              row.isExpanded = false;
+            }
+          }
+        });
+        break;
+      case 'mep-pa':
+        this.isTablePaExpanded = !this.isTablePaExpanded;
+        this.dataSourceMepPa.data.forEach((row: Loc_mep_bloc) => {
+          if (row.suivi_Mep.length > 0) {
+            row.isExpanded = this.isTablePaExpanded;
+          } else {
+            if (row.isExpanded) {
+              row.isExpanded = false;
+            }
+          }
+        });
+        break;
+      case 'mep-mv':
+        this.isTableMvExpanded = !this.isTableMvExpanded;
+        this.dataSourceMepMv.data.forEach((row: Loc_mep_bloc) => {
+          if (row.suivi_Mep.length > 0) {
+            row.isExpanded = this.isTableMvExpanded;
+          } else {
+            if (row.isExpanded) {
+              row.isExpanded = false;
+            }
+          }
+        });
+        break
+    }
+  }
+  onAddShowSuivi(data: any) {
+    //let data_ = {data: row, index_: i}
+    console.log(data);
+    switch(data.src) {
+      case 'mep-sg':
+        this.dataSourceMepSg.data.forEach((row, ind) => {
+          if (ind === data.index_) {
+            row.isExpanded = true;
+          }
+        });
+        break;
+      case 'mep-pa':
+        this.dataSourceMepPa.data.forEach((row, ind) => {
+          if (ind === data.index_) {
+            row.isExpanded = true;
+          }
+        });
+        break;
+      case 'mep-mv':
+        this.dataSourceMepMv.data.forEach((row, ind) => {
+          if (ind === data.index_) {
+            row.isExpanded = true;
+          }
+        });
+        break;
+      default:
+        console.log("default");
+        break;
+    }
+  }
+
   // Event selected matgroupe
   async selectMatTab(index: number) {
     console.log("index Mat-Tab Selected :: " + index);
@@ -2157,5 +1791,4 @@ export class SuiviBlocPage implements OnInit {
     }
     this.accordionGroup.value = undefined;
   }
-
 }

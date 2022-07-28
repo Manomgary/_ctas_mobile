@@ -74,7 +74,7 @@ export interface UpdateSuiviBloc {
     hauteur: number,
     img_cult: string, 
     dt_capture: string,
-    ex: string,
+    ex: number,
     dt_creation: string,
     dt_modification: string,
     etat: string
@@ -196,4 +196,15 @@ export interface UpdateSuiviMepPR {
     dt_creation: string, 
     dt_modification: string, 
     etat: string
+}
+export interface UpdatedBenefActivPms {
+    code_benef_pms: string, 
+    code_achat: string, 
+    id_proj: string, 
+    id_benef: string, 
+    id_activ: number, 
+    id_association: string, 
+    id_collaborateur: string,
+    etat: string,
+    status: string
 }

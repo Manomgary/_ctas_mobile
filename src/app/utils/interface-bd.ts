@@ -313,6 +313,7 @@ export interface Benef_RP {
     id_commune: string, 
     village: string, 
     dt_Insert: string, 
+    etat_pms: string,
     etat_benef: string, 
     status_benef: string
 }

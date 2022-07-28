@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { SuiviBlocPageRoutingModule } from './suivi-bloc-routing.module';
 
 import { SuiviBlocPage } from './suivi-bloc.page';
+import { CustomDatePipe } from 'src/app/utils/custom.datepipe';
 
 @NgModule({
   imports: [
@@ -15,6 +16,9 @@ import { SuiviBlocPage } from './suivi-bloc.page';
     IonicModule,
     SuiviBlocPageRoutingModule
   ],
-  declarations: [SuiviBlocPage]
+  declarations: [
+    SuiviBlocPage,
+    CustomDatePipe
+  ]
 })
 export class SuiviBlocPageModule {}

@@ -329,6 +329,14 @@ export class LoadDataService {
     return this.collaborateur.asObservable();
   }
 
+  async loadCollaborateursActivite(code_activite: any) {
+    let req_ = `SELECT CA.code, CA.id_col, COL.nom, COL.description, COL.ancronyme, CA.id_activ 
+                FROM collaborateur_activ CA
+                INNER JOIN collaborateur COL ON COL.code_col = CA.id_col
+                WHERE CA.id_activ = ${code_activite}`;
+    return await this.db.query(req_);
+  }
+
   async loadAssociation(data: any) {
     let req: string = ``;
     /**
@@ -382,12 +390,7 @@ export class LoadDataService {
                                 GROUP BY ASS.code_ass)
                               GROUP BY ASS.code_ass;`;
       req = stat1 + ` UNION ` + stat2 + ` UNION ` + stat3;
-    } /*else req = statement1 + ` UNION ` + statement2 + ` WHERE ASS.code_ass NOT IN (SELECT ASS.code_ass
-      FROM association ASS
-      INNER JOIN projet P ON P.code_proj = ASS.id_prjt
-      INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = ASS.id_fkt
-      INNER JOIN benef_activ_pms BPMS ON BPMS.code_benef_pms = ASS.id_pms
-      INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef);`;*/
+    }
     return await this.db.query(req);
   }
 
@@ -601,42 +604,27 @@ export class LoadDataService {
         /**
          * Séléctionner béneficiaire Association + nombre de parcelle
          */
-        const statement = `SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, BPMS.code_achat, PARC_ASS.code_parce, COUNT(PARC_ASS.code_parce) AS nb_parcelle, SUM(PARC_ASS.superficie) AS sum_superf, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, FKT.nom_fkt AS adress, BPMS.id_collaborateur, C.nom as nom_collab, B.statut
+        const statement = `SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, BPMS.code_achat, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.dt_nais_vers, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, B.village, BPMS.id_collaborateur, C.nom as nom_collab, B.statut,
+                          CASE WHEN B.id_commune IS NOT NULL AND B.id_fkt IS NULL THEN (SELECT REG.code_reg FROM zone_commune COM INNER JOIN zone_district DIST ON DIST.code_dist = COM.id_dist INNER JOIN zone_region REG ON REG.code_reg = DIST.id_reg WHERE COM.code_com = B.id_commune)
+                          WHEN B.id_fkt IS NOT NULL THEN (SELECT ZREG.code_reg FROM zone_fonkotany FKT INNER JOIN zone_commune ZCOM ON ZCOM.code_com = FKT.id_com INNER JOIN zone_district ZDIST ON ZDIST.code_dist = ZCOM.id_dist INNER JOIN zone_region ZREG ON ZREG.code_reg = ZDIST.id_reg WHERE FKT.code_fkt = B.id_fkt) ELSE NULL END AS code_region,
+                          CASE WHEN B.id_commune IS NOT NULL AND B.id_fkt IS NULL THEN (SELECT DIST.code_dist FROM zone_commune COM INNER JOIN zone_district DIST ON DIST.code_dist = COM.id_dist WHERE COM.code_com = B.id_commune)
+                          WHEN B.id_fkt IS NOT NULL THEN (SELECT ZDIST.code_dist FROM zone_fonkotany FKT INNER JOIN zone_commune ZCOM ON ZCOM.code_com = FKT.id_com INNER JOIN zone_district ZDIST ON ZDIST.code_dist = ZCOM.id_dist WHERE FKT.code_fkt = B.id_fkt) ELSE NULL END AS code_district,
+                          CASE WHEN B.id_commune IS NOT NULL AND B.id_fkt IS NULL THEN (SELECT DIST.nom_dist FROM zone_commune COM INNER JOIN zone_district DIST ON DIST.code_dist = COM.id_dist WHERE COM.code_com = B.id_commune)
+                          WHEN B.id_fkt IS NOT NULL THEN (SELECT ZDIST.nom_dist FROM zone_fonkotany FKT INNER JOIN zone_commune ZCOM ON ZCOM.code_com = FKT.id_com INNER JOIN zone_district ZDIST ON ZDIST.code_dist = ZCOM.id_dist WHERE FKT.code_fkt = B.id_fkt) ELSE NULL END AS nom_district,
+                          CASE WHEN B.id_commune IS NOT NULL AND B.id_fkt IS NULL THEN (SELECT COM.code_com FROM zone_commune COM WHERE COM.code_com = B.id_commune)
+                          WHEN B.id_fkt IS NOT NULL THEN (SELECT ZCOM.code_com FROM zone_fonkotany FKT INNER JOIN zone_commune ZCOM ON ZCOM.code_com = FKT.id_com WHERE FKT.code_fkt = B.id_fkt) ELSE NULL END AS code_commune,
+                          CASE WHEN B.id_commune IS NOT NULL AND B.id_fkt IS NULL THEN (SELECT COM.nom_com FROM zone_commune COM WHERE COM.code_com = B.id_commune)
+                          WHEN B.id_fkt IS NOT NULL THEN (SELECT ZCOM.nom_com FROM zone_fonkotany FKT INNER JOIN zone_commune ZCOM ON ZCOM.code_com = FKT.id_com WHERE FKT.code_fkt = B.id_fkt) ELSE NULL END AS nom_commune,
+                          CASE WHEN B.id_fkt IS NOT NULL AND B.village IS NULL THEN (SELECT FKT.nom_fkt FROM zone_fonkotany FKT WHERE FKT.code_fkt = B.id_fkt) 
+                          WHEN B.village IS NOT NULL AND B.id_fkt IS NULL THEN B.village END AS adress
                           FROM benef_activ_pms BPMS 
-                          INNER JOIN projet P ON P.code_proj = BPMS.id_proj
+                          INNER JOIN projet P ON P.code_proj = BPMS.id_proj AND P.statuts = "activer"
                           INNER JOIN activite A ON A.code_act = BPMS.id_activ
-                          INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef
-                          INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association
+                          INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef AND B.statut = "active"
+                          INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association AND ASS.status = "active"
                           INNER JOIN collaborateur C ON C.code_col = BPMS.id_collaborateur
-                          INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
                           INNER JOIN zone_fonkotany FKT_ASS ON FKT_ASS.code_fkt = ASS.id_fkt
-                          INNER JOIN assoc_parce PARC_ASS ON (PARC_ASS.id_assoc = BPMS.id_association AND PARC_ASS.id_benef = B.code_benef)
-                          WHERE BPMS.status = "active" AND PARC_ASS.status = "active" AND ASS.code_ass  = "${code_ass}"
-                          GROUP BY BPMS.code_benef_pms
-                              UNION
-                          SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, BPMS.code_achat, '', 0, 0, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, FKT.nom_fkt AS adress, BPMS.id_collaborateur, C.nom as nom_collab, B.statut
-                          FROM benef_activ_pms BPMS 
-                            INNER JOIN projet P ON P.code_proj = BPMS.id_proj
-                            INNER JOIN activite A ON A.code_act = BPMS.id_activ
-                            INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef
-                            INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association
-                            INNER JOIN collaborateur C ON C.code_col = BPMS.id_collaborateur
-                            INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
-                            INNER JOIN zone_fonkotany FKT_ASS ON FKT_ASS.code_fkt = ASS.id_fkt
-                          WHERE BPMS.status = "active" AND BPMS.id_association =  "${code_ass}" AND BPMS.code_benef_pms NOT IN (
-                            SELECT BPMS.code_benef_pms
-                            FROM benef_activ_pms BPMS 
-                            INNER JOIN projet P ON P.code_proj = BPMS.id_proj
-                            INNER JOIN activite A ON A.code_act = BPMS.id_activ
-                            INNER JOIN beneficiaire B ON B.code_benef = BPMS.id_benef
-                            INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association
-                            INNER JOIN collaborateur C ON C.code_col = BPMS.id_collaborateur
-                            INNER JOIN zone_fonkotany FKT ON FKT.code_fkt = B.id_fkt
-                            INNER JOIN zone_fonkotany FKT_ASS ON FKT_ASS.code_fkt = ASS.id_fkt
-                            INNER JOIN assoc_parce PARC_ASS ON (PARC_ASS.id_assoc = BPMS.id_association AND PARC_ASS.id_benef = B.code_benef)
-                            WHERE BPMS.status = "active" AND PARC_ASS.status = "active" AND ASS.code_ass  = "${code_ass}"
-                            GROUP BY BPMS.code_benef_pms
-                            );`;
+                          WHERE BPMS.status = "active" AND BPMS.id_association =  "${code_ass}"`;
 
     return await this.db.query(statement);
   }
@@ -823,7 +811,7 @@ export class LoadDataService {
    * Load All Suivi Mep Bloc
    */
   async loadAllSuiviBloc(data: any) {
-    const req = `SELECT SBL.code_sv, BL.nom AS bloc, BABL.code_benef_bl, BNF.nom, BNF.prenom, SBL.id_culture, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, CBL.annee_du, CBL.qso, CBL.dds, CBL.sfce, CBL.sc AS mep_sc, CBL.ea_autres, CBL.ea_id_variette, SBL.ddp, SBL.stc, SBL.ec, SBL.ql, SBL.qr, SBL.long_ligne, SBL.nbre_ligne, SBL.nbre_pied, SBL.hauteur, SBL.img_cult, SBL.ex, SBL.etat, CBL.type,
+    let req = `SELECT SBL.code_sv, BL.nom AS bloc, BABL.code_benef_bl, BNF.nom, BNF.prenom, SBL.id_culture, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, CBL.annee_du, CBL.qso, CBL.dds, CBL.sfce, CBL.sc AS mep_sc, CBL.ea_autres, CBL.ea_id_variette, SBL.ddp, SBL.stc, SBL.ec, SBL.ql, SBL.qr, SBL.long_ligne, SBL.nbre_ligne, SBL.nbre_pied, SBL.hauteur, SBL.img_cult, SBL.ex, SBL.etat, CBL.type,
                 CASE WHEN CBL.id_espece IS NOT NULL THEN (SELECT nom_espece FROM espece WHERE code_espece = CBL.id_espece)
                 ELSE NULL END AS espece,
                 CASE WHEN CBL.id_var IS NOT NULL THEN (SELECT E.nom_espece || ' ' || V.nom_var AS nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE code_var = CBL.id_var)
@@ -832,11 +820,18 @@ export class LoadDataService {
                 ELSE NULL END AS saison
                 FROM suivi_bl SBL
                 INNER JOIN culture_bl CBL ON CBL.code_culture = SBL.id_culture
-                INNER JOIN bloc_parce BPRC ON BPRC.code_parce = CBL.id_parce
-                INNER JOIN bloc BL ON BL.code_bloc = BPRC.id_bloc
-                INNER JOIN beneficiaire BNF ON BNF.code_benef = BPRC.id_benef
-                INNER JOIN benef_activ_bl BABL ON BABL.id_benef = BNF.code_benef
-                WHERE BNF.statut = "active" AND BPRC.status = "active" AND BABL.status = "active" AND BL.code_bloc = "${data.id_bloc}"`;
+                INNER JOIN bloc_parce BPRC ON BPRC.code_parce = CBL.id_parce AND BPRC.status = "active"
+                INNER JOIN bloc BL ON BL.code_bloc = BPRC.id_bloc AND BL.status = "active"
+                INNER JOIN projet PRJ ON PRJ.code_proj = BL.id_prjt AND PRJ.statuts = "activer"
+                INNER JOIN beneficiaire BNF ON BNF.code_benef = BPRC.id_benef AND BNF.statut = "active"
+                INNER JOIN benef_activ_bl BABL ON BABL.id_benef = BNF.code_benef AND BABL.id_proj = PRJ.code_proj AND BABL.status = "active"`;
+    if (data.id_bloc != undefined) {
+      req += ` WHERE BL.code_bloc = "${data.id_bloc}"`;
+    } else if (data.code_culture != undefined) {
+      req += ` WHERE CBL.code_culture = "${data.code_culture}"`;
+    } else if (data.code_suivi != undefined) {
+      req += ` WHERE SBL.code_sv = "${data.code_suivi}"`;
+    }
     return await this.db.query(req);
   }
 
