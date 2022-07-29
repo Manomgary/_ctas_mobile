@@ -132,8 +132,8 @@ export class CrudDbService {
   }
   async UpdateBenef(data: UpdateBenef) {
     if (this.db_ready.dbReady.value) {
-      let data_ = [data.img_benef, data.nom, data.prenom, data.sexe, data.dt_nais, data.dt_nais_vers, data.surnom, data.cin, data.dt_delivrance, data.lieu_delivrance, data.img_cin, data.contact, data.id_fkt, data.id_commune, data.village, data.dt_Insert, data.etat, data.statut];
-      const state_ = `UPDATE beneficiaire SET img_benef= ?, nom= ?, prenom= ?, sexe= ?, dt_nais= ?, dt_nais_vers= ?, surnom= ?, cin= ?, dt_delivrance= ?, lieu_delivrance= ?, img_cin= ?, contact= ?, id_fkt= ?, id_commune= ?, village= ?, dt_Insert= ?, etat= ?, statut= ? WHERE code_benef="${data.code_benef}"`;
+      let data_ = [data.img_benef, data.nom, data.prenom, data.sexe, data.dt_nais, data.dt_nais_vers, data.surnom, data.cin, data.dt_delivrance, data.lieu_delivrance, data.img_cin, data.contact, data.id_fkt, data.id_commune, data.village, data.etat, data.statut];
+      const state_ = `UPDATE beneficiaire SET img_benef= ?, nom= ?, prenom= ?, sexe= ?, dt_nais= ?, dt_nais_vers= ?, surnom= ?, cin= ?, dt_delivrance= ?, lieu_delivrance= ?, img_cin= ?, contact= ?, id_fkt= ?, id_commune= ?, village= ?, etat= ?, statut= ? WHERE code_benef="${data.code_benef}"`;
       return await this.db.query(state_, data_);
     }
   }
@@ -303,9 +303,9 @@ export class CrudDbService {
         state_ = `UPDATE benef_activ_pms SET code_achat=?, id_proj=?, id_benef=?, id_activ=?, id_association=?, id_collaborateur=?, etat =?, status=? WHERE code_benef_pms = "${data_pms.code_benef_pms}"`;
       }
       if (data.isUpdatePmsSync) {
-        let data_pms: any = data.data_pms;
-        data_update = [data.etat, data_pms.status];
-        state_ = `UPDATE benef_activ_pms SET etat =?, status=? WHERE code_benef_pms = "${data_pms.code_benef_pms}"`;
+        let data_pms_sync: any = data.data_pms;
+        data_update = [data_pms_sync.etat, data_pms_sync.status];
+        state_ = `UPDATE benef_activ_pms SET etat =?, status=? WHERE code_benef_pms = "${data_pms_sync.code_benef_pms}"`;
       }
       return await this.db.query(state_, data_update);
     }

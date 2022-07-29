@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import * as moment from 'moment';
 import { BehaviorSubject } from 'rxjs';
 import { Db_Culture_pms, UpdateAnimeSpecu } from 'src/app/interfaces/interface-insertDb';
-import { Sync_activ_pr, Sync_anime_specu, Sync_anime_ve, Sync_benef_activ_pr, Sync_culture_pms, Sync_info_benef, Sync_MepPR, Sync_mep_bl, Sync_suivi_bl, Sync_Suivi_MepPr, Sync_suivi_pms } from 'src/app/interfaces/interface-sync';
+import { Sync_activ_pms, Sync_activ_pr, Sync_anime_specu, Sync_anime_ve, Sync_benef_activ_pms, Sync_benef_activ_pr, Sync_culture_pms, Sync_info_benef, Sync_MepPR, Sync_mep_bl, Sync_suivi_bl, Sync_Suivi_MepPr, Sync_suivi_pms } from 'src/app/interfaces/interface-sync';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 import { LoadSyncService } from 'src/app/services/local/load-sync.service';
 import { SyncService } from 'src/app/services/sync.service';
@@ -26,8 +26,11 @@ export class SynchroPage implements OnInit {
   private data_mep_bloc: Sync_mep_bl[] = [];
   private data_suivi_bloc: Sync_suivi_bl[] = [];
   private data_benef_activ_pr: Sync_benef_activ_pr[] = [];
+  private data_benef_activ_pms: Sync_benef_activ_pms[] = [];
   private data_info_benf_pr: Sync_info_benef[] = [];
+  private data_info_benf_pms: Sync_info_benef[] = [];
   private data_benef_pr: Sync_activ_pr[] = [];
+  private data_benef_pms: Sync_activ_pms[] = [];
   private data_anime_ve: Sync_anime_ve[] = [];
   private data_anime_specu: Sync_anime_specu[] = [];
 
@@ -55,6 +58,7 @@ export class SynchroPage implements OnInit {
         this.loadAnimationVe();
         this.loadSyncMepPR();
         this.loadSuiviMepPR();
+        this.loadSyncPms();
       }
     });
   }
@@ -509,6 +513,92 @@ export class SynchroPage implements OnInit {
             this.loadSuiviMepPR();
           });
         });
+      }
+    });
+  }
+  loadSyncPms() {
+    const data_ = {
+      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_projet: this.projet.code_proj
+    };
+    this.data_benef_activ_pms = [];
+    this.data_info_benf_pms = [];
+    this.data_benef_pms = [];
+    this.LoadTosync.loadSyncBenefActivPms(data_).then(res_ => {
+      this.data_benef_activ_pms = res_.values;
+      if (this.data_benef_activ_pms.length > 0) {
+        this.data_benef_activ_pms.forEach(elem_pms => {
+          this.data_info_benf_pms.push({
+            code_benef: elem_pms.code_benef,
+            img_benef: elem_pms.img_benef,
+            nom: elem_pms.nom,
+            prenom: elem_pms.prenom,
+            sexe: elem_pms.sexe,
+            dt_nais: elem_pms.dt_nais,
+            dt_nais_vers: elem_pms.dt_nais_vers,
+            surnom: elem_pms.surnom,
+            cin: elem_pms.cin,
+            dt_delivrance: elem_pms.dt_delivrance,
+            lieu_delivrance: elem_pms.lieu_delivrance,
+            img_cin: elem_pms.img_cin,
+            contact: elem_pms.contact,
+            id_fkt: elem_pms.id_fkt,
+            id_commune: elem_pms.id_commune,
+            village: elem_pms.village,
+            dt_Insert: elem_pms.dt_Insert,
+            etat: elem_pms.etat_benf,
+            statut: elem_pms.statut_benef
+          });
+          this.data_benef_pms.push({
+            code_benef_pms: elem_pms.code_benef_pms,
+            code_achat: elem_pms.code_achat,
+            id_proj: elem_pms.id_proj,
+            id_benef: elem_pms.code_benef,
+            id_association: elem_pms.id_association,
+            id_collaborateur: elem_pms.id_collaborateur,
+            id_activ: elem_pms.id_activ,
+            etat: elem_pms.etat_pms,
+            status: elem_pms.status_pms,
+          });
+        });
+      }
+    });
+  }
+  onSyncBenefeActivePms() {
+    console.log(":::Data PMS:::", this.data_benef_activ_pms);
+    let data_ = {
+      update_info_benef: this.data_info_benf_pms,
+      update_activ_pms: this.data_benef_pms
+    }
+    this.syncService.syncBenefPms(data_).subscribe(res => {
+      console.log(":::Response sync:::", res);
+      if (res.response == 1) {
+        this.data_info_benf_pms.forEach((elem_info, ind_info) => {
+          // update data
+          let updated_etat_benef = {
+            code_benef: elem_info.code_benef,
+            etat: elem_info.etat === SYNC? ISSYNC: ISUPDATE
+          }
+          this.crudDb.UpdateBenefSync(updated_etat_benef).then(res => {
+            console.log(":::Benef info Updated::::");
+            if ((this.data_info_benf_pms.length - 1) === ind_info) {
+              this.data_benef_pms.forEach((elem_pms, ind_pms) => {
+                let update_etat_pms = {
+                  isUpdatePmsSync: true,
+                  data_pms: {
+                    code_benef_pms: elem_pms.code_benef_pms,
+                    etat: elem_pms.etat === SYNC? ISSYNC: ISUPDATE,
+                    status: ACTIVE
+                  }
+                }
+                this.crudDb.UpdatePms(update_etat_pms).then(res => {
+                  console.log(":::::PMS updated::::", res);
+                  this.loadSyncPms();
+                });
+              });
+            }
+          });
+        })
       }
     });
   }

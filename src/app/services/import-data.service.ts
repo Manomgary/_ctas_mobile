@@ -6,7 +6,7 @@ import { DB_NAME } from '../utils/global-variables';
 import { DatabaseService } from './database.service';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { ApiService } from './api.service';
-import { Activite, Animation_ve, Benef_Bloc, Benef_PR_Bloc, Benef_RP, Bloc, bloc_Parcelle, Catego_espece, Cep_pr, Collaborateur, Collaborateur_activ, Commune, Culture_pms, District, Equipe, Espece, Fonkotany, MepPR, Mep_bloc, Parcelle, Parcelle_Association, Parcelle_bl, 
+import { Activite, Animation_ve, AnneeAgricole, AssociationParceSaison, Benef_Bloc, Benef_PR_Bloc, Benef_RP, Bloc, bloc_Parcelle, Catego_espece, Cep_pr, Collaborateur, Collaborateur_activ, Commune, Culture_pms, District, Equipe, Espece, Fonkotany, MepPR, Mep_bloc, Parcelle, Parcelle_Association, Parcelle_bl, 
         Participe_proj_activ, Participe_proj_volet, Projet, ProjetEquipe, ProjetEquipeVolet, Region, Saison, Specu_anime, suiviMepPR, Suivi_bloc, Suivi_pms, Utilisateurs, Variette, Volet } from '../utils/interface-bd';
 import { BehaviorSubject } from 'rxjs';
 import { Console } from 'console';
@@ -120,6 +120,7 @@ export class ImportDataService implements OnInit, OnDestroy {
         this.loadVolet();
         this.loadSaison();
         this.loadCategEspece();
+        this.loadAnneeAgricole();
       } else console.log('-----------Users not imported--------');
     });
 
@@ -268,6 +269,25 @@ export class ImportDataService implements OnInit, OnDestroy {
         }
 
       });
+    });
+  }
+
+  loadAnneeAgricole() {
+    let data_annee: AnneeAgricole[] = [];
+    this.api.getAnneeAgricole().subscribe(res_annee => {
+      data_annee = res_annee;
+      if (data_annee.length > 0) {
+        data_annee.forEach((elem_annee, ind_annee) => {
+          let value = [elem_annee.code, elem_annee.annee_du, elem_annee.annee_au, elem_annee.statut];
+          let state_add_mep = `INSERT INTO annee_agricole(code, annee_du, annee_au, statut) 
+                              VALUES (?, ?, ?, ?)`;
+          let req = {
+            state_: state_add_mep, 
+            data_: value
+          }
+          this.insertDataSet(req);
+        });
+      }
     });
   }
 
@@ -493,7 +513,6 @@ export class ImportDataService implements OnInit, OnDestroy {
               code_act: elem.id_activ
             }
             this.loadAssociation(data_equipe_pr, data_rp);
-            //this.loadBenefRp(data_rp);
           } else if (intitule.toUpperCase() === 'BLOC') {
             console.log("============ ACTIVITE BLOC +++++ " + data_equipe_pr.id_projet);
             let data_bl_benef = {
@@ -724,7 +743,6 @@ export class ImportDataService implements OnInit, OnDestroy {
                 console.log("==Fin du boucle definitive BENEFICIAIRE ACTIVITE PMS==");
                 this.select("benef_activ_pms", data_benef);
                 // Inserer parcelle beneficiaire par association
-                //this.loadParcelleBenef(data);
                 this.loadParcAssoc(data);
               }
             })
@@ -892,30 +910,6 @@ export class ImportDataService implements OnInit, OnDestroy {
       }
     });
   }
-
-  loadParcelleBenef(data: any) {
-    let data_benef_parce: Parcelle[];
-    // Inserer association par équipe et par projet
-    this.api.getBenefParcelle(data).subscribe((res: any[]) => {  
-      console.log("************************Import Data Service::: ASSOCIATION....");
-      console.log(res);
-      data_benef_parce = res;
-      if (data_benef_parce.length > 0) {
-        data_benef_parce.forEach((elem, i) => {
-          const insert = `INSERT OR IGNORE INTO parcelle(code_parce, id_benef, ref_gps , lat, log, superficie, id_fkt, status) 
-                            VALUES ("${elem.code_parce}","${elem.id_benef}",${elem.ref_gps != null? `"${elem.ref_gps}"`:null}, ${elem.lat}, ${elem.log}, ${elem.superficie}, ${elem.id_fkt != null? `"${elem.id_fkt}"`:null}, "${elem.status}");`;
-          console.log(elem);
-          this.insertData(insert);
-          if (i == (data_benef_parce.length - 1)) {
-            console.log("==Fin du boucle parcelle==");
-            this.select("parcelle", data_benef_parce);
-            // Inserer Parcelle Asociation 
-            this.loadParcAssoc(data);
-          }
-        });
-      } else console.log("***Aucune Parcelle disponible pour les béneficiaire de l'association de ::", data.code_ass);
-    });
-  }
   // Load parcelle Association
   loadParcAssoc(data: any) {
     let data_assoc_parce: Parcelle_Association[] = [];
@@ -933,10 +927,32 @@ export class ImportDataService implements OnInit, OnDestroy {
           if (i == (data_assoc_parce.length - 1)) {
             console.log("==Fin du boucle assoc_parce==");
             this.select("assoc_parce", data_assoc_parce);
-            this.loadCultureAssoc(data);
+            this.loadAssocitionParceSaison(data)
+            //this.loadCultureAssoc(data);
           }
         });
       } else console.log("***Aucune assoc_parce disponible pour l'association de ::", data.code_ass);
+    });
+  }
+  loadAssocitionParceSaison(data: any) {
+    let data_parce_assocSaison: AssociationParceSaison[] = [];
+    this.api.getParcelleSaisonPms(data).subscribe(res_parce_saison => {
+      data_parce_assocSaison = res_parce_saison;
+      if (data_parce_assocSaison.length > 0) {
+        data_parce_assocSaison.forEach((elem_saison_parce, ind_saison) => {
+          let value = [elem_saison_parce.code, elem_saison_parce.id_annee, elem_saison_parce.id_saison, elem_saison_parce.id_parce, elem_saison_parce.id_var, elem_saison_parce.objectif, elem_saison_parce.etat, elem_saison_parce.commentaire];
+          let state_add_mep = `INSERT OR IGNORE INTO assoc_parce_saison(code, id_annee, id_saison, id_parce, id_var, objectif, etat, commentaire) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+          let req = {
+            state_: state_add_mep, 
+            data_: value
+          }
+          this.insertDataSet(req);
+          if ((data_parce_assocSaison.length - 1) === ind_saison) {
+            this.loadCultureAssoc(data);
+          }
+        });
+      } else this.loadCultureAssoc(data);
     });
   }
   // loadCulture Association

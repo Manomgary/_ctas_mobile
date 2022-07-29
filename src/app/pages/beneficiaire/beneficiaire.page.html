@@ -183,6 +183,9 @@
           <div class="child-row">
             <button mat-raised-button (click)="onUpdatePms({src: 'add'})" class="demo-button" *ngIf="isUpdate" [disabled]="isAddPms || isEditRowPms">Ajouter</button>
           </div>
+          <div class="child-row">
+            <button mat-raised-button (click)="loadPArcelleTest()" class="demo-button">Refresh</button>
+          </div>
         </div>
       </div>
       <!--Column content-->
@@ -287,7 +290,7 @@
                 <td mat-cell *matCellDef="let row; let i = dataIndex;">
                   <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
                     <a (click)="onCancelAddPms({src: 'edit'})">Annuler</a> |
-                    <a (click)="onSaveAddPms({src: 'edit'})">modifier</a>
+                    <a (click)="onSaveAddPms({src: 'edit', elem_pms: row})">modifier</a>
                   </span>
                   <span *ngIf="!isUpdate">
                     <button mat-flat-button class="btn-info btn-dimension" (click)="row.isExpanded = !row.isExpanded">Parcelle</button>

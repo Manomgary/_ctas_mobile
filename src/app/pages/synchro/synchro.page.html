@@ -56,4 +56,10 @@
       Sync
     </button>
   </p>
+  <p>
+    PMS à Synchroniser: {{data_benef_activ_pms.length}}
+    <button mat-raised-button (click)="onSyncBenefeActivePms()" class="demo-button" [disabled] = "data_benef_activ_pms.length === 0">
+      Sync
+    </button>
+  </p>
 </ion-content>

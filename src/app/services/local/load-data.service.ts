@@ -600,11 +600,11 @@ export class LoadDataService {
   /*****************************
    * Load Beneficiare Pms Par association
    ******************************/
-  async loadBeneficiairePms(code_ass: any) {
+  async loadBeneficiairePms(data: any) {
         /**
          * Séléctionner béneficiaire Association + nombre de parcelle
          */
-        const statement = `SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, BPMS.code_achat, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.dt_nais_vers, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, B.village, BPMS.id_collaborateur, C.nom as nom_collab, B.statut,
+        let statement = `SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, BPMS.code_achat, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.dt_nais_vers, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, B.village, BPMS.id_collaborateur, C.nom as nom_collab, B.etat AS etat_benef, B.statut, BPMS.etat AS etat_pms,
                           CASE WHEN B.id_commune IS NOT NULL AND B.id_fkt IS NULL THEN (SELECT REG.code_reg FROM zone_commune COM INNER JOIN zone_district DIST ON DIST.code_dist = COM.id_dist INNER JOIN zone_region REG ON REG.code_reg = DIST.id_reg WHERE COM.code_com = B.id_commune)
                           WHEN B.id_fkt IS NOT NULL THEN (SELECT ZREG.code_reg FROM zone_fonkotany FKT INNER JOIN zone_commune ZCOM ON ZCOM.code_com = FKT.id_com INNER JOIN zone_district ZDIST ON ZDIST.code_dist = ZCOM.id_dist INNER JOIN zone_region ZREG ON ZREG.code_reg = ZDIST.id_reg WHERE FKT.code_fkt = B.id_fkt) ELSE NULL END AS code_region,
                           CASE WHEN B.id_commune IS NOT NULL AND B.id_fkt IS NULL THEN (SELECT DIST.code_dist FROM zone_commune COM INNER JOIN zone_district DIST ON DIST.code_dist = COM.id_dist WHERE COM.code_com = B.id_commune)
@@ -624,8 +624,14 @@ export class LoadDataService {
                           INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association AND ASS.status = "active"
                           INNER JOIN collaborateur C ON C.code_col = BPMS.id_collaborateur
                           INNER JOIN zone_fonkotany FKT_ASS ON FKT_ASS.code_fkt = ASS.id_fkt
-                          WHERE BPMS.status = "active" AND BPMS.id_association =  "${code_ass}"`;
-
+                          WHERE BPMS.status = "active"`;
+    if (!(Object.keys(data).length === 0)) {
+      if (data.code_ass != undefined) {
+        statement += ` AND BPMS.id_association =  "${data.code_ass}"`;
+      } else if (data.code_benef_pms != undefined) {
+        statement += ` AND BPMS.code_benef_pms = "${data.code_benef_pms}"`;
+      }
+    }
     return await this.db.query(statement);
   }
 

@@ -14,7 +14,7 @@ import { ModalPage } from '../modal/modal.page';
 import { ModalPrPage } from '../modals/modal-pr/modal-pr.page';
 
 import * as _moment from 'moment';
-import { ACTIVE, SYNC} from 'src/app/utils/global-variables';
+import { ACTIVE, SYNC, UPDATE} from 'src/app/utils/global-variables';
 import { UpdateBenef, UpdatedBenefActivPms } from 'src/app/interfaces/interface-insertDb';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 const moment = _moment;
@@ -391,7 +391,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
             this.parcelle_pms.push(elem_parce);
           });
         });
-        this.loadData.loadBeneficiairePms(elem_assoc.code_ass).then((res_pms) => {
+        this.loadData.loadBeneficiairePms({code_ass: elem_assoc.code_ass}).then((res_pms) => {
           console.log(res_pms);
           res_pms.values.forEach((elem_pms: Benef_activ_pms) => {
             elem_pms.parcelle = [];
@@ -425,8 +425,16 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Finish
-  onFinish() {
+  async onFinish() {
+    const loading = await this.loadingCtrl.create();
+    await loading.present();
+    this.loadPmsAsso();
+    setTimeout(() => {
+      this.refreshDataSource();
+      this.loadingCtrl.dismiss();
+    }, 500);
     this.isUpdate = false;
+    
   }
   // Update
   onUpdate() {
@@ -450,65 +458,103 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onSaveAddPms(data) {
+    let img_cin: string[] = [];
+    if (this.update_pms.img_cin_1.data != null) {
+      img_cin.push(this.update_pms.img_cin_1.data);
+    } 
+    
+    if (this.update_pms.img_cin_2.data != null) {
+      img_cin.push(this.update_pms.img_cin_2.data);
+    }
+    let data_to_add: UpdateBenef = {
+      code_benef: null,
+      img_benef: this.update_pms.img_pr != null? this.update_pms.img_pr.data: null,
+      nom: this.update_pms.nom,
+      prenom: this.update_pms.prenom,
+      sexe: this.update_pms.sexe,             
+      dt_nais: this.update_pms.dt_naissance,
+      dt_nais_vers: this.update_pms.dt_naissance_vers,
+      surnom: this.update_pms.surnom,
+      cin: this.update_pms.cin,
+      dt_delivrance: this.update_pms.dt_delivrance,
+      lieu_delivrance: this.update_pms.lieu_delivrance,
+      img_cin:  img_cin.length > 0? JSON.stringify(img_cin.join("-")):null,
+      contact: this.update_pms.contact,
+      id_fkt: this.update_pms.fokontany != null?this.update_pms.fokontany.code_fkt:null,
+      id_commune: this.update_pms.village != null?this.update_pms.commune.code_com: null,
+      village: this.update_pms.village,
+      dt_Insert: null,
+      etat: null,
+      statut: null
+    };
+    let add_pms: UpdatedBenefActivPms = {
+      code_benef_pms: null,
+      code_achat: this.update_pms.code_achat,
+      id_proj: this.projet.code_proj,
+      id_benef: null,
+      id_activ: this.activite.id_activ,
+      id_association: this.update_pms.association.code_ass,
+      id_collaborateur: this.update_pms.collaborateur.id_col,
+      etat: null,
+      status: null
+    }
     if (data.src === 'add') {
       console.log(":::Data to Add:::", this.update_pms);
       let code_benef: string = 'B' + '-' + this.user[this.user.length - 1].id_equipe + '-' + moment().format('YYYYMMDD-HHmmss');
-      let img_cin: string[] = [];
-      if (this.update_pms.img_cin_1.data != null) {
-        img_cin.push(this.update_pms.img_cin_1.data);
-      } 
-      
-      if (this.update_pms.img_cin_2.data != null) {
-        img_cin.push(this.update_pms.img_cin_2.data);
-      }
 
-      let data_to_add: UpdateBenef = {
-        code_benef: code_benef,
-        img_benef: this.update_pms.img_pr != null? this.update_pms.img_pr.data: null,
-        nom: this.update_pms.nom,
-        prenom: this.update_pms.prenom,
-        sexe: this.update_pms.sexe,             
-        dt_nais: this.update_pms.dt_naissance,
-        dt_nais_vers: this.update_pms.dt_naissance_vers,
-        surnom: this.update_pms.surnom,
-        cin: this.update_pms.cin,
-        dt_delivrance: this.update_pms.dt_delivrance,
-        lieu_delivrance: this.update_pms.lieu_delivrance,
-        img_cin:  img_cin.length > 0? JSON.stringify(img_cin.join("-")):null,
-        contact: this.update_pms.contact,
-        id_fkt: this.update_pms.fokontany != null?this.update_pms.fokontany.code_fkt:null,
-        id_commune: this.update_pms.village != null?this.update_pms.commune.code_com: null,
-        village: this.update_pms.village,
-        dt_Insert: moment().format("YYYY-MM-DD"),
-        etat: SYNC,
-        statut: ACTIVE
-      };
+      data_to_add.code_benef = code_benef;
+      data_to_add.dt_Insert = moment().format("YYYY-MM-DD");
+      data_to_add.etat = SYNC;
+      data_to_add.statut = ACTIVE;
       this.crudService.AddBenef_(data_to_add).then(res => {
-        let code_pr: string = 'B' + '-' + this.update_pms.association.numero + this.projet.ancronyme + this.update_pms.association.ancronyme + '-' + moment().format('YYYYMMDD-HHmmss');
-        let add_pms: UpdatedBenefActivPms = {
-          code_benef_pms: code_pr,
-          code_achat: this.update_pms.code_achat,
-          id_proj: this.projet.code_proj,
-          id_benef: code_benef,
-          id_activ: this.activite.id_activ,
-          id_association: this.update_pms.association.code_ass,
-          id_collaborateur: this.update_pms.collaborateur.id_col,
-          etat: SYNC,
-          status: ACTIVE
-        }
+        let code_pms: string = 'B' + '-' + this.update_pms.association.numero + this.update_pms.association.ancronyme + '-' + moment().format('YYYYMMDD-HHmmss');
+        add_pms.code_benef_pms = code_pms;
+        add_pms.id_benef = code_benef;
+        add_pms.etat = SYNC;
+        add_pms.status = ACTIVE;
         console.log(":::::Pms ToAdd Data:::", add_pms);
         this.crudService.AddPms(add_pms).then(res => {
-          this.loadPmsAsso();
-          this.refreshDataSource();
+          this.loadData.loadBeneficiairePms({code_benef_pms: add_pms.code_benef_pms}).then((res_pms) => {
+            let new_pms: Benef_activ_pms = res_pms.values[0];
+            new_pms.parcelle = [];
+            this.dataSourceBenef.data = [new_pms, ...this.dataSourceBenef.data];
+          });
           this.isAddPms = false;
           this.update_pms = <Update_infos_benef>{};
         });
       });
     } else if (data.src === 'edit') {
-      console.log(":::Data to Add:::", this.update_pms);
-      this.isEditRowPms = false;
-      this.update_pms = <Update_infos_benef>{};
-      this.indexEditRowPms = null;
+      let element_pms: Benef_activ_pms = data.elem_pms;
+      data_to_add.code_benef = element_pms.code_benef;
+      data_to_add.etat = element_pms.etat_benef === SYNC?SYNC:UPDATE;
+      data_to_add.statut = ACTIVE;
+      console.log(":::Data info to Edit:::", data_to_add);
+      this.crudService.UpdateBenef(data_to_add).then(res => {
+        add_pms.code_benef_pms = element_pms.code_benef_pms;
+        add_pms.id_benef = element_pms.code_benef;
+        add_pms.etat = element_pms.etat_pms === SYNC?SYNC:UPDATE;
+        add_pms.status = ACTIVE;
+        let update_data = {
+          isUpdatePms: true,
+          data_pms: add_pms
+        }
+        console.log(":::Data Pms to Edit:::", add_pms);
+        this.crudService.UpdatePms(update_data).then(res => {
+          this.loadData.loadBeneficiairePms({code_benef_pms: element_pms.code_benef_pms}).then((res_pms) => {
+            let parce_pms = element_pms.parcelle;
+            console.log("::::::::Response edit pms:::::::::", res_pms);
+            this.dataSourceBenef.data.forEach(elem_src => {
+              if (elem_src.code_benef_pms === res_pms.values[0].code_benef_pms) {
+                elem_src = res_pms.values[0];
+                elem_src.parcelle = parce_pms;
+              }
+            });
+          });
+          this.isEditRowPms = false;
+          this.update_pms = <Update_infos_benef>{};
+          this.indexEditRowPms = null;
+        });
+      });
     }
   }
   // Update Pms
@@ -702,6 +748,15 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
     console.log(":::::activite::::", this.activite);
     this.loadData.loadCollaborateursActivite(this.activite.id_activ).then(res => {
       this.data_collaborateur = res.values;
+    });
+  }
+
+  loadPArcelleTest() {
+    this.loadData.loadAllTable('assoc_parce_saison').then(res => {
+      console.log(":::Association par saison assoc_parce_saison::::", res.values);
+    });
+    this.loadData.loadAllTable('annee_agricole').then(res => {
+      console.log(":::Association annee_agricole::::", res.values);
     });
   }
 

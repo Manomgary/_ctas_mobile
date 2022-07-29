@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BASE_PATH } from '../utils/global-variables';
-import { Activite, Commune, District, Fonkotany, Participe_proj_activ, Projet, Region, Utilisateurs, Volet } from '../utils/interface-bd';
+import { Activite, AnneeAgricole, AssociationParceSaison, Commune, District, Fonkotany, Participe_proj_activ, Projet, Region, Utilisateurs, Volet } from '../utils/interface-bd';
 
 @Injectable({
   providedIn: 'root'
@@ -54,6 +54,11 @@ export class ApiService {
   // Get List Volet
   getListVolet(): Observable<Volet[]> {
     return this.http.get<Volet[]>(this.base_path + 'volet');
+  }
+
+  // Get Annee agricole
+  getAnneeAgricole(): Observable<AnneeAgricole[]> {
+    return this.http.get<AnneeAgricole[]>(this.base_path + 'saison/findAnneeAgricole');
   }
 
   // Get List activite!!!
@@ -218,5 +223,9 @@ export class ApiService {
   // load Suivi Mep PR
   getSuiviMepPR(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'culture/find_suivi_pr', data, this.httpOptions);
+  }
+  // load Parcelle Pms
+  getParcelleSaisonPms(data: any): Observable<AssociationParceSaison[]> {
+    return this.http.post<AssociationParceSaison[]>(this.base_path + 'parcelle/findParcelleAssSaison', data, this.httpOptions);
   }
 }

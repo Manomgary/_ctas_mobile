@@ -13,6 +13,13 @@ export interface Projet {
     statuts: string
 }
 
+export interface AnneeAgricole {
+    code: number, 
+    annee_du: number, 
+    annee_au: number, 
+    statut: number
+}
+
 export interface Equipe {
     code_equipe: number, 
     img: Blob, 
@@ -462,4 +469,14 @@ export interface suiviMepPR {
     dt_creation: string, 
     dt_modification: string, 
     etat: string
+}
+export interface AssociationParceSaison {
+    code: number, 
+    id_annee: number, 
+    id_saison: string, 
+    id_parce: string, 
+    id_var: string, 
+    objectif: number, 
+    etat: string, 
+    commentaire: string
 }

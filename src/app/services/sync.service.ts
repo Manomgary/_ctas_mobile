@@ -55,4 +55,7 @@ export class SyncService {
   syncSuiviMepPR(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'culture/update_suivi_mep_pr', data, this.httpOptions);
   }
+  syncBenefPms(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'beneficiaire/update_pms', data, this.httpOptions);
+  }
 }

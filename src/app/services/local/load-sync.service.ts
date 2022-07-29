@@ -107,4 +107,18 @@ export class LoadSyncService {
                 WHERE SV.etat IN("${SYNC}", "${UPDATE}")`;
     return await this.db.query(state);
   }
+  /**
+   * Load sync pms
+   */
+  async loadSyncBenefActivPms(data: any) {
+  const state = `SELECT BNF.code_benef, BNF.img_benef, BNF.nom, BNF.prenom, BNF.sexe, BNF.dt_nais, BNF.dt_nais_vers, BNF.surnom, BNF.cin, BNF.dt_delivrance, BNF.lieu_delivrance, BNF.img_cin, BNF.contact, BNF.id_fkt, BNF.id_commune, BNF.village, BNF.dt_Insert, BNF.etat AS etat_benf, BNF.statut AS statut_benef, BPMS.code_benef_pms, BPMS.code_achat, id_proj, BPMS.id_benef, BPMS.id_activ, BPMS.id_association, BPMS.id_collaborateur, BPMS.status AS status_pms, BPMS.etat AS etat_pms
+                FROM benef_activ_pms BPMS
+                INNER JOIN beneficiaire BNF ON BNF.code_benef = BPMS.id_benef AND BNF.statut = "active"
+                INNER JOIN association ASS ON ASS.code_ass = BPMS.id_association AND ASS.id_prjt = "${data.id_projet}" AND ASS.id_tech = ${data.id_tech} AND  ASS.status = "active"
+                INNER JOIN projet PRJ ON PRJ.code_proj = ASS.id_prjt AND PRJ.statuts = "activer"
+                INNER JOIN equipe EQ ON EQ.code_equipe = ASS.id_tech AND EQ.statuts = "active"
+                INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND EQ.code_equipe = PE.id_equipe AND PE.status_pe = "active"
+                WHERE BPMS.etat IN("${SYNC}", "${UPDATE}") AND BPMS.status = "active" AND BPMS.id_proj = "${data.id_projet}";`;
+  return await this.db.query(state);
+}
 }

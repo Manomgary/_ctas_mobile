@@ -36,6 +36,12 @@ CREATE TABLE IF NOT EXISTS  projet (
     nom TEXT NOT NULL, 
     description TEXT
     );
+CREATE TABLE IF NOT EXISTS  annee_agricole (
+    code INTEGER PRIMARY KEY NOT NULL, 
+    annee_du INTEGER, 
+    annee_au INTEGER, 
+    statut INTEGER
+    );
 CREATE TABLE IF NOT EXISTS participe_proj_volet(
     code INTEGER PRIMARY KEY NOT NULL, 
     id_projet TEXT NOT NULL, 
@@ -267,6 +273,20 @@ CREATE TABLE IF NOT EXISTS assoc_parce (
     FOREIGN KEY (id_assoc) REFERENCES association(code_ass) ON DELETE SET DEFAULT,
     FOREIGN KEY (id_fkt) REFERENCES zone_fonkotany(code_fkt) ON DELETE SET DEFAULT,
     FOREIGN KEY (id_benef) REFERENCES beneficiaire(code_benef) ON DELETE SET DEFAULT
+);
+CREATE TABLE IF NOT EXISTS assoc_parce_saison (
+    code INTEGER PRIMARY KEY AUTOINCREMENT, 
+    id_annee INTEGER, 
+    id_saison TEXT NOT NULL, 
+    id_parce TEXT, 
+    id_var TEXT NOT NULL, 
+    objectif INTEGER, 
+    etat TEXT NOT NULL, 
+    commentaire TEXT,
+    FOREIGN KEY (id_annee) REFERENCES annee_agricole(code) ON DELETE SET DEFAULT,
+    FOREIGN KEY (id_saison) REFERENCES saison(code_saison) ON DELETE SET DEFAULT,
+    FOREIGN KEY (id_parce) REFERENCES assoc_parce(code_parce) ON DELETE SET DEFAULT,
+    FOREIGN KEY (id_var) REFERENCES variette(code_var) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS bloc_parce (
     code_parce TEXT PRIMARY KEY NOT NULL, 

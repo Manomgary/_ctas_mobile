@@ -140,6 +140,47 @@ export interface Sync_activ_pr {
     etat: string, 
     status: string
 }
+export interface Sync_benef_activ_pms {
+    code_benef: string,
+    img_benef: string,
+    nom: string,
+    prenom: string,
+    sexe: string,
+    dt_nais: string,
+    dt_nais_vers: string,
+    surnom: string,
+    cin: number,
+    dt_delivrance: string,
+    lieu_delivrance: string,
+    img_cin: string,
+    contact: string,
+    id_fkt: string,
+    id_commune: string,
+    village: string,
+    dt_Insert: string,
+    etat_benf: string,
+    statut_benef: string,
+    code_benef_pms: string, // Pms
+    code_achat: string, 
+    id_proj: string, 
+    id_benef: string, 
+    id_activ: number, 
+    id_association: string, 
+    id_collaborateur: string, 
+    status_pms: string, 
+    etat_pms: string
+}
+export interface Sync_activ_pms {
+    code_benef_pms: string, // Pms
+    code_achat: string, 
+    id_proj: string, 
+    id_benef: string, 
+    id_activ: number, 
+    id_association: string, 
+    id_collaborateur: string, 
+    status: string, 
+    etat: string
+}
 export interface Sync_anime_ve {
     code: string, 
     id_pr: string, 

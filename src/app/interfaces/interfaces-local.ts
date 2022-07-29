@@ -152,6 +152,8 @@ export interface Benef_activ_pms {
     adress: string,
     id_collaborateur: string,
     nom_collab: string,
+    etat_benef: string,
+    etat_pms: string,
     statut: string,
     parcelle: Local_Parcelle[],
     isExpanded: boolean,
