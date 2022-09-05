@@ -21,10 +21,9 @@
           <!--Formulaire Annee-->
           <div class="child-row-flex">
             <mat-form-field appearance="outline" floatLabel="auto">
-              <mat-label>Annee_du</mat-label>
               <mat-select formControlName="annee">
-                <mat-option *ngFor="let annee of annee_du" [value]="annee">
-                  {{ annee }}
+                <mat-option *ngFor="let annee of data_annee_agricole" [value]="annee">
+                  {{ annee.annee_du }}-{{ annee.annee_au }}
                 </mat-option>
               </mat-select>
             </mat-form-field>

@@ -24,6 +24,7 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { CONTROLE_MEP, DECLARATION_MEP, EC, EC_CULTURAL, IMAGE_DIR, STC, SYNC, UPDATE } from 'src/app/utils/global-variables';
 import { SuiviPageRoutingModule } from './suivi-routing.module';
 import { SharedService } from 'src/app/services/shared.service';
+import { CaptureImageService } from 'src/app/services/capture-image.service';
 
 const moment = _moment;
 
@@ -93,9 +94,9 @@ interface Suivi_export {
 }
 
 interface LocalFile {
-  name: string;
-  path: string;
-  data: string;
+  name: string,
+  date: string,
+  data: string
 }
 
 @Component({
@@ -181,7 +182,7 @@ export class SuiviPage implements OnInit, OnDestroy {
   private code_cult_selected: string;
   private fileLastImage: LocalFile = {
     name: null,
-    path: null,
+    date: null,
     data: null
   };
 
@@ -214,11 +215,11 @@ export class SuiviPage implements OnInit, OnDestroy {
               private loadData: LoadDataService,
               private crudDb: CrudDbService,
               private modalCtrl: ModalController,
-              private file: File,
               private loadingCtrl: LoadingController,
               private formBuilder: FormBuilder,
               private toastCtrl: ToastController,
-              private sharedService: SharedService) { 
+              private sharedService: SharedService,
+              private captureImg: CaptureImageService) { 
     const routeState = this.router.getCurrentNavigation().extras.state;
     this.loading();
     if (routeState) {
@@ -620,14 +621,14 @@ export class SuiviPage implements OnInit, OnDestroy {
     this.saveToPhone(buffer);
   }
   saveToPhone(buffer) {
-    var fileType= 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    /**var fileType= 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     var fileExtension = ".xlsx";
     var fileName = Date.now().toString();
     var data:Blob = new Blob([buffer], {type: fileType});
     this.file.writeFile(this.file.externalRootDirectory, fileName+fileExtension,data,{replace: true})
           .then(() => {
             alert("excel file saved in phone");
-          });
+          });*/
   }
 
   onUpdate() {
@@ -807,7 +808,8 @@ export class SuiviPage implements OnInit, OnDestroy {
         }
         console.log(code_association);
       });*/
-      this.codeCulture = saison + '-' + this.new_culte.order_assoc + code_association + '-' + order.toString();
+      //this.codeCulture = saison + '-' + this.new_culte.order_assoc + code_association + '-' + order.toString();
+      this.codeCulture = saison + '-' + this.new_culte.order_assoc + code_association + '-' + moment().format('YYYYMMDD-HHmmss');
 
       // Insert new Culture
       const  dataNewCulteToInsert: Db_Culture_pms = {
@@ -944,11 +946,10 @@ export class SuiviPage implements OnInit, OnDestroy {
   }
   async onCancelAddSuivi() {
     if (this.fileLastImage != undefined && this.fileLastImage.data !== null) {
-      this.deleteImage(this.fileLastImage);
       this.fileLastImage = {
         data: null,
         name: null,
-        path: null
+        date: null
       }
     }
     this.isNewItemsSuivi = false;
@@ -970,7 +971,7 @@ export class SuiviPage implements OnInit, OnDestroy {
       ex: val.ex,
       img_cult: this.fileLastImage.data,
       name: this.fileLastImage.name,
-      path: this.fileLastImage.path,
+      path: null,
       controle: val.controle,
       declaration: val.declaration,
       etat: SYNC
@@ -996,11 +997,10 @@ export class SuiviPage implements OnInit, OnDestroy {
       this.loadSuiviMep(this.code_cult_selected);
     });
     if  (this.fileLastImage != undefined && this.fileLastImage.data !== null) {
-      this.deleteImage(this.fileLastImage);
       this.fileLastImage = {
         data: null,
         name: null,
-        path: null
+        date: null
       }
     }
     this.isNewItemsSuivi = false;
@@ -1035,11 +1035,10 @@ export class SuiviPage implements OnInit, OnDestroy {
       this.loadSuiviMep(this.code_cult_selected);
     });
     if (this.fileLastImage != undefined && this.fileLastImage.data !== null) {
-      this.deleteImage(this.fileLastImage);
       this.fileLastImage = {
         data: null,
         name: null,
-        path: null
+        date: null
       }
     }
     this.suiviForm.reset();
@@ -1047,11 +1046,10 @@ export class SuiviPage implements OnInit, OnDestroy {
   }
   onCancelEditSuivi() {
     if (this.fileLastImage != undefined && this.fileLastImage.data !== null) {
-      this.deleteImage(this.fileLastImage);
       this.fileLastImage = {
         data: null,
         name: null,
-        path: null
+        date: null
       }
     }
     this.isEditableSuivi = false;
@@ -1166,136 +1164,6 @@ export class SuiviPage implements OnInit, OnDestroy {
     }
   }
 
-
-  // image 
-  async selectImage() {
-    const image = await Camera.getPhoto({
-      quality: 50,//90
-      allowEditing: false,
-      resultType: CameraResultType.Uri,
-      source: CameraSource.Camera,
-      saveToGallery: false,
-    });
-
-    if (image) {
-      this.saveImage(image);
-    }
-  }
-
-  async saveImage(photo: Photo) {
-    const base64 = await this.readAsBase64(photo);
-    console.log(base64);
-
-    const fileName = new Date().getTime()  + 'jpeg';
-    const savedFile = await Filesystem.writeFile({
-      directory: Directory.Data,
-      path:  `${IMAGE_DIR}/${fileName}`,
-      data: base64
-    }).then(res_sucess => {
-      console.log("File system write File sucess::: ",res_sucess)
-    },  async (err) => {
-      // Folder does not yet exists!
-      console.log("error write File::: Folder does not yet exists! :::", err);
-    }).then(res => 
-      {
-        console.log("writed file=========");
-        // Reload the file list
-        // Improve by only loading for the new image and unshifting array!
-        this.loadFiles(photo);
-    });
-    console.log('saved:', savedFile);
-  }
-
-  // https://ionicframework.com/docs/angular/your-first-app/3-saving-photos
-  private async readAsBase64(photo: Photo) {
-    console.log("***************************");
-    console.log(photo);
-    if (this.plt.is('hybrid')) {
-        console.log("-------------HYBRIDE TESTE--------------");
-        const file = await Filesystem.readFile({
-            path: photo.path
-        });
-
-        return file.data;
-    }
-    else {
-        // Fetch the photo, read as a blob, then convert to base64 format
-        console.log("------------web Path---------");
-        const response = await fetch(photo.webPath);
-        const blob = await response.blob();
-
-        return await this.convertBlobToBase64(blob) as string;
-    }
-  }
-
-  // Helper function
-  convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
-      const reader = new FileReader;
-      reader.onerror = reject;
-      reader.onload = () => {
-          resolve(reader.result);
-      };
-      reader.readAsDataURL(blob);
-  });
-
-  async loadFiles(photo: Photo) {
-    this.images = [];
- 
-    Filesystem.readdir({
-      path: IMAGE_DIR,
-      directory: Directory.Data,
-    }).then(result => {
-      console.log('HERE:  ', result);
-      if (result.files.length > 0) {
-        this.loadFileData(result.files);
-      } else console.log("resultat load file est nulle, ", result.files);
-      this.deleteLocalImage(photo);
-    },
-      async (err) => {
-        // Folder does not yet exists!
-        console.log("Folder doen't existe:: ", IMAGE_DIR);
-        this.deleteLocalImage(photo);
-      }
-    ).then(_ => {
-      //loading.dismiss();
-    });
-  }
-
-    // Get the actual base64 data of an image
-  // base on the name of the file
-  async loadFileData(fileNames: string[]) {
-    for (let f of fileNames) {
-      const filePath = `${IMAGE_DIR}/${f}`;
- 
-      const readFile = await Filesystem.readFile({
-        path: filePath,
-        directory: Directory.Data,
-      });
- 
-      this.images.push({
-        name: f,
-        path: filePath,
-        data: `data:image/jpeg;base64,${readFile.data}`,
-      });
-    }
-    this.fileLastImage = this.images[this.images.length - 1];
-  }
-  async deleteLocalImage(photo: Photo) {
-      // Delete local image
-      await Filesystem.deleteFile({
-        path: photo.path
-      });
-  }
-
-  async deleteImage(file: LocalFile) {
-    console.log("Delete Image file:::: ",file);
-    await Filesystem.deleteFile({
-        directory: Directory.Data,
-        path: file.path
-    });
-    this.presentToast('File removed.');
-  }
-
   // Little helper
   async presentToast(text) {
     const toast = await this.toastCtrl.create({
@@ -1303,5 +1171,13 @@ export class SuiviPage implements OnInit, OnDestroy {
       duration: 3000,
     });
     toast.present();
+  }
+
+  // Image
+  async takeImage(src: string) {
+    this.captureImg.getImage().then(res => {
+      console.log(":::Res Image:::", res);
+        this.fileLastImage = res;
+    });
   }
 }

@@ -6,7 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
-import { UpdateBenef, UpdatedBenefBloc } from 'src/app/interfaces/interface-insertDb';
+import { UpdateBenef, UpdatedBenefBloc, UpdateParceBloc } from 'src/app/interfaces/interface-insertDb';
 import { Local_benef_activ_bl, Local_bloc_parce, Local_bloc_zone, Loc_activ_projet, Loc_Bloc, Loc_Collabo_Activite, Loc_Commune, Loc_district, Loc_Fokontany, Loc_region, Update_infos_benef } from 'src/app/interfaces/interfaces-local';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
@@ -19,6 +19,20 @@ import { ACTIVE, ISSYNC, SYNC, UPDATE, VALIDE} from 'src/app/utils/global-variab
 
 
 const moment = _moment;
+
+interface Update_Parce_bl {
+  bloc: Loc_Bloc,
+  ref_gps: string,
+  latitude: number,
+  longitude: number,
+  superficie: number,
+  region: Loc_region,
+  district: Loc_district,
+  commune: Loc_Commune,
+  fokontany: Loc_Fokontany,
+  village: string,
+  indication: string
+}
 
 @Component({
   selector: 'app-beneficiaire-bloc',
@@ -97,6 +111,8 @@ export class BeneficiaireBlocPage implements OnInit {
   data_fokontany: Loc_Fokontany[] = [];
 
   data_collaborateur: Loc_Collabo_Activite[] = [];
+
+  private update_parce: Update_Parce_bl = <Update_Parce_bl>{};
 
   isUpdate: boolean = false;
   isAddBenef: boolean = false;
@@ -454,14 +470,89 @@ export class BeneficiaireBlocPage implements OnInit {
     }
   }
   onSaveParce(data: any) {
+    let element_bnf: Local_benef_activ_bl = data.elem_benef;
+    let order_parce_bl: number;
+    console.log(":::DATA Parce:::", this.update_parce);
+
+    let add_parce: UpdateParceBloc = {
+      code_parce: null,
+      code_parce_temp: null,
+      id_bloc: this.update_parce.bloc != null?this.update_parce.bloc.code_bloc:null,
+      id_benef: element_bnf.id_benef,
+      ref_gps: this.update_parce.ref_gps,
+      lat: this.update_parce.latitude,
+      log: this.update_parce.longitude,
+      superficie: this.update_parce.superficie,
+      id_fkt: this.update_parce.fokontany != null?this.update_parce.fokontany.code_fkt:null,
+      id_commune: this.update_parce.village != null && this.update_parce.fokontany == null?this.update_parce.commune.code_com:null,
+      village: this.update_parce.village,
+      anne_adheran: null,
+      indication: this.update_parce.indication,
+      etat: null,
+      status: null
+    }
+    /**let code_bloc = {
+      code_bloc: this.update_parce.bloc != null?this.update_parce.bloc.code_bloc:null
+    }
+    this.loadData.loadBlocParce(code_bloc).then(parce_bloc => {
+      console.log(parce_bloc);
+      if (parce_bloc.values.length > 0) {
+        parce_bloc.values.forEach(elem_blparc => {
+          console.log(elem_blparc);
+          elem_blparc.parcelle = [];
+          this.data_bloc_parce.push(elem_blparc);
+        });
+      }
+    });*/
     if (data.src === 'add') {
+      let code_parce: string = this.update_parce.bloc.ordre + this.update_parce.bloc.ancronyme + '-' + moment().format('YYYYMMDD-HHmmss');
+      add_parce.code_parce = code_parce;
+      add_parce.code_parce_temp = null;// A refaire
+      add_parce.etat = SYNC;
+      add_parce.status = ACTIVE,
+      this.crudDb.AddParceBloc(add_parce).then(res_ => {
+        console.log("::::Parcelle Added:::", res_);
+        this.loadData.loadBlocParce({code_benef_bl: element_bnf.code_benef_bl}).then(parce_bloc => {
+          console.log(parce_bloc);
+          if (parce_bloc.values.length > 0) {
+            this.dataSourceBenef.data.forEach(src_bnf => {
+              if (src_bnf.code_benef_bl === element_bnf.code_benef_bl) {
+                src_bnf.parcelle = parce_bloc.values;
+              }
+            });
+          }
+        });
+      });
       this.isAddParce = false;
       this.indexEditRowBenef = null;
     } else if (data.src === 'edit') {
-      let elem_benef: Local_benef_activ_bl = data.elem_benef;
-      this.indexEditRowparce = null;
-      this.indexEditRowBenef = null;
-      this.isRowEditParce = false;
+      /**
+       * Edit
+       */
+      let elem_parce_bl: Local_bloc_parce = data.elem_parce;
+      add_parce.code_parce = elem_parce_bl.code_parce;
+      add_parce.code_parce_temp = null;// A refaire
+      add_parce.etat = elem_parce_bl.etat === SYNC?SYNC:UPDATE;
+      add_parce.status = ACTIVE;
+      let data_update = {
+        isUpdateParceBl: true,
+        data_parce_bl: add_parce
+      }
+      this.crudDb.UpdateParceBl(data_update).then(res => {
+        this.loadData.loadBlocParce({code_benef_bl: element_bnf.code_benef_bl}).then(parce_bloc => {
+          console.log(parce_bloc);
+          if (parce_bloc.values.length > 0) {
+            this.dataSourceBenef.data.forEach(src_bnf => {
+              if (src_bnf.code_benef_bl === element_bnf.code_benef_bl) {
+                src_bnf.parcelle = parce_bloc.values;
+              }
+            });
+          }
+          this.indexEditRowparce = null;
+          this.indexEditRowBenef = null;
+          this.isRowEditParce = false;
+        });
+      });
     }
   }
 
@@ -515,7 +606,7 @@ export class BeneficiaireBlocPage implements OnInit {
     modal.onDidDismiss().then(modal_data => {
       console.log("::::Data Parce Dismissed:::", modal_data.data);
       if (modal_data.data != undefined) {
-        //this.update_cep = modal_data.data;
+        this.update_parce = modal_data.data;
         if (data.src === 'add') {
           this.isAddParce = true;
           this.indexEditRowBenef = data.index_;
@@ -694,9 +785,14 @@ export class BeneficiaireBlocPage implements OnInit {
     if (index == 0) {
       this.dataSource.filter = '';
       this.dataSource.data = this.data_bloc;
-    } else if (index == 1) {  
-      this.dataSourceBenef.filter = ''; 
-      this.dataSourceBenef.data = this.data_benef;
+    } else if (index == 1) { 
+      setTimeout(async () => {
+        const loading = await this.loadingCtrl.create();
+        await loading.present();
+        this.dataSourceBenef.filter = ''; 
+        this.dataSourceBenef.data = this.data_benef;
+        this.loadingCtrl.dismiss();
+      }, 500);
     } else if(index == 2) {
       this.dataSourceParcelle.filter = '';
       this.dataSourceParcelle.data = this.data_bloc_parce;

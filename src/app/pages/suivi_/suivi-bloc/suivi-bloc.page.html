@@ -116,15 +116,15 @@
                               <th mat-header-cell *matHeaderCellDef> Annee </th>
                               <td mat-cell *matCellDef="let row; let i = dataIndex"> 
                                 <span *ngIf="!isRowMepSgEdit || indexRowEditMepSg != i">
-                                  {{row.annee_du}} 
+                                  {{row.annee_du}}-{{row.annee_au}}
                                 </span>
                                 <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
-                                  {{ update_mep.annee_du }} 
+                                  {{ update_mep.annee != null?update_mep.annee.annee_du:null }}-{{ update_mep.annee != null?update_mep.annee.annee_au:null }}
                                 </span>
                               </td>
                             </ng-container>
                             <ng-container matColumnDef="new_annee">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.annee_du }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.annee != null?update_mep.annee.annee_du:null }}-{{ update_mep.annee != null?update_mep.annee.annee_au:null }} </th>
                             </ng-container>
                   
                             <!-- Saison Column -->
@@ -135,12 +135,12 @@
                                   {{row.intitule}} 
                                 </span>
                                 <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
-                                  {{ update_mep.nom_saison }} 
+                                  {{ update_mep.saison != null?update_mep.saison.intitule:null }} 
                                 </span>
                               </td>
                             </ng-container>       
                             <ng-container matColumnDef="new_saison">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_saison }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.saison != null?update_mep.saison.intitule:null }} </th>
                             </ng-container>               
                   
                             <!-- Bloc Column -->
@@ -151,12 +151,12 @@
                                   {{row.nom_bl}}
                                 </span>
                                 <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
-                                  {{ update_mep.nom_bloc }} 
+                                  {{ update_mep.bloc != null?update_mep.bloc.nom_bloc:null }} 
                                 </span>
                               </td>
                             </ng-container>  
                             <ng-container matColumnDef="new_bloc">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_bloc }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.bloc != null?update_mep.bloc.nom_bloc:null }} </th>
                             </ng-container>            
                   
                             <!-- Parcelle Column -->
@@ -167,12 +167,12 @@
                                   {{row.id_parce}}
                                 </span>
                                 <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
-                                  {{ update_mep.id_parce }} 
+                                  {{ update_mep.parcelle != null?update_mep.parcelle.code_parce:null }} 
                                 </span>
                               </td>
                             </ng-container>  
                             <ng-container matColumnDef="new_parcelle">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.id_parce }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.parcelle != null?update_mep.parcelle.code_parce:null }} </th>
                             </ng-container>            
                   
                             <!-- code_benef Column -->
@@ -183,12 +183,12 @@
                                   {{row.code_benef_bl}} 
                                 </span>
                                 <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
-                                  {{ update_mep.id_benef }} 
+                                  {{ update_mep.beneficiaire != null?update_mep.beneficiaire.code_benef_bl:null }} 
                                 </span>
                               </td>
                             </ng-container>      
                             <ng-container matColumnDef="new_code_benef">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.id_benef }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.beneficiaire != null?update_mep.beneficiaire.code_benef_bl:null }} </th>
                             </ng-container>          
                   
                             <!-- nom_benef Column -->
@@ -199,12 +199,12 @@
                                   {{row.nom}} {{row.prenom}}
                                 </span>
                                 <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
-                                  {{ update_mep.nom_benef }} 
+                                  {{ update_mep.beneficiaire != null?update_mep.beneficiaire.nom:null }} {{ update_mep.beneficiaire != null?update_mep.beneficiaire.prenom:null }} 
                                 </span>
                               </td>
                             </ng-container> 
                             <ng-container matColumnDef="new_nom_benef">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_benef }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.beneficiaire != null?update_mep.beneficiaire.nom:null }} {{ update_mep.beneficiaire != null?update_mep.beneficiaire.prenom:null }} </th>
                             </ng-container>               
                   
                             <!-- date de passage Column -->
@@ -231,12 +231,12 @@
                                   {{row.nom_var}} 
                                 </span>
                                 <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
-                                  {{ update_mep.nom_var }} 
+                                  {{ update_mep.espece != null?update_mep.espece.nom_espece:null }} {{ update_mep.variette != null?update_mep.variette.nom_var:null }}
                                 </span>
                               </td>
                             </ng-container>
                             <ng-container matColumnDef="new_variette">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_var }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.espece != null?update_mep.espece.nom_espece:null }} {{ update_mep.variette != null?update_mep.variette.nom_var:null }} </th>
                             </ng-container>
                   
                             <!-- qso Column -->
@@ -295,12 +295,12 @@
                                   {{row.sc}}
                                 </span>
                                 <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
-                                  {{ update_mep.sc }} 
+                                  {{ update_mep.sc != null?update_mep.sc.description:null }} 
                                 </span>
                               </td>
                             </ng-container>
                             <ng-container matColumnDef="new_sc">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.sc }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.sc != null?update_mep.sc.description:null }} </th>
                             </ng-container>
 
                             <!-- culture associé Column -->
@@ -311,13 +311,13 @@
                                   {{row.ea}}
                                 </span>
                                 <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
-                                  {{ update_mep.ea }} 
+                                  {{ update_mep.espece_ea != null?update_mep.espece_ea.nom_espece:null }} {{ update_mep.variette_ea != null?update_mep.variette_ea.nom_var:null }} 
                                 </span>
                               </td>
                             </ng-container>
                             <!-- New culture associé Column -->
                             <ng-container matColumnDef="new_ea">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.ea }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.espece_ea != null?update_mep.espece_ea.nom_espece:null }} {{ update_mep.variette_ea != null?update_mep.variette_ea.nom_var:null }} </th>
                             </ng-container>
 
                             <!-- nbre_ligne  Column -->
@@ -633,15 +633,15 @@
                               <th mat-header-cell *matHeaderCellDef> Annee </th>
                               <td mat-cell *matCellDef="let row; let i = dataIndex"> 
                                 <span *ngIf="!isRowMepPaEdit || indexRowEditMepPa != i">
-                                  {{row.annee_du}} 
+                                  {{row.annee_du}}-{{row.annee_au}}
                                 </span>
                                 <span *ngIf="indexRowEditMepPa == i  && isRowMepPaEdit">
-                                  {{ update_mep.annee_du }} 
+                                  {{ update_mep.annee != null?update_mep.annee.annee_du:null }}-{{ update_mep.annee != null?update_mep.annee.annee_au:null }} 
                                 </span>
                               </td>
                             </ng-container>
                             <ng-container matColumnDef="new_annee">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.annee_du }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.annee != null?update_mep.annee.annee_du:null }}-{{ update_mep.annee != null?update_mep.annee.annee_au:null }} </th>
                             </ng-container>               
                   
                             <!-- Bloc Column -->
@@ -652,12 +652,12 @@
                                   {{row.nom_bl}}
                                 </span>
                                 <span *ngIf="indexRowEditMepPa == i  && isRowMepPaEdit">
-                                  {{ update_mep.nom_bloc }} 
+                                  {{ update_mep.bloc != null?update_mep.bloc.nom_bloc:null }} 
                                 </span>
                               </td>
                             </ng-container>  
                             <ng-container matColumnDef="new_bloc">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_bloc }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.bloc != null?update_mep.bloc.nom_bloc:null }} </th>
                             </ng-container>            
                   
                             <!-- Parcelle Column -->
@@ -668,12 +668,12 @@
                                   {{row.id_parce}}
                                 </span>
                                 <span *ngIf="indexRowEditMepPa == i  && isRowMepPaEdit">
-                                  {{ update_mep.id_parce }} 
+                                  {{ update_mep.parcelle != null?update_mep.parcelle.code_parce:null }} 
                                 </span>
                               </td>
                             </ng-container>    
                             <ng-container matColumnDef="new_parcelle">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.id_parce }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.parcelle != null?update_mep.parcelle.code_parce:null }} </th>
                             </ng-container>            
                   
                             <!-- code_benef Column -->
@@ -684,12 +684,12 @@
                                   {{row.code_benef_bl}} 
                                 </span>
                                 <span *ngIf="indexRowEditMepPa == i  && isRowMepPaEdit">
-                                  {{ update_mep.id_benef }} 
+                                  {{ update_mep.beneficiaire != null?update_mep.beneficiaire.code_benef_bl:null }} 
                                 </span>
                               </td>
                             </ng-container> 
                             <ng-container matColumnDef="new_code_benef">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.id_benef }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.beneficiaire != null?update_mep.beneficiaire.code_benef_bl:null }} </th>
                             </ng-container>                
                   
                             <!-- nom_benef Column -->
@@ -700,12 +700,12 @@
                                   {{row.nom}} {{row.prenom}} 
                                 </span>
                                 <span *ngIf="indexRowEditMepPa == i  && isRowMepPaEdit">
-                                  {{ update_mep.nom_benef }} 
+                                  {{ update_mep.beneficiaire != null?update_mep.beneficiaire.nom:null }} {{ update_mep.beneficiaire != null?update_mep.beneficiaire.prenom:null }} 
                                 </span>
                               </td>
                             </ng-container>  
                             <ng-container matColumnDef="new_nom_benef">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_benef }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.beneficiaire != null?update_mep.beneficiaire.nom:null }} {{ update_mep.beneficiaire != null?update_mep.beneficiaire.prenom:null }} </th>
                             </ng-container>               
                   
                             <!-- qsa Column -->
@@ -732,12 +732,12 @@
                                   {{row.nom_espece}} 
                                 </span>
                                 <span *ngIf="indexRowEditMepPa == i  && isRowMepPaEdit">
-                                  {{ update_mep.nom_espece }} 
+                                  {{ update_mep.espece != null?update_mep.espece.nom_espece:null }} 
                                 </span>
                               </td>
                             </ng-container>   
                             <ng-container matColumnDef="new_espece">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_espece }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.espece != null?update_mep.espece.nom_espece:null }} </th>
                             </ng-container>          
                   
                             <!-- quantite Obtenu Column -->
@@ -1098,15 +1098,15 @@
                               <th mat-header-cell *matHeaderCellDef> Annee </th>
                               <td mat-cell *matCellDef="let row; let i = dataIndex"> 
                                 <span *ngIf="!isRowMepMvEdit || indexRowEditMepMv != i">
-                                  {{row.annee_du}} 
+                                  {{row.annee_du}}-{{row.annee_au}}
                                 </span>
                                 <span *ngIf="indexRowEditMepMv == i  && isRowMepMvEdit">
-                                  {{ update_mep.annee_du }} 
+                                  {{ update_mep.annee != null?update_mep.annee.annee_du:null }}-{{ update_mep.annee != null?update_mep.annee.annee_au:null }} 
                                 </span>
                               </td>
                             </ng-container>
                             <ng-container matColumnDef="new_annee">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.annee_du }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.annee != null?update_mep.annee.annee_du:null }}-{{ update_mep.annee != null?update_mep.annee.annee_au:null }} </th>
                             </ng-container>
                   
                             <!-- Saison Column -->
@@ -1117,12 +1117,12 @@
                                   {{row.intitule}} 
                                 </span>
                                 <span *ngIf="indexRowEditMepMv == i  && isRowMepMvEdit">
-                                  {{ update_mep.nom_saison }} 
+                                  {{ update_mep.saison != null?update_mep.saison.intitule:null }} 
                                 </span>
                               </td>
                             </ng-container>
                             <ng-container matColumnDef="new_saison">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_saison }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.saison != null?update_mep.saison.intitule:null }} </th>
                             </ng-container>   
 
                             <!-- Bloc Column -->
@@ -1133,12 +1133,12 @@
                                   {{row.nom_bl}}
                                 </span>
                                 <span *ngIf="indexRowEditMepMv == i  && isRowMepMvEdit">
-                                  {{ update_mep.nom_bloc }} 
+                                  {{ update_mep.bloc != null?update_mep.bloc.nom_bloc:null }} 
                                 </span>
                               </td>
                             </ng-container> 
                             <ng-container matColumnDef="new_bloc">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_bloc }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.bloc != null?update_mep.bloc.nom_bloc:null }} </th>
                             </ng-container>             
                   
                             <!-- Parcelle Column -->
@@ -1149,12 +1149,12 @@
                                   {{row.id_parce}}
                                 </span>
                                 <span *ngIf="indexRowEditMepMv == i  && isRowMepMvEdit">
-                                  {{ update_mep.id_parce }} 
+                                  {{ update_mep.parcelle != null?update_mep.parcelle.code_parce:null }} 
                                 </span>
                               </td>
                             </ng-container>
                             <ng-container matColumnDef="new_parcelle">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.id_parce }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.parcelle != null?update_mep.parcelle.code_parce:null }} </th>
                             </ng-container>            
                   
                             <!-- code_benef Column -->
@@ -1165,12 +1165,12 @@
                                   {{row.code_benef_bl}} 
                                 </span>
                                 <span *ngIf="indexRowEditMepMv == i  && isRowMepMvEdit">
-                                  {{ update_mep.id_benef }} 
+                                  {{ update_mep.beneficiaire != null?update_mep.beneficiaire.code_benef_bl:null }} 
                                 </span>
                               </td>
                             </ng-container>   
                             <ng-container matColumnDef="new_code_benef">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.id_benef }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.beneficiaire != null?update_mep.beneficiaire.code_benef_bl:null }} </th>
                             </ng-container>              
                   
                             <!-- nom_benef Column -->
@@ -1181,12 +1181,12 @@
                                   {{row.nom}} {{row.prenom}}
                                 </span>
                                 <span *ngIf="indexRowEditMepMv == i  && isRowMepMvEdit">
-                                  {{ update_mep.nom_benef }} 
+                                  {{ update_mep.beneficiaire != null?update_mep.beneficiaire.nom:null }} {{ update_mep.beneficiaire != null?update_mep.beneficiaire.prenom:null }} 
                                 </span>
                               </td>
                             </ng-container>  
                             <ng-container matColumnDef="new_nom_benef">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_benef }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.beneficiaire != null?update_mep.beneficiaire.nom:null }} {{ update_mep.beneficiaire != null?update_mep.beneficiaire.prenom:null }} </th>
                             </ng-container>               
                   
                             <!-- qsa Column -->
@@ -1213,12 +1213,12 @@
                                   {{row.nom_espece}} 
                                 </span>
                                 <span *ngIf="indexRowEditMepMv == i  && isRowMepMvEdit">
-                                  {{ update_mep.nom_espece }} 
+                                  {{ update_mep.espece != null?update_mep.espece.nom_espece:null }} 
                                 </span>
                               </td>
                             </ng-container> 
                             <ng-container matColumnDef="new_espece">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.nom_espece }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.espece != null?update_mep.espece.nom_espece:null }} </th>
                             </ng-container> 
                   
                             <!-- qso Column -->
@@ -1310,12 +1310,12 @@
                                   {{row.sc}}
                                 </span>
                                 <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
-                                  {{ update_mep.sc }} 
+                                  {{ update_mep.sc != null?update_mep.sc.description:null }} 
                                 </span>
                               </td>
                             </ng-container>
                             <ng-container matColumnDef="new_sc">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.sc }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.sc != null?update_mep.sc.description:null }} </th>
                             </ng-container>
 
                             <!-- culture associé Column -->
@@ -1326,13 +1326,13 @@
                                   {{row.ea}}
                                 </span>
                                 <span *ngIf="indexRowEditMepSg == i  && isRowMepSgEdit">
-                                  {{ update_mep.ea }} 
+                                  {{ update_mep.espece_ea != null?update_mep.espece_ea.nom_espece:null }} {{ update_mep.variette_ea != null?update_mep.variette_ea.nom_var:null }} 
                                 </span>
                               </td>
                             </ng-container>
                             <!-- New culture associé Column -->
                             <ng-container matColumnDef="new_ea">
-                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.ea }} </th>
+                              <th mat-header-cell *matHeaderCellDef> {{ update_mep.espece_ea != null?update_mep.espece_ea.nom_espece:null }} {{ update_mep.variette_ea != null?update_mep.variette_ea.nom_var:null }} </th>
                             </ng-container>
 
                             <!-- New action Column -->

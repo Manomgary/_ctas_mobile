@@ -8,7 +8,7 @@ import { Directory, Filesystem } from '@capacitor/filesystem';
 import { IonAccordionGroup, LoadingController, ModalController, Platform } from '@ionic/angular';
 import * as _moment from 'moment';
 import { AddMepBloc, UpdateSuiviBloc } from 'src/app/interfaces/interface-insertDb';
-import { Local_benef_activ_bl, Local_bloc_parce, Local_bloc_zone, Loc_all_suivi_bloc, Loc_all_suivi_mep, Loc_Bloc, Loc_categEspece, Loc_Commune, Loc_Espece, Loc_export_excel, Loc_mep_bloc, Loc_saison, Loc_suivi_mep, Loc_sv_bloc, Loc_variette, Update_FormModal_Suivi_Mep_Bloc } from 'src/app/interfaces/interfaces-local';
+import { Local_benef_activ_bl, Local_bloc_parce, Local_bloc_zone, Loc_all_suivi_bloc, Loc_all_suivi_mep, Loc_AnneeAgricole, Loc_Bloc, Loc_categEspece, Loc_Commune, Loc_Espece, Loc_export_excel, Loc_mep_bloc, Loc_saison, Loc_suivi_mep, Loc_sv_bloc, Loc_variette, Update_FormModal_Suivi_Mep_Bloc } from 'src/app/interfaces/interfaces-local';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { ACTIVE, EC, EC_CULTURAL, IMAGE_DIR, MV, PA, SC, SG, STC, SYNC, UPDATE } from 'src/app/utils/global-variables';
@@ -21,6 +21,29 @@ import { ModalPrPage } from '../../modals/modal-pr/modal-pr.page';
 import { ExportExcelService } from 'src/app/services/export-excel.service';
 
 const moment = _moment;
+
+interface update_Mep_form {
+  annee: Loc_AnneeAgricole,
+  saison: Loc_saison,
+  bloc: Loc_Bloc,
+  beneficiaire: Local_benef_activ_bl,
+  parcelle: Local_bloc_parce,
+  ddp: string,
+  qso: number,
+  dt_distribution: string,
+  dds: string,
+  sfce: number,
+  nbre_ligne: number,
+  long_ligne: number,
+  usage: string,
+  sc: any,
+  categorie_ea: Loc_categEspece,
+  espece: Loc_Espece,
+  espece_ea: Loc_Espece,
+  variette: Loc_variette,
+  variette_ea: Loc_variette,
+  autreCultureEa: string
+}
 
 @Component({
   selector: 'app-suivi-bloc',
@@ -131,12 +154,13 @@ export class SuiviBlocPage implements OnInit {
    data_espece: Loc_Espece[] = [];
    data_var: Loc_variette[] = [];
    data_categ: Loc_categEspece[] = [];
+   data_annee_agricole: Loc_AnneeAgricole[] = [];
 
    data_sc: any[] = SC;
    data_stc: any[] = STC;
    data_ec: any[] = EC_CULTURAL;
 
-   update_mep: any = {};
+   update_mep: update_Mep_form = <update_Mep_form>{};
 
   // Export
   mep_export_sg: any[] = [];
@@ -180,6 +204,7 @@ export class SuiviBlocPage implements OnInit {
       this.loadDataExportSg();
       this.loadDataExportPa();
       this.loadDataExportMv();
+      this.loadAnneeAgricole();
       this.loadingCtrl.dismiss();
     }, 1000);
   }
@@ -377,7 +402,8 @@ export class SuiviBlocPage implements OnInit {
         parcelle: this.data_bloc_parce,
         categorie: this.data_categ,
         espece: this.data_espece,
-        variette: this.data_var
+        variette: this.data_var,
+        annee_agricole: this.data_annee_agricole
       }
     }
 
@@ -403,7 +429,8 @@ export class SuiviBlocPage implements OnInit {
         categorie: this.data_categ,
         espece: this.data_espece,
         variette: this.data_var,
-        data_row: data.data
+        data_row: data.data,
+        annee_agricole: this.data_annee_agricole
       }
     }
     switch(data.src) {
@@ -434,11 +461,11 @@ export class SuiviBlocPage implements OnInit {
     let order = 1;
     let new_mep: AddMepBloc = {
       code_culture: this.generateCodeMep(),
-      id_parce: this.update_mep.id_parce,
-      id_espece: this.update_mep.id_var != null? null:this.update_mep.id_espece,
-      id_var: this.update_mep.id_var,
-      id_saison: this.update_mep.id_saison,
-      annee_du: this.update_mep.annee_du,
+      id_parce: this.update_mep.parcelle != null?this.update_mep.parcelle.code_parce:null,
+      id_espece: this.update_mep.variette != null? null:this.update_mep.espece.code_espece,
+      id_var: this.update_mep.variette != null?this.update_mep.variette.code_var:null,
+      id_saison: this.update_mep.saison != null?this.update_mep.saison.code_saison:null,
+      id_annee: this.update_mep.annee != null?this.update_mep.annee.code:null,
       ddp: this.update_mep.ddp,
       qso: this.update_mep.qso,
       dt_distribution: this.update_mep.dt_distribution,
@@ -446,28 +473,27 @@ export class SuiviBlocPage implements OnInit {
       sfce: this.update_mep.sfce,
       nbre_ligne: this.update_mep.nbre_ligne,
       long_ligne:this.update_mep.long_ligne,
-      sc: this.update_mep.sc,
+      sc: this.update_mep.sc != null?this.update_mep.sc.value:null,
       usage: this.update_mep.usage,
-      ea_autres: this.update_mep.ea_autres,
-      ea_id_variette: this.update_mep.ea_id_variette,
+      ea_autres: this.update_mep.autreCultureEa,
+      ea_id_variette: this.update_mep.variette_ea != null?this.update_mep.variette_ea.code_var:null,
       dt_creation: moment().format("YYYY-MM-DD"),
       dt_modification: moment().format("YYYY-MM-DD"),
       status: EC,
       etat: SYNC,
       id_equipe: this.user[this.user.length - 1].id_equipe,
-      type: ''
+      type: null
     }
     switch(source) {
       case 'mep-sg':
         // insertion
-        console.log("New Data Semences en grains::: ", this.update_mep);
+        new_mep.type = SG;
         let data_sg = {
           type: SG, 
-          id_bloc: this.update_mep.id_bloc, 
-          id_saison: this.update_mep.id_saison, 
-          annee_du: this.update_mep.annee_du
+          id_bloc: this.update_mep.bloc != null?this.update_mep.bloc.code_bloc:null, 
+          id_saison: this.update_mep.saison != null?this.update_mep.saison.code_saison:null, 
+          annee_du: this.update_mep.annee != null?this.update_mep.annee.code:null
         }
-        new_mep.type = SG;
         
         this.loadData.loadMepBloc(data_sg).then(res_mep => {
           console.log("Response load Mep SG Bloc:::", res_mep);
@@ -492,7 +518,7 @@ export class SuiviBlocPage implements OnInit {
           this.crudDb.AddMepBl(new_mep).then(res => {
             console.log("Data Semences en grains To Add::: ", new_mep);
             // refresh dataSource
-            this.loadData.loadMepBloc({type: SG, id_bloc: this.update_mep.id_bloc}).then(res_mep => {
+            this.loadData.loadMepBloc({type: SG, id_bloc: this.update_mep.bloc != null?this.update_mep.bloc.code_bloc:null}).then(res_mep => {
               console.log("Response load Mep SG Bloc:::", res_mep);
               if (res_mep.values.length > 0) {
                 res_mep.values.forEach((elem_mep, i) => {
@@ -503,24 +529,24 @@ export class SuiviBlocPage implements OnInit {
                 this.src_MepSg[0].suivi_Mep = [];
                 this.dataSourceMepSg.data = this.src_MepSg;
               }
+              this.isAddMepSg = false;
+              this.update_mep = <update_Mep_form>{};
             });
             setTimeout(() => {
               this.loadingCtrl.dismiss();
-            }, 300);
+            }, 200);
           }, err => {
             this.loadingCtrl.dismiss();
           });
         });
-
-        this.isAddMepSg = false;
         break;
       case 'mep-pa':
         // insertion
         console.log("New Data jeunes plants::: ", this.update_mep);
         let data_pa = {
           type: PA, 
-          id_bloc: this.update_mep.id_bloc, 
-          annee_du: this.update_mep.annee_du
+          id_bloc: this.update_mep.bloc != null?this.update_mep.bloc.code_bloc:null, 
+          annee_du: this.update_mep.annee != null?this.update_mep.annee.code:null
         }
         new_mep.type = PA;
 
@@ -549,7 +575,7 @@ export class SuiviBlocPage implements OnInit {
           this.crudDb.AddMepBl(new_mep).then(res => {
             console.log("Data jeunes plants To Add::: ", new_mep);
             // refresh data source
-            this.loadData.loadMepBloc({type: PA, id_bloc: this.update_mep.id_bloc}).then(res_mep => {
+            this.loadData.loadMepBloc({type: PA, id_bloc: this.update_mep.bloc != null?this.update_mep.bloc.code_bloc:null}).then(res_mep => {
               console.log("Response load Mep PA Bloc:::", res_mep);
               if (res_mep.values.length > 0) {
                 res_mep.values.forEach((elem_mep, i) => {
@@ -560,6 +586,8 @@ export class SuiviBlocPage implements OnInit {
                 this.src_MepPa[0].suivi_Mep = [];
                 this.dataSourceMepPa.data = this.src_MepPa;
               }
+              this.isAddMepPa = false;
+              this.update_mep = <update_Mep_form>{};
             });
             setTimeout(() => {
               this.loadingCtrl.dismiss();
@@ -569,25 +597,23 @@ export class SuiviBlocPage implements OnInit {
           });
 
         });
-        
-        this.isAddMepPa = false;
         break;
       case 'mep-mv':
         // insertion
         console.log("New Data Materiels vegetaux::: ", this.update_mep);
         let data_mv: any;
-        if (this.update_mep.id_saison != null) {
+        if (this.update_mep.saison != null) {
           data_mv = {
             type: MV, 
-            id_bloc: this.update_mep.id_bloc, 
-            id_saison: this.update_mep.id_saison, 
-            annee_du: this.update_mep.annee_du
+            id_bloc: this.update_mep.bloc != null?this.update_mep.bloc.code_bloc:null, 
+            id_saison: this.update_mep.saison != null?this.update_mep.saison.code_saison:null, 
+            annee_du: this.update_mep.annee != null?this.update_mep.annee.code:null
           }
         } else {
           data_mv = {
             type: MV, 
-            id_bloc: this.update_mep.id_bloc, 
-            annee_du: this.update_mep.annee_du
+            id_bloc: this.update_mep.bloc != null?this.update_mep.bloc.code_bloc:null, 
+            annee_du: this.update_mep.annee != null?this.update_mep.annee.code:null
           }
         }
         new_mep.type = MV;
@@ -615,7 +641,7 @@ export class SuiviBlocPage implements OnInit {
           this.crudDb.AddMepBl(new_mep).then(res => {
             console.log("Data Maeteriels vegetaux To Add::: ", new_mep);
             // refresh data source
-            this.loadData.loadMepBloc({type: MV, id_bloc: this.update_mep.id_bloc}).then(res_mep => {
+            this.loadData.loadMepBloc({type: MV, id_bloc: this.update_mep.bloc != null?this.update_mep.bloc.code_bloc:null}).then(res_mep => {
               console.log("Response load Mep PA Bloc:::", res_mep);
               if (res_mep.values.length > 0) {
                 res_mep.values.forEach((elem_mep, i) => {
@@ -626,17 +652,17 @@ export class SuiviBlocPage implements OnInit {
                 this.src_MepMv[0].suivi_Mep = [];
                 this.dataSourceMepMv.data = this.src_MepMv;
               }
+              this.isAddMepMv = false;
+              this.update_mep = <update_Mep_form>{};
             });
             setTimeout(() => {
               this.loadingCtrl.dismiss();
-            }, 300);
+            }, 200);
           }, err => {
             this.loadingCtrl.dismiss();
           });
 
         });
-
-        this.isAddMepMv = false;
         break;
         default:
           this.loadingCtrl.dismiss();
@@ -647,12 +673,15 @@ export class SuiviBlocPage implements OnInit {
     switch(source) {
       case 'mep-sg':
         this.isAddMepSg = false;
+        this.update_mep = <update_Mep_form>{};
         break;
       case 'mep-pa':
         this.isAddMepPa = false;
+        this.update_mep = <update_Mep_form>{};
         break;
       case 'mep-mv':
         this.isAddMepMv = false;
+        this.update_mep = <update_Mep_form>{};
         break;
     }
   }
@@ -661,11 +690,11 @@ export class SuiviBlocPage implements OnInit {
     let data_row: Loc_mep_bloc = source.data;
     let updated_mep_: AddMepBloc = {
       code_culture: data_row.code_culture,
-      id_parce: this.update_mep.id_parce,
-      id_espece: this.update_mep.id_var != null? null:this.update_mep.id_espece,
-      id_var: this.update_mep.id_var,
-      id_saison: this.update_mep.id_saison,
-      annee_du: this.update_mep.annee_du,
+      id_parce: this.update_mep.parcelle != null?this.update_mep.parcelle.code_parce:null,
+      id_espece: this.update_mep.variette != null? null:this.update_mep.espece.code_espece,
+      id_var: this.update_mep.variette != null?this.update_mep.variette.code_var:null,
+      id_saison: this.update_mep.saison != null?this.update_mep.saison.code_saison:null,
+      id_annee: this.update_mep.annee != null?this.update_mep.annee.code:null,
       ddp: this.update_mep.ddp,
       qso: this.update_mep.qso,
       dt_distribution: this.update_mep.dt_distribution,
@@ -674,9 +703,9 @@ export class SuiviBlocPage implements OnInit {
       nbre_ligne: this.update_mep.nbre_ligne,
       long_ligne:this.update_mep.long_ligne,
       usage: this.update_mep.usage,
-      sc: this.update_mep.sc,
-      ea_autres: this.update_mep.ea_autres,
-      ea_id_variette: this.update_mep.ea_id_variette,
+      sc: this.update_mep.sc != null?this.update_mep.sc.value:null,
+      ea_autres: this.update_mep.autreCultureEa,
+      ea_id_variette: this.update_mep.variette_ea != null?this.update_mep.variette_ea.code_var:null,
       dt_creation: data_row.dt_creation,
       dt_modification: moment().format("YYYY-MM-DD"),
       status: EC,
@@ -699,21 +728,21 @@ export class SuiviBlocPage implements OnInit {
         console.log("SAVE Data To Edit SG::::", updated_mep_);
         this.isRowMepSgEdit = false;
         this.indexRowEditMepSg = null;
-        this.update_mep = {};
+        this.update_mep = <update_Mep_form>{};
         // Save Edit
         break;
       case 'mep-pa':
         console.log("SAVE Data To Edit PA::::", updated_mep_);
         this.isRowMepPaEdit = false;
         this.indexRowEditMepPa = null;
-        this.update_mep = {};
+        this.update_mep = <update_Mep_form>{};
         // Save Edit
         break;
       case 'mep-mv':
         console.log("SAVE Data To Edit MV::::", updated_mep_);
         this.isRowMepMvEdit = false;
         this.indexRowEditMepMv = null;
-        this.update_mep = {};
+        this.update_mep = <update_Mep_form>{};
         // Save Edit
         break;
       default:
@@ -726,20 +755,20 @@ export class SuiviBlocPage implements OnInit {
         console.log("Cancel Edit SG::::",this.update_mep);
         this.isRowMepSgEdit = false;
         this.indexRowEditMepSg = null;
-        this.update_mep = {};
+        this.update_mep = <update_Mep_form>{};
         break;
       case 'mep-pa':
         console.log("Cancel Edit PA::::", this.update_mep);
         this.isRowMepPaEdit = false;
         this.indexRowEditMepPa = null;
-        this.update_mep = {};
+        this.update_mep = <update_Mep_form>{};
         // Save Edit
         break;
       case 'mep-mv':
         console.log("Cancel Edit MV::::", this.update_mep);
         this.isRowMepMvEdit = false;
         this.indexRowEditMepMv = null;
-        this.update_mep = {};
+        this.update_mep = <update_Mep_form>{};
         // Save Edit
         break;
       default:
@@ -1078,14 +1107,12 @@ export class SuiviBlocPage implements OnInit {
   // generate code Mep
   generateCodeMep() {
     let code_mep: string = '';
-    let annee_ = this.update_mep.annee_du.charAt(2) + this.update_mep.annee_du.charAt(3);
-    
-    console.log("Ordre Bloc:::", this.update_mep.ordre_bloc, "Code bloc:::::", this.update_mep.ancronyme_bloc);
+    let annee_ = this.update_mep.annee.annee_du.toString().charAt(2) + this.update_mep.annee.annee_du.toString().charAt(3) + this.update_mep.annee.annee_au.toString().charAt(2) + this.update_mep.annee.annee_au.toString().charAt(3);
 
-    if (this.update_mep.nom_saison != null && this.update_mep.nom_saison != null) {
-      return code_mep = this.update_mep.nom_saison + annee_ + '-' +  this.update_mep.ordre_bloc + this.update_mep.ancronyme_bloc.toUpperCase() + '-' + 'Mep'; 
+    if (this.update_mep.saison != null) {
+      return code_mep = this.update_mep.saison.intitule + annee_ + '-' +  this.update_mep.bloc.ordre + this.update_mep.bloc.ancronyme.toUpperCase() + '-' + 'Mep'; 
     } else {
-      return code_mep =  this.update_mep.ordre_bloc + this.update_mep.ancronyme_bloc.toUpperCase() + '-' + annee_ + 'Mep'; 
+      return code_mep =  this.update_mep.bloc.ordre + this.update_mep.bloc.ancronyme.toUpperCase() + '-' + annee_ + 'Mep'; 
     }
   }
 
@@ -1123,74 +1150,23 @@ export class SuiviBlocPage implements OnInit {
 
     modal.onDidDismiss().then((res_modal) => {
       console.log(res_modal);
-      this.update_mep = {};
+      ///this.update_mep = {};
 
       if (res_modal.data != undefined) {
         let data_modal = res_modal.data;
         if ((data_modal.isAddMepSg != undefined && data_modal.isAddMepSg) || (data_modal.isAddMepPa != undefined && data_modal.isAddMepPa) || (data_modal.isAddMepMv != undefined &&  data_modal.isAddMepMv)) {
-          let data_: any = data_modal.data_;
-          let saison: Loc_saison;
-          let bloc: Loc_Bloc;
-          let benef: Local_benef_activ_bl;
-          let categorie: Loc_categEspece;
-          let espece: Loc_Espece;
-          let parcelle: Local_bloc_parce;
-          // data
-          saison = data_.saison != null?data_.saison:null;
-          bloc = data_.bloc;
-          benef = data_.beneficiaire;
-          categorie = data_.categorie_ea;
-          espece = data_.espece;
-          parcelle = data_.parcelle;
-          this.update_mep = {
-            id_bloc: bloc.code_bloc,
-            nom_bloc: bloc.nom_bloc,
-            ancronyme_bloc: bloc.ancronyme,
-            ordre_bloc: bloc.ordre,
-            id_benef: benef.code_benef_bl,
-            nom_benef: benef.nom + ' ' + benef.prenom,
-            id_parce: parcelle.code_parce,
-            id_espece: espece.code_espece,
-            nom_espece: espece.nom_espece,
-            id_var: null,
-            nom_var: null,
-            id_saison: data_.saison != null?saison.code_saison:null,
-            nom_saison:  data_.saison != null?saison.intitule:null,
-            annee_du: data_.annee,
-            ddp: data_.ddp.format("YYYY-MM-DD"),
-            qso: data_.qso,
-            dt_distribution: data_.dt_distribution != null?data_.dt_distribution.format("YYYY-MM-DD"):null,
-            dds: data_.dds.format("YYYY-MM-DD"),
-            sfce: data_.sfce,
-            nbre_ligne: data_.nbre_ligne,
-            long_ligne: data_.long_ligne,
-            usage: data_.usage,
-            sc: data_.sc != null? data_.sc.value: null,
-            ea_autres: data_.autreCultureEa,
-            ea_id_variette: null,
-            ea: null
-          }
+          this.update_mep = data_modal.data_;
+          this.update_mep.ddp = this.update_mep.ddp != null?data_modal.data_.ddp.format("YYYY-MM-DD"):null;
+          this.update_mep.dds = this.update_mep.dds != null?data_modal.data_.dds.format("YYYY-MM-DD"):null;
+          this.update_mep.dt_distribution = this.update_mep.dt_distribution != null?data_modal.data_.dt_distribution.format("YYYY-MM-DD"):null;
   
           if ((data_modal.isAddMepSg != undefined && data_modal.isAddMepSg) || (data_modal.isAddMepMv != undefined &&  data_modal.isAddMepMv)) {
             
-            //let variette_ea: Loc_variette;
-            let variette_ea: any;
-            let espece_ea: Loc_Espece;
-            espece_ea = data_.espece_ea;
-            variette_ea = data_.variette_ea;
-            
-            this.update_mep.ea_id_variette = variette_ea != null? variette_ea.code_var: null;
-            this.update_mep.ea = data_.autreCultureEa != null || variette_ea != null?  (data_.autreCultureEa != null? data_.autreCultureEa: (espece_ea.nom_espece + ' ' + variette_ea.nom_var)): null;
             if (data_modal.isAddMepMv != undefined &&  data_modal.isAddMepMv) {
               this.isAddMepMv = true;
               console.log('Dismissed Add MV..', data_modal.data_);
             } else if(data_modal.isAddMepSg != undefined && data_modal.isAddMepSg) {
               console.log('Dismissed Add Sg..', data_modal.data_);
-              let variette: Loc_variette;
-              variette = data_.variette;
-  
-              this.update_mep.id_var = variette.code_var;
-              this.update_mep.nom_var = espece.nom_espece + ' ' + variette.nom_var;
               this.isAddMepSg = true;
             }
           } else if (data_modal.isAddMepPa != undefined && data_modal.isAddMepPa) {
@@ -1250,68 +1226,20 @@ export class SuiviBlocPage implements OnInit {
     }
     modal.onDidDismiss().then((res_modal) => {
       console.log(res_modal);
-      this.update_mep = {};
+      //this.update_mep = {};
       if (res_modal.data != undefined) {
-        let data_modal = res_modal.data;
+        let data_modal: any = res_modal.data;
+        this.update_mep = data_modal.data_;
+        this.update_mep.ddp = this.update_mep.ddp != null?data_modal.data_.ddp.format("YYYY-MM-DD"):null;
+        this.update_mep.dds = this.update_mep.dds != null?data_modal.data_.dds.format("YYYY-MM-DD"):null;
+        this.update_mep.dt_distribution = this.update_mep.dt_distribution != null?data_modal.data_.dt_distribution.format("YYYY-MM-DD"):null;
+
         if ((data_modal.isEditMepSg != undefined && data_modal.isEditMepSg) || (data_modal.isEditMepMv != undefined && data_modal.isEditMepMv) || (data_modal.isEditMepPa != undefined && data_modal.isEditMepPa)) {
-          console.log('Dismissed Edit Mep...', data_modal.data_);
-          let data_: any = data_modal.data_;
-          let saison: Loc_saison;
-          let bloc: Loc_Bloc;
-          let benef: Local_benef_activ_bl;
-          let categorie: Loc_categEspece;
-          let espece: Loc_Espece;
-          let variette: Loc_variette;
-          let parcelle: Local_bloc_parce;
-          // data
-          saison = data_.saison != null?data_.saison:null;
-          bloc = data_.bloc;
-          benef = data_.beneficiaire;
-          categorie = data_.categorie_ea;
-          espece = data_.espece;
-          variette = data_.variette;
-          parcelle = data_.parcelle;
-          this.update_mep = {
-            //code_culture: '001',
-            id_bloc: bloc.code_bloc,
-            nom_bloc: bloc.nom_bloc,
-            id_benef: benef.code_benef_bl,
-            nom_benef: benef.nom + ' ' + benef.prenom,
-            id_parce: parcelle.code_parce,
-            id_espece: espece.code_espece,
-            nom_espece: espece.nom_espece,
-            id_var: null,
-            nom_var: null,
-            id_saison: data_.saison != null?saison.code_saison:null,
-            nom_saison: data_.saison != null?saison.intitule:null,
-            annee_du: data_.annee,
-            ddp: data_.ddp.format("YYYY-MM-DD"),
-            qso: data_.qso,
-            dt_distribution: data_.dt_distribution != null?data_.dt_distribution.format("YYYY-MM-DD"):null,
-            dds: data_.dds.format("YYYY-MM-DD"),
-            sfce: data_.sfce,
-            nbre_ligne: data_.nbre_ligne,
-            long_ligne: data_.long_ligne,
-            usage: data_.usage,
-            sc: data_.sc != null? data_.sc.value:null,
-            ea_autres: data_.autreCultureEa,
-            ea_id_variette: null,
-            ea: null
-          }
-  
+          console.log('Dismissed Edit Mep...', this.update_mep);
+
           if ((data_modal.isEditMepSg != undefined && data_modal.isEditMepSg) ||  (data_modal.isEditMepMv != undefined && data_modal.isEditMepMv)) {
-            //let variette_ea: Loc_variette;
-            let variette_ea: Loc_variette;
-            let espece_ea: Loc_Espece;
-            espece_ea = data_.espece_ea;
-            variette_ea = data_.variette_ea;
-  
-            this.update_mep.ea_id_variette = variette_ea != null? variette_ea.code_var: null;
-            this.update_mep.ea = data_.autreCultureEa != null  || variette_ea != null?(data_.autreCultureEa != null ? data_.autreCultureEa:(espece_ea.nom_espece + ' ' + variette_ea.nom_var)):null;
   
             if (data_modal.isEditMepSg != undefined && data_modal.isEditMepSg) {
-              this.update_mep.id_var = variette.code_var;
-              this.update_mep.nom_var = espece.nom_espece + ' ' + variette.nom_var;
               this.isRowMepSgEdit = true;
   
             } else if (data_modal.isEditMepMv != undefined && data_modal.isEditMepMv){
@@ -1446,6 +1374,7 @@ export class SuiviBlocPage implements OnInit {
       this.indexRowEditMepMv = null;
       this.indexRowEditMepPa  = null;
       this.indexRowEditMepSg = null;
+      this.update_mep = <update_Mep_form>{};
       //this.update_mep = null;
     }
     // init Suivi semences en grains
@@ -1773,6 +1702,12 @@ export class SuiviBlocPage implements OnInit {
     } 
   }
 
+  loadAnneeAgricole() {
+    this.loadData.loadAnneeAgricole().then(res => {
+      this.data_annee_agricole = res.values;
+    });
+  }
+
   // Accordion
   logAccordionValue() {
     console.log(this.accordionGroup.value);
@@ -1792,3 +1727,7 @@ export class SuiviBlocPage implements OnInit {
     this.accordionGroup.value = undefined;
   }
 }
+function data_sg(data_sg: { type: string; id_bloc: string; id_saison: string; annee_du: number; }) {
+  throw new Error('Function not implemented.');
+}
+

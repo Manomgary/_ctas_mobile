@@ -65,8 +65,8 @@ export class CrudDbService {
   */
  async AddMepBl(data: AddMepBloc) {
    if (this.db_ready.dbReady.value) {
-      const state = `INSERT INTO culture_bl(code_culture, id_parce, id_espece, id_var, id_saison, annee_du, ddp, qso, dt_distribution, dds, sfce, nbre_ligne, long_ligne, usage, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type) 
-                    VALUES ("${data.code_culture}","${data.id_parce}", ${data.id_espece != null? `"${data.id_espece}"` : null}, ${data.id_var != null? `"${data.id_var}"`:null }, ${data.id_saison != null?`"${data.id_saison}"`:null},"${data.annee_du}","${data.ddp}",${data.qso}, ${data.dt_distribution != null?`"${data.dt_distribution}"`:null}, "${data.dds}", ${data.sfce},  ${data.nbre_ligne},  ${data.long_ligne}, ${data.usage != null?`"${data.usage}"`:null}, ${data.sc != null? `"${data.sc}"`:null},${data.ea_autres != null? `"${data.ea_autres}"`: null}, ${data.ea_id_variette != null? `"${data.ea_id_variette}"`: null},"${data.dt_creation}","${data.dt_modification}","${data.status}","${data.etat}",${data.id_equipe}, "${data.type}");`;
+      const state = `INSERT INTO culture_bl(code_culture, id_parce, id_espece, id_var, id_saison, id_annee, ddp, qso, dt_distribution, dds, sfce, nbre_ligne, long_ligne, usage, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type) 
+                    VALUES ("${data.code_culture}","${data.id_parce}", ${data.id_espece != null? `"${data.id_espece}"` : null}, ${data.id_var != null? `"${data.id_var}"`:null }, ${data.id_saison != null?`"${data.id_saison}"`:null}, ${data.id_annee},"${data.ddp}",${data.qso}, ${data.dt_distribution != null?`"${data.dt_distribution}"`:null}, "${data.dds}", ${data.sfce},  ${data.nbre_ligne},  ${data.long_ligne}, ${data.usage != null?`"${data.usage}"`:null}, ${data.sc != null? `"${data.sc}"`:null},${data.ea_autres != null? `"${data.ea_autres}"`: null}, ${data.ea_id_variette != null? `"${data.ea_id_variette}"`: null},"${data.dt_creation}","${data.dt_modification}","${data.status}","${data.etat}",${data.id_equipe}, "${data.type}");`;
       return await this.db.execute(state);
    }
  }
@@ -77,7 +77,7 @@ export class CrudDbService {
       // Sync service
       state = `UPDATE culture_bl SET  etat="${data.etat}" WHERE code_culture="${data.code_culture}"`;
     } else {
-      state = `UPDATE culture_bl SET id_parce="${data.id_parce}", id_espece= ${data.id_espece != null? `"${data.id_espece}"` : null}, id_var= ${data.id_var != null? `"${data.id_var}"`:null },id_saison=${data.id_saison != null?`"${data.id_saison}"`:null},annee_du="${data.annee_du}",
+      state = `UPDATE culture_bl SET id_parce="${data.id_parce}", id_espece= ${data.id_espece != null? `"${data.id_espece}"` : null}, id_var= ${data.id_var != null? `"${data.id_var}"`:null },id_saison=${data.id_saison != null?`"${data.id_saison}"`:null},id_annee= ${data.id_annee},
               ddp="${data.ddp}", qso=${data.qso}, dt_distribution = ${data.dt_distribution != null?`"${data.dt_distribution}"`:null}, dds="${data.dds}", sfce=${data.sfce}, nbre_ligne = ${data.nbre_ligne}, long_ligne = ${data.long_ligne}, usage = ${data.usage != null?`"${data.usage}"`:null}, sc=${data.sc != null? `"${data.sc}"`:null}, ea_autres=${data.ea_autres != null? `"${data.ea_autres}"`: null}, ea_id_variette=${data.ea_id_variette != null? `"${data.ea_id_variette}"`: null}, 
               dt_modification="${data.dt_modification}", status="${data.status}", etat="${data.etat}", id_equipe=${data.id_equipe}, type="${data.type}" WHERE code_culture="${data.code_culture}"`;
     }
@@ -244,8 +244,8 @@ export class CrudDbService {
   // Add Mep PR
   async AddMepPR(data: UpdateMepPR) {
     if (this.db_ready.dbReady.value) {
-      let data_ = [data.code_culture, data.id_parce, data.id_espece, data.id_var, data.id_saison, data.annee_du, data.ddp, data.qso, data.dt_distribution, data.dds, data.sfce, data.nbre_ligne, data.long_ligne, data.sc, data.ea_autres, data.ea_id_variette, data.dt_creation, data.dt_modification, data.status, data.etat, data.id_equipe, data.type];
-      const state_ = `INSERT INTO culture_pr(code_culture, id_parce, id_espece, id_var, id_saison, annee_du, ddp, qso, dt_distribution, dds, sfce, nbre_ligne, long_ligne, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type)
+      let data_ = [data.code_culture, data.id_parce, data.id_espece, data.id_var, data.id_saison, data.id_annee, data.ddp, data.qso, data.dt_distribution, data.dds, data.sfce, data.nbre_ligne, data.long_ligne, data.sc, data.ea_autres, data.ea_id_variette, data.dt_creation, data.dt_modification, data.status, data.etat, data.id_equipe, data.type];
+      const state_ = `INSERT INTO culture_pr(code_culture, id_parce, id_espece, id_var, id_saison, id_annee, ddp, qso, dt_distribution, dds, sfce, nbre_ligne, long_ligne, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
       return await this.db.query(state_, data_);
     }
@@ -257,8 +257,8 @@ export class CrudDbService {
       let state_: any;
       if (data.isUpdateMepSuivi) {
         let data_mep: UpdateMepPR = data.data_mep;
-        data_ = [data_mep.id_parce, data_mep.id_espece, data_mep.id_var, data_mep.id_saison, data_mep.annee_du, data_mep.ddp, data_mep.qso, data_mep.dt_distribution, data_mep.dds, data_mep.sfce, data_mep.nbre_ligne, data_mep.long_ligne, data_mep.sc, data_mep.ea_autres, data_mep.ea_id_variette, data_mep.dt_modification, data_mep.status, data_mep.etat];
-        state_ = `UPDATE culture_pr SET id_parce= ?, id_espece= ?, id_var= ?, id_saison= ?, annee_du= ?, ddp= ?, qso= ?, dt_distribution= ?, 
+        data_ = [data_mep.id_parce, data_mep.id_espece, data_mep.id_var, data_mep.id_saison, data_mep.id_annee, data_mep.ddp, data_mep.qso, data_mep.dt_distribution, data_mep.dds, data_mep.sfce, data_mep.nbre_ligne, data_mep.long_ligne, data_mep.sc, data_mep.ea_autres, data_mep.ea_id_variette, data_mep.dt_modification, data_mep.status, data_mep.etat];
+        state_ = `UPDATE culture_pr SET id_parce= ?, id_espece= ?, id_var= ?, id_saison= ?, id_annee= ?, ddp= ?, qso= ?, dt_distribution= ?, 
                 dds= ?, sfce= ?, nbre_ligne= ?, long_ligne= ?, sc= ?, ea_autres= ?, ea_id_variette= ?, dt_modification= ?, status= ?, etat= ? WHERE code_culture= "${data_mep.code_culture}"`;
       }
       if (data.isUpdateMepSuiviSync) {
@@ -327,7 +327,7 @@ export class CrudDbService {
     if (this.db_ready.dbReady.value) {
       let data_to_add = [data.code_parce, data.code_parce_temp, data.id_bloc, data.id_benef, data.ref_gps, data.lat, data.log, data.superficie, data.id_fkt, data.id_commune, data.village, data.anne_adheran, data.indication, data.etat, data.status];
       let state_ = `INSERT INTO bloc_parce(code_parce, code_parce_temp, id_bloc, id_benef, ref_gps, lat, log, superficie, id_fkt, id_commune, village, anne_adheran, indication, etat, status) 
-                    VALUES(?, ? ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,? ,?)`;
+                    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,? ,?)`;
       return await this.db.query(state_, data_to_add);
     }
   }
@@ -381,9 +381,9 @@ export class CrudDbService {
    *************************/
   async AddParcellePms(data: UpdateParcellePms) {
     if (this.db_ready.dbReady.value) {
-      let data_parce = [data.code_parce, data.id_assoc, data.id_benef, data.ref_gps, data.lat, data.log, data.superficie, data.id_fkt, data.id_commune, data.village, data.anne_adheran, data.indication, data.etat, data.status];
-      let state_ = `INSERT INTO assoc_parce(code_parce, id_assoc, id_benef, ref_gps, lat, log, superficie, id_fkt, id_commune, village, anne_adheran, indication, etat, status) 
-                  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,? ,?)`;
+      let data_parce = [data.code_parce, data.code_parce_temp, data.id_assoc, data.id_benef, data.ref_gps, data.lat, data.log, data.superficie, data.id_fkt, data.id_commune, data.village, data.anne_adheran, data.indication, data.etat, data.status];
+      let state_ = `INSERT INTO assoc_parce(code_parce, code_parce_temp, id_assoc, id_benef, ref_gps, lat, log, superficie, id_fkt, id_commune, village, anne_adheran, indication, etat, status) 
+                  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
       return await this.db.query(state_, data_parce);
     }
   }

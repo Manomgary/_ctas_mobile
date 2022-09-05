@@ -119,7 +119,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
 
   // Beneficiaire pms Paginator
   @ViewChild('benfPaginator') benfPaginator: MatPaginator;
-  @ViewChild('benefSort') benefSort: MatSort;
+  //@ViewChild('benefSort') benefSort: MatSort;
 
   // Parcelle pms
   @ViewChild('parcePaginator') parcePaginator: MatPaginator;
@@ -190,9 +190,9 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
     this.dataSource.paginator = this.assocPaginator;
     this.dataSource.sort = this.assocSort;
 
-    this.benefSort.disableClear = true;
+    //this.benefSort.disableClear = true;
     this.dataSourceBenef.paginator = this.benfPaginator;
-    this.dataSourceBenef.sort = this.benefSort;
+    //this.dataSourceBenef.sort = this.benefSort;
 
     this.dataSourceParce.paginator = this.parcePaginator;
     this.dataSourceParce.sort = this.parceSort;
@@ -214,6 +214,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
         this.district = data.data.district;
         this.commune = data.data.commune;
         this.loadFktAssociation();
+        this.refreshDataSource();
       } else {
         // Initialized data 
         this.initPropr();
@@ -393,6 +394,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadPmsAsso() {
+    console.log(":::Load Data Pms:::");
     this.data_pms = [];
     this.parcelle_saison_pms = [];
     if (this.association.length > 0 ) {
@@ -486,7 +488,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  onSaveAddPms(data) {
+  async onSaveAddPms(data) {
     let img_cin: string[] = [];
     if (this.update_pms.img_cin_1.data != null) {
       img_cin.push(this.update_pms.img_cin_1.data);
@@ -528,7 +530,7 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
       status: null
     }
     if (data.src === 'add') {
-      console.log(":::Data to Add:::", this.update_pms);
+      console.log(":::Data to Add:::", this.update_pms.association);
       let code_benef: string = 'B' + '-' + this.user[this.user.length - 1].id_equipe + '-' + moment().format('YYYYMMDD-HHmmss');
 
       data_to_add.code_benef = code_benef;
@@ -553,6 +555,8 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
         });
       });
     } else if (data.src === 'edit') {
+      const loading = await this.loadingCtrl.create();
+      await loading.present();
       let element_pms: Benef_activ_pms = data.elem_pms;
       data_to_add.code_benef = element_pms.code_benef;
       data_to_add.dt_Insert = moment().format("YYYY-MM-DD");
@@ -570,7 +574,11 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
         }
         console.log(":::Data Pms to Edit:::", add_pms);
         this.crudService.UpdatePms(update_data).then(res => {
-          this.loadPmsAsso();
+          setTimeout(() => {
+            this.refreshDataSource();
+            this.loadingCtrl.dismiss();
+          }, 500);
+          this.dataSourceBenef.data =  this.data_pms;
           this.isEditRowPms = false;
           this.update_pms = <Update_infos_benef>{};
           this.indexEditRowPms = null;
@@ -590,18 +598,19 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
   }
   // Update Pms
   onSaveParce(data: any) {
-    console.log(":::Data Parce to Update:::", this.update_parce_pms);
+    console.log(":::Data Parce to Update:::", this.update_parce_pms.superficie);
     let elem_pms: Benef_activ_pms = data.elem_pms;
     let data_To_add_parce: UpdateParcellePms = {
       code_parce: null,
+      code_parce_temp: null,
       id_assoc: elem_pms.id_association,
       id_benef: elem_pms.code_benef,
       ref_gps: this.update_parce_pms.ref_gps,
       lat: this.update_parce_pms.latitude,
       log: this.update_parce_pms.longitude,
       superficie: this.update_parce_pms.superficie,
-      id_fkt: this.update_parce_pms.fokontany != null?this.update_parce_pms.fokontany.code_fkt:null,
-      id_commune: this.update_parce_pms.village != null && this.update_parce_pms.fokontany == null?this.update_parce_pms.commune.code_com:null,
+      id_fkt: this.update_parce_pms.fokontany != null ? this.update_parce_pms.fokontany.code_fkt : null,
+      id_commune: this.update_parce_pms.village != null && this.update_parce_pms.fokontany == null ? this.update_parce_pms.commune.code_com : null,
       village: this.update_parce_pms.village,
       anne_adheran: null,
       indication: null,
@@ -632,7 +641,9 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
             }
           });
           let code_parce = association.numero + association.ancronyme + '-' + moment().format('YYYYMMDD-HHmmss');
+          let code_parce_tmp = null; // A faire
           data_To_add_parce.code_parce = code_parce;
+          data_To_add_parce.code_parce_temp = code_parce_tmp;
           data_To_add_parce.etat = SYNC;
           data_To_add_parce.status = ACTIVE;
           console.log("::::Data Parcelle Association:::::", data_To_add_parce);
@@ -937,15 +948,17 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
     else this.expandedElement = row;
   }
 
-  selectMatTab(index: number) {
+  async selectMatTab(index: number) {
     console.log("index Mat-Tab Selected : " + index);
     this.initPropr();
     if (index == 0) {
       this.dataSource.filter = '';
       this.dataSource.data = this.association;
     } else if (index == 1) {
+      //this.loadPmsAsso();
       console.log(this.data_pms);
       this.dataSourceBenef.filter = '';
+      this.refreshDataSource();
       this.dataSourceBenef.data =  this.data_pms;
       console.log(this.dataSourceBenef.data);      
     } else if(index == 2) {
@@ -1117,5 +1130,4 @@ export class BeneficiairePage implements OnInit, AfterViewInit, OnDestroy {
       console.log(":::Association annee_agricole::::", res.values);
     });
   }
-
 }

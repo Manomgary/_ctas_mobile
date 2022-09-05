@@ -8,71 +8,206 @@
 </ion-header>
 
 <ion-content>
-  <p>
-    mise en place identifier : {{data_culture.length}}
-    <button mat-raised-button (click)="onSyncCulture()" class="demo-button" [disabled] = "data_culture.length === 0">
-      Sync
-    </button>
-  </p>
-  <p>
-    suivi effectuer : {{data_suivi.length}}
-    <button mat-raised-button (click)="onSyncSuivi()" class="demo-button" [disabled] = "data_suivi.length === 0">
-      Sync
-    </button>
-  </p>
-  <p>
-    MEP Bloc: {{data_mep_bloc.length}}
-    <button mat-raised-button (click)="onSyncMepBl()" class="demo-button" [disabled] = "data_mep_bloc.length === 0">
-      Sync
-    </button>
-  </p>
-  <p>
-    Suivi Bloc: {{data_suivi_bloc.length}}
-    <button mat-raised-button (click)="onSyncSuiviBl()" class="demo-button" [disabled] = "data_suivi_bloc.length === 0">
-      Sync
-    </button>
-  </p>
-  <p>
-    Paysan Relai identifier: {{data_benef_activ_pr.length}}
-    <button mat-raised-button (click)="onSyncBenefeActivePr()" class="demo-button" [disabled] = "data_benef_activ_pr.length === 0">
-      Sync
-    </button>
-  </p>
-  <p>
-    Parcelle PR: {{data_cep_pr.length}}
-    <button mat-raised-button (click)="onSyncParcePr()" class="demo-button" [disabled] = "data_cep_pr.length === 0">
-      Sync
-    </button>
-  </p>
-  <p>
-    Animation PR : {{data_anime_ve.length}}
-    <button mat-raised-button (click)="onSyncAnimationVe()" class="demo-button" [disabled] = "data_anime_ve.length === 0">
-      Sync
-    </button>
-  </p>
-  <p>
-    MEP CEP: {{data_mep_pr.length}}
-    <button mat-raised-button (click)="onSyncMepPR()" class="demo-button" [disabled] = "data_mep_pr.length === 0">
-      Sync
-    </button>
-  </p>
-  <p>
-    Suivi CEP: {{data_suivi_pr.length}}
-    <button mat-raised-button (click)="onSyncSuiviPr()" class="demo-button" [disabled] = "data_suivi_pr.length === 0">
-      Sync
-    </button>
-  </p>
-  <p>
-    PMS à Synchroniser: {{data_benef_activ_pms.length}}
-    <button mat-raised-button (click)="onSyncBenefeActivePms()" class="demo-button" [disabled] = "data_benef_activ_pms.length === 0">
-      Sync
-    </button>
-  </p>
-  <p>
-    Parcelle Pms à Synchroniser: {{data_parce_pms.length}}
-    Parcelle Saison Pms à Synchroniser: {{data_parceSaison_pms.length}}
-    <button mat-raised-button (click)="onSyncParcePms()" class="demo-button" [disabled] = "data_parceSaison_pms.length === 0">
-      Sync
-    </button>
-  </p>
+  <ion-accordion-group mode="ios" [multiple]="true">
+    <ion-accordion value="rp">
+      <ion-item slot="header" class="level1">
+        <ion-label>
+          <div class="flex-header" fxLayout="row">
+            <div class="child-layout">Gestion de Reseau paysan</div>
+            <div class="child-layout">
+              <!--<button mat-raised-button (click)="onSyncRp()" class="demo-button">Sync</button>-->
+            </div>
+          </div>
+        </ion-label>
+      </ion-item>
+      <div slot="content" fxLayout="column width100">
+        <div class="child-column-flex">
+          <ion-list>
+            <ion-item>
+              <ion-label>
+                <div class="flex-layout" fxLayout="row">
+                  <div class="child-row">PMS à Synchroniser: {{data_benef_activ_pms.length}}</div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onSyncBenefeActivePms()" class="demo-button" [disabled] = "data_benef_activ_pms.length === 0">
+                      Sync
+                    </button>
+                  </div>
+                </div>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <div class="flex-layout" fxLayout="row">
+                  <div class="child-row">
+                    Parcelle Pms à Synchroniser: {{data_parce_pms.length}}
+                    Parcelle Saison Pms à Synchroniser: {{data_parceSaison_pms.length}}
+                  </div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onSyncParcePms()" class="demo-button" [disabled] = "data_benef_activ_pms.length > 0 || data_parceSaison_pms.length === 0">                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            >
+                      Sync
+                    </button>
+                  </div>
+                </div>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <div class="flex-layout" fxLayout="row">
+                  <div class="child-row">
+                    PMS mise en place identifier: {{data_culture.length}}
+                  </div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onSyncCulture()" class="demo-button" [disabled] = "data_culture.length === 0 || data_parceSaison_pms.length > 0">Sync</button>
+                  </div>
+                </div>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <div class="flex-layout" fxLayout="row">
+                  <div class="child-row">
+                    PMS suivi effectuer : {{data_suivi.length}}
+                  </div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onSyncSuivi()" class="demo-button" [disabled] = "data_culture.length > 0 || data_suivi.length === 0">Sync</button>
+                  </div>
+                </div>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+      </div>
+    </ion-accordion>
+    <!--Bloc-->
+    <ion-accordion value="ida">
+      <ion-item slot="header" class="level1">
+        <ion-label>
+          <div class="flex-header" fxLayout="row">
+            <div class="child-layout">Gestion du Bloc</div>
+            <div class="child-layout">
+              <!--<button mat-raised-button (click)="onSyncBloc()" class="demo-button">Sync</button>-->
+            </div>
+          </div>
+        </ion-label>
+      </ion-item>
+      <div slot="content">
+        <div class="flex-content" fxLayout="column width100">
+          <div class="child-column-flex">
+            <ion-list>
+              <!--Item 1-->
+              <ion-item>
+                <ion-label>
+                  <div class="flex-layout" fxLayout="row">
+                    <div class="child-row">Bloc Beneficiaire Recenser: {{data_benef_activ_bl.length}}</div>
+                    <div class="child-row">
+                      <button mat-raised-button (click)="onSyncBenefBloc()" class="demo-button" [disabled] = "data_benef_activ_bl.length === 0">Sync</button>
+                    </div>
+                  </div>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <div class="flex-layout" fxLayout="row">
+                    <div class="child-row">Parcelle Bloc Recenser: {{data_parce_bl.length}}</div>
+                    <div class="child-row">
+                      <button mat-raised-button (click)="onSyncParceBloc()" class="demo-button" [disabled] = "data_benef_activ_bl.length > 0 || data_parce_bl.length === 0">Sync</button>
+                    </div>
+                  </div>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <div class="flex-layout" fxLayout="row">
+                    <div class="child-row">MEP Bloc Recencer: {{data_mep_bloc.length}}</div>
+                    <div class="child-row">
+                      <button mat-raised-button (click)="onSyncMepBl()" class="demo-button" [disabled] = "data_parce_bl.length > 0 || data_mep_bloc.length === 0">Sync</button>
+                    </div>
+                  </div>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <div class="flex-layout" fxLayout="row">
+                    <div class="child-row">Suivi Bloc effectué: {{data_suivi_bloc.length}}</div>
+                    <div class="child-row">
+                      <button mat-raised-button (click)="onSyncSuiviBl()" class="demo-button" [disabled] = "data_mep_bloc.length > 0 || data_suivi_bloc.length === 0">Sync</button>
+                    </div>
+                  </div>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </div>
+        </div>
+      </div>
+    </ion-accordion>
+    <!--Paysan Relais-->
+    <ion-accordion value="pr">
+      <ion-item slot="header" class="level1">
+        <ion-label>
+          <div class="flex-header" fxLayout="row">
+            <div class="child-layout">Gestion des Paysan Relai</div>
+            <div class="child-layout">
+              <!--<button mat-raised-button (click)="onSyncPR()" class="demo-button">Sync</button>-->
+            </div>
+          </div>
+        </ion-label>
+      </ion-item>
+      <div slot="content" fxLayout="column width100">
+        <div class="child-column-flex">
+          <ion-list>
+            <ion-item>
+              <ion-label>
+                <div class="flex-layout" fxLayout="row">
+                  <div class="child-row">Paysan Relai identifier: {{data_benef_activ_pr.length}}</div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onSyncBenefeActivePr()" class="demo-button" [disabled] = "data_benef_activ_pr.length === 0">Sync</button>
+                  </div>
+                </div>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <div class="flex-layout" fxLayout="row">
+                  <div class="child-row">Parcelle PR: {{data_cep_pr.length}}</div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onSyncParcePr()" class="demo-button" [disabled] = "data_benef_activ_pr.length > 0 || data_cep_pr.length === 0">Sync</button>
+                  </div>
+                </div>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <div class="flex-layout" fxLayout="row">
+                  <div class="child-row">Animation PR : {{data_anime_ve.length}}</div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onSyncAnimationVe()" class="demo-button" [disabled] = "data_benef_activ_pr.length > 0 || data_anime_ve.length === 0">Sync</button>
+                  </div>
+                </div>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <div class="flex-layout" fxLayout="row">
+                  <div class="child-row">MEP CEP: {{data_mep_pr.length}}</div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onSyncMepPR()" class="demo-button" [disabled] = "data_cep_pr.length > 0 || data_mep_pr.length === 0">Sync</button>
+                  </div>
+                </div>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <div class="flex-layout" fxLayout="row">
+                  <div class="child-row">Suivi CEP: {{data_suivi_pr.length}}</div>
+                  <div class="child-row">
+                    <button mat-raised-button (click)="onSyncSuiviPr()" class="demo-button" [disabled] = "data_mep_pr.length > 0 || data_suivi_pr.length === 0">Sync</button>
+                  </div>
+                </div>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
 </ion-content>

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 // Imports 
 import { SqliteService } from '../sqlite.service'; 
 import { DatabaseService } from '../database.service';
-import { DB_NAME, SYNC } from 'src/app/utils/global-variables';
+import { ACTIVE, DB_NAME, ISSYNC, ISUPDATE, SYNC, UPDATE, VALIDE } from 'src/app/utils/global-variables';
 import { CapacitorSQLite, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 import { Equipe, ProjetEquipe, Utilisateurs } from 'src/app/utils/interface-bd';
@@ -664,6 +664,8 @@ export class LoadDataService {
          * Séléctionner béneficiaire Association + nombre de parcelle
          */
         let statement = `SELECT BPMS.id_activ, A.intitule, BPMS.id_proj, P.nom as nom_pr, FKT_ASS.nom_fkt AS fkt_association, BPMS.id_association, ASS.nom as nom_ass, BPMS.code_benef_pms, BPMS.code_achat, BPMS.id_benef, B.code_benef, B.img_benef, B.nom as nom_benef, B.prenom, B.sexe, B.dt_nais, B.dt_nais_vers, B.surnom, B.cin, B.dt_delivrance, B.lieu_delivrance, B.img_cin, B.contact, B.id_fkt, B.village, BPMS.id_collaborateur, C.nom as nom_collab, B.etat AS etat_benef, B.statut, BPMS.etat AS etat_pms,
+                          CASE WHEN B.dt_nais IS NOT NULL THEN B.dt_nais
+                          WHEN B.dt_nais_vers IS NOT NULL THEN B.dt_nais_vers ELSE NULL END AS data_naissance,
                           CASE WHEN B.id_commune IS NOT NULL AND B.id_fkt IS NULL THEN (SELECT REG.code_reg FROM zone_commune COM INNER JOIN zone_district DIST ON DIST.code_dist = COM.id_dist INNER JOIN zone_region REG ON REG.code_reg = DIST.id_reg WHERE COM.code_com = B.id_commune)
                           WHEN B.id_fkt IS NOT NULL THEN (SELECT ZREG.code_reg FROM zone_fonkotany FKT INNER JOIN zone_commune ZCOM ON ZCOM.code_com = FKT.id_com INNER JOIN zone_district ZDIST ON ZDIST.code_dist = ZCOM.id_dist INNER JOIN zone_region ZREG ON ZREG.code_reg = ZDIST.id_reg WHERE FKT.code_fkt = B.id_fkt) ELSE NULL END AS code_region,
                           CASE WHEN B.id_commune IS NOT NULL AND B.id_fkt IS NULL THEN (SELECT DIST.code_dist FROM zone_commune COM INNER JOIN zone_district DIST ON DIST.code_dist = COM.id_dist WHERE COM.code_com = B.id_commune)
@@ -848,7 +850,7 @@ export class LoadDataService {
   }
 
   async loadBlocParce(data: any) {
-    let state = `SELECT BPARC.code_parce, BPARC.id_bloc, BL.nom AS nom_bloc, BABL.code_benef_bl, BENF.nom, BENF.prenom,  BPARC.ref_gps, BPARC.lat, BPARC.log, BPARC.superficie, BPARC.anne_adheran, BPARC.status, BPARC.id_fkt, BPARC.id_commune, BPARC.village, BPARC.indication, BPARC.etat,
+    let state = `SELECT BPARC.code_parce, BPARC.code_parce_temp, BPARC.id_bloc, BL.nom AS nom_bloc, BABL.code_benef_bl, BENF.nom, BENF.prenom,  BPARC.ref_gps, BPARC.lat, BPARC.log, BPARC.superficie, BPARC.anne_adheran, BPARC.status, BPARC.id_fkt, BPARC.id_commune, BPARC.village, BPARC.indication, BPARC.etat,
               CASE WHEN BPARC.id_fkt IS NOT NULL THEN (SELECT DIST.id_reg FROM zone_fonkotany FKT INNER JOIN zone_commune COM ON COM.code_com = FKT.id_com INNER JOIN zone_district DIST ON DIST.code_dist = COM.id_dist WHERE FKT.code_fkt = BPARC.id_fkt)
               WHEN BPARC.id_commune IS NOT NULL AND BPARC.village IS NOT NULL THEN (SELECT ZD.id_reg FROM zone_commune ZC INNER JOIN zone_district ZD ON ZD.code_dist = ZC.id_dist WHERE ZC.code_com = BPARC.id_commune) ELSE NULL END AS code_reg,
               CASE WHEN BPARC.id_fkt IS NOT NULL THEN (SELECT DIST.code_dist FROM zone_fonkotany FKT INNER JOIN zone_commune COM ON COM.code_com = FKT.id_com INNER JOIN zone_district DIST ON DIST.code_dist = COM.id_dist WHERE FKT.code_fkt = BPARC.id_fkt)
@@ -876,7 +878,7 @@ export class LoadDataService {
   }
 
   async loadMepBloc(data: any) {
-    const state = `SELECT CBL.code_culture, BL.code_bloc, BL.nom AS nom_bl, BBL.code_benef_bl, BNF.nom, BNF.prenom, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, CBL.annee_du, CBL.ddp, CBL.qso, CBL.dt_distribution, CBL.dds, CBL.sfce, CBL.nbre_ligne, CBL.long_ligne, CBL.usage, CBL.sc, CBL.ea_autres, CBL.ea_id_variette, CBL.dt_creation, CBL.dt_modification, CBL.status, CBL.etat, CBL.id_equipe, CBL.type, 
+    const state = `SELECT CBL.code_culture, BL.code_bloc, BL.nom AS nom_bl, BBL.code_benef_bl, BNF.nom, BNF.prenom, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, CBL.id_annee, AN.annee_du, AN.annee_au, CBL.ddp, CBL.qso, CBL.dt_distribution, CBL.dds, CBL.sfce, CBL.nbre_ligne, CBL.long_ligne, CBL.usage, CBL.sc, CBL.ea_autres, CBL.ea_id_variette, CBL.dt_creation, CBL.dt_modification, CBL.status, CBL.etat, CBL.id_equipe, CBL.type, 
                   CASE WHEN CBL.id_var IS NOT NULL THEN (SELECT E.code_espece FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.id_var)
                   ELSE '' END AS code_espece,
                   CASE WHEN CBL.id_var IS NOT NULL THEN (SELECT (E.nom_espece || ' ' || V.nom_var) AS nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = CBL.id_var)
@@ -894,14 +896,15 @@ export class LoadDataService {
                   INNER JOIN benef_activ_bl BBL ON BBL.id_benef = BPRC.id_benef 
                   INNER JOIN beneficiaire BNF ON BNF.code_benef = BPRC.id_benef
                   INNER JOIN bloc BL ON BL.code_bloc = BBL.id_bloc
+                  INNER JOIN annee_agricole AN ON AN.code = CBL.id_annee
                   WHERE BPRC.status = "active" AND BBL.status = "active" AND BNF.statut = "active" `;
     if (data.type != undefined && data.id_bloc != undefined && data.id_saison != undefined && data.annee_du != undefined) {
       // Mep saisonnier
-      let req = state + `AND CBL.type = "${data.type}" AND BL.code_bloc  = "${data.id_bloc}" AND CBL.id_saison = "${data.id_saison}" AND CBL.annee_du = "${data.annee_du}";`;
+      let req = state + `AND CBL.type = "${data.type}" AND BL.code_bloc  = "${data.id_bloc}" AND CBL.id_saison = "${data.id_saison}" AND CBL.id_annee = ${data.annee_du};`;
       return await this.db.query(req);
     } else if(data.type != undefined && data.id_bloc != undefined && data.annee_du != undefined) {
       // Mep PA et MV Culture non saisoniale
-      let req = state + `AND CBL.type = "${data.type}" AND BL.code_bloc  = "${data.id_bloc}" AND CBL.annee_du = "${data.annee_du}" AND CBL.id_saison IS NULL;`;
+      let req = state + `AND CBL.type = "${data.type}" AND BL.code_bloc  = "${data.id_bloc}" AND CBL.id_annee = "${data.annee_du}" AND CBL.id_saison IS NULL;`;
       return await this.db.query(req);
     } else {
       let req = state + `AND BL.code_bloc  = "${data.id_bloc}";`;
@@ -922,7 +925,7 @@ export class LoadDataService {
    * Load All Suivi Mep Bloc
    */
   async loadAllSuiviBloc(data: any) {
-    let req = `SELECT SBL.code_sv, BL.nom AS bloc, BABL.code_benef_bl, BNF.nom, BNF.prenom, SBL.id_culture, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, CBL.annee_du, CBL.qso, CBL.dds, CBL.sfce, CBL.sc AS mep_sc, CBL.ea_autres, CBL.ea_id_variette, SBL.ddp, SBL.stc, SBL.ec, SBL.ql, SBL.qr, SBL.long_ligne, SBL.nbre_ligne, SBL.nbre_pied, SBL.hauteur, SBL.img_cult, SBL.ex, SBL.etat, CBL.type,
+    let req = `SELECT SBL.code_sv, BL.nom AS bloc, BABL.code_benef_bl, BNF.nom, BNF.prenom, SBL.id_culture, CBL.id_parce, BPRC.superficie AS sfce_reel, CBL.id_espece, CBL.id_var, CBL.id_saison, CBL.id_annee, AN.annee_du, AN.annee_au, CBL.qso, CBL.dds, CBL.sfce, CBL.sc AS mep_sc, CBL.ea_autres, CBL.ea_id_variette, SBL.ddp, SBL.stc, SBL.ec, SBL.ql, SBL.qr, SBL.long_ligne, SBL.nbre_ligne, SBL.nbre_pied, SBL.hauteur, SBL.img_cult, SBL.ex, SBL.etat, CBL.type,
                 CASE WHEN CBL.id_espece IS NOT NULL THEN (SELECT nom_espece FROM espece WHERE code_espece = CBL.id_espece)
                 ELSE NULL END AS espece,
                 CASE WHEN CBL.id_var IS NOT NULL THEN (SELECT E.nom_espece || ' ' || V.nom_var AS nom_var FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE code_var = CBL.id_var)
@@ -935,7 +938,8 @@ export class LoadDataService {
                 INNER JOIN bloc BL ON BL.code_bloc = BPRC.id_bloc AND BL.status = "active"
                 INNER JOIN projet PRJ ON PRJ.code_proj = BL.id_prjt AND PRJ.statuts = "activer"
                 INNER JOIN beneficiaire BNF ON BNF.code_benef = BPRC.id_benef AND BNF.statut = "active"
-                INNER JOIN benef_activ_bl BABL ON BABL.id_benef = BNF.code_benef AND BABL.id_proj = PRJ.code_proj AND BABL.status = "active"`;
+                INNER JOIN benef_activ_bl BABL ON BABL.id_benef = BNF.code_benef AND BABL.id_proj = PRJ.code_proj AND BABL.status = "active"
+                INNER JOIN annee_agricole AN ON AN.code = CBL.id_annee`;
     if (data.id_bloc != undefined) {
       req += ` WHERE BL.code_bloc = "${data.id_bloc}"`;
     } else if (data.code_culture != undefined) {
@@ -1068,7 +1072,7 @@ export class LoadDataService {
   }
 
   async loadMepPR(data: any) {
-    const req = `SELECT MEP.code_culture, MEP.id_parce, CEP.superficie AS sfce_reel, BAPR.code_pr, BAPR.code_achat, BNF.img_benef, BNF.nom, BNF.prenom, BNF.dt_nais, MEP.id_espece, MEP.id_var, MEP.id_saison, MEP.annee_du, MEP.ddp, MEP.qso, MEP.dt_distribution, MEP.dds, MEP.sfce AS sfce_emb, MEP.nbre_ligne, MEP.long_ligne, MEP.usage, MEP.sc, MEP.ea_autres, MEP.ea_id_variette, MEP.dt_creation, MEP.dt_modification, MEP.status, MEP.etat AS etat_mep, MEP.id_equipe, MEP.type, CEP.etat AS etat_cep, BNF.etat AS etat_benef, BAPR.etat AS etat_benef_pr,
+    const req = `SELECT MEP.code_culture, MEP.id_parce, CEP.superficie AS sfce_reel, BAPR.code_pr, BAPR.code_achat, BNF.img_benef, BNF.nom, BNF.prenom, BNF.dt_nais, MEP.id_espece, MEP.id_var, MEP.id_saison, MEP.id_annee, AN_.annee_du, AN_.annee_au, MEP.ddp, MEP.qso, MEP.dt_distribution, MEP.dds, MEP.sfce AS sfce_emb, MEP.nbre_ligne, MEP.long_ligne, MEP.usage, MEP.sc, MEP.ea_autres, MEP.ea_id_variette, MEP.dt_creation, MEP.dt_modification, MEP.status, MEP.etat AS etat_mep, MEP.id_equipe, MEP.type, CEP.etat AS etat_cep, BNF.etat AS etat_benef, BAPR.etat AS etat_benef_pr,
                 CASE WHEN MEP.id_var IS NOT NULL THEN (SELECT E.code_espece FROM variette V INNER JOIN espece E ON E.code_espece = V.id_espece WHERE V.code_var = MEP.id_var)
                 ELSE NULL END AS code_espece_var_sg,
                 CASE WHEN MEP.id_espece IS NOT NULL AND MEP.id_var IS NULL THEN (SELECT ESP.nom_espece FROM espece ESP WHERE ESP.code_espece = MEP.id_espece)
@@ -1088,6 +1092,7 @@ export class LoadDataService {
                 INNER JOIN equipe EQ ON EQ.code_equipe = BAPR.id_tech AND EQ.statuts = "active"
                 INNER JOIN projet PRJ ON PRJ.code_proj = BAPR.id_proj AND PRJ.statuts = "activer"
                 INNER JOIN projet_equipe PE ON PE.id_projet = PRJ.code_proj AND PE.id_equipe = EQ.code_equipe AND PE.status_pe = "active"
+                INNER JOIN annee_agricole AN_ ON AN_.code = MEP.id_annee
                 WHERE BAPR.id_proj = "${data.code_projet}" AND BAPR.id_tech = ${data.code_equipe} AND MEP.status = "active" ORDER BY MEP.code_culture`;
     return await this.db.query(req);
   }

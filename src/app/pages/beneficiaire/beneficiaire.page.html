@@ -194,96 +194,184 @@
 
               <!-- Association Column -->
               <ng-container matColumnDef="association" sticky>
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Association </th>
-                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.nom_ass}} </td>
+                <th mat-header-cell *matHeaderCellDef> Association </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> 
+                  <span *ngIf="!isEditRowPms || indexEditRowPms != i">
+                    {{row.nom_ass}}
+                  </span> 
+                  <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
+                    {{update_pms.association != null?update_pms.association.nom_ass:null}}
+                  </span>
+                </td>
               </ng-container>
               <!-- Association Column -->
               <ng-container matColumnDef="new_association" sticky>
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>new_ass</th>
+                <th mat-header-cell *matHeaderCellDef>
+                  {{update_pms.association != null?update_pms.association.nom_ass:null}}
+                </th>
               </ng-container>
     
               <!-- Fokontany Column -->
               <ng-container matColumnDef="fokontany">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Fokontany </th>
-                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.fkt_association}} </td>
+                <th mat-header-cell *matHeaderCellDef> Fokontany </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> 
+                  <span *ngIf="!isEditRowPms || indexEditRowPms != i">
+                    {{row.fkt_association}}
+                  </span> 
+                  <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
+                    {{update_pms.association != null?update_pms.association.nom_fkt:null}}
+                  </span>
+                </td>
               </ng-container>
               <ng-container matColumnDef="new_fokontany">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>new_fkt</th>
+                <th mat-header-cell *matHeaderCellDef>
+                  {{update_pms.association != null?update_pms.association.nom_fkt:null}}
+                </th>
               </ng-container>
     
               <!-- Code PA Column -->
               <ng-container matColumnDef="code_pms">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> code PMS </th>
-                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.code_benef_pms}} </td>
+                <th mat-header-cell *matHeaderCellDef> code PMS </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;">
+                  <span *ngIf="!isEditRowPms || indexEditRowPms != i">
+                    {{row.code_benef_pms}}
+                  </span> 
+                  <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
+                   
+                  </span>
+                </td>
               </ng-container>
               <ng-container matColumnDef="new_code_pms">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>new_cd_pms</th>
+                <th mat-header-cell *matHeaderCellDef>new_cd_pms</th>
               </ng-container>
   
               <!-- Code Achat Column -->
               <ng-container matColumnDef="code_ahat">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>code Achat</th>
-                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.code_achat}} </td>
+                <th mat-header-cell *matHeaderCellDef>code Achat</th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;">  
+                  <span *ngIf="!isEditRowPms || indexEditRowPms != i">
+                    {{row.code_achat}}
+                  </span> 
+                  <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
+                    {{update_pms.code_achat}}
+                  </span>
+                </td>
               </ng-container>
               <ng-container matColumnDef="new_code_ahat">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>new_cd_ach</th>
+                <th mat-header-cell *matHeaderCellDef>
+                  {{update_pms.code_achat}}
+                </th>
               </ng-container>
     
               <!-- Nom PA Column -->
               <ng-container matColumnDef="pms">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Nom PMS </th>
-                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.nom_benef}} - {{row.prenom}} </td>
+                <th mat-header-cell *matHeaderCellDef> Nom PMS </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;">
+                  <span *ngIf="!isEditRowPms || indexEditRowPms != i">
+                    {{row.nom_benef}} - {{row.prenom}}
+                  </span> 
+                  <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
+                    {{update_pms.nom}} {{update_pms.prenom}}
+                  </span>
+                </td>
               </ng-container>
               <ng-container matColumnDef="new_pms">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>--</th>
+                <th mat-header-cell *matHeaderCellDef>
+                  {{update_pms.nom}} {{update_pms.prenom}}
+                </th>
               </ng-container>
     
               <!-- Sexe PA Column -->
               <ng-container matColumnDef="sexe">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Sexe </th>
-                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.sexe}} </td>
+                <th mat-header-cell *matHeaderCellDef> Sexe </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;">
+                  <span *ngIf="!isEditRowPms || indexEditRowPms != i">
+                    {{row.sexe}}
+                  </span> 
+                  <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
+                    {{update_pms.sexe}}
+                  </span>
+                </td>
               </ng-container>
               <ng-container matColumnDef="new_sexe">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> new_ </th>
+                <th mat-header-cell *matHeaderCellDef>
+                  {{update_pms.sexe}}
+                </th>
               </ng-container>
     
               <!-- cin PA Column -->
               <ng-container matColumnDef="age">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Dt_nais </th>
-                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.dt_nais}} </td>
+                <th mat-header-cell *matHeaderCellDef> Dt_nais </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> 
+                  <span *ngIf="!isEditRowPms || indexEditRowPms != i">
+                    {{row.data_naissance}}
+                  </span> 
+                  <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
+                    {{update_pms.dt_naissance != null?update_pms.dt_naissance:null}} {{update_pms.dt_naissance_vers != null?update_pms.dt_naissance_vers:null}}
+                  </span>
+                </td>
               </ng-container>
               <ng-container matColumnDef="new_age">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> -- </th>
+                <th mat-header-cell *matHeaderCellDef>
+                  {{update_pms.dt_naissance != null?update_pms.dt_naissance:null}} {{update_pms.dt_naissance_vers != null?update_pms.dt_naissance_vers:null}}
+                </th>
               </ng-container>
     
               <!-- cin PA Column -->
               <ng-container matColumnDef="cin">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Cin </th>
-                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.cin}} </td>
+                <th mat-header-cell *matHeaderCellDef> Cin </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> 
+                  <span *ngIf="!isEditRowPms || indexEditRowPms != i">
+                    {{row.cin}}
+                  </span> 
+                  <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
+                    {{update_pms.cin}}
+                  </span>
+                </td>
               </ng-container>
               <ng-container matColumnDef="new_cin">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> new_Cin </th>
+                <th mat-header-cell *matHeaderCellDef>
+                  {{update_pms.cin}}
+                </th>
               </ng-container>
     
               <!-- village PA Column -->
               <ng-container matColumnDef="village">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> résidence </th>
-                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.adress}} </td>
+                <th mat-header-cell *matHeaderCellDef> résidence </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> 
+                  <span *ngIf="!isEditRowPms || indexEditRowPms != i">
+                    {{row.adress}}
+                  </span> 
+                  <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
+                    {{update_pms.commune != null?update_pms.commune.nom_com:null}} {{update_pms.fokontany != null?update_pms.fokontany.nom_fkt:null}} {{update_pms.village != null?update_pms.village:null}}
+                  </span>
+                </td>
               </ng-container>
               <ng-container matColumnDef="new_village">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> new_res</th>
+                <th mat-header-cell *matHeaderCellDef>
+                  {{update_pms.commune != null?update_pms.commune.nom_com:null}} {{update_pms.fokontany != null?update_pms.fokontany.nom_fkt:null}} {{update_pms.village != null?update_pms.village:null}}
+                </th>
               </ng-container>
   
               <ng-container matColumnDef="collaborateur">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Type </th>
-                <td mat-cell *matCellDef="let row; let i = dataIndex;"> {{row.nom_collab}} </td>
+                <th mat-header-cell *matHeaderCellDef> Type </th>
+                <td mat-cell *matCellDef="let row; let i = dataIndex;"> 
+                  <span *ngIf="!isEditRowPms || indexEditRowPms != i">
+                    {{row.nom_collab}}
+                  </span> 
+                  <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
+                    {{update_pms.collaborateur != null?update_pms.collaborateur.nom:null}}
+                  </span>
+                </td>
               </ng-container>
               <ng-container matColumnDef="new_collaborateur">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>new_col</th>
+                <th mat-header-cell *matHeaderCellDef>
+                  {{ update_pms.collaborateur != null?update_pms.collaborateur.nom:null }}
+                </th>
               </ng-container>
 
               <ng-container matColumnDef="action">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Action </th>
+                <th mat-header-cell *matHeaderCellDef> Action </th>
                 <td mat-cell *matCellDef="let row; let i = dataIndex;">
                   <span *ngIf="indexEditRowPms == i  && isEditRowPms && isUpdate">
                     <a (click)="onCancelAddPms({src: 'edit'})">Annuler</a> |
@@ -326,12 +414,12 @@
                             {{row.annee_du}}-{{row.annee_au}}
                           </span>
                           <span *ngIf="indexEditRowParce == ind && indexEditRowPms == i  && isRowEditParce">
-                            up--
+                            {{update_parce_pms.annee != null?update_parce_pms.annee.annee_du:null}}-{{update_parce_pms.annee != null?update_parce_pms.annee.annee_au:null}}
                           </span>
                       </td>
                       </ng-container>
                       <ng-container matColumnDef="new_annee">
-                        <th mat-header-cell *matHeaderCellDef> new-- </th>
+                        <th mat-header-cell *matHeaderCellDef>{{update_parce_pms.annee != null?update_parce_pms.annee.annee_du:null}}-{{update_parce_pms.annee != null?update_parce_pms.annee.annee_au:null}} </th>
                       </ng-container>
 
                       <!-- Saison Column -->
@@ -342,12 +430,12 @@
                             {{row.saison}}
                           </span>
                           <span *ngIf="indexEditRowParce == ind && indexEditRowPms == i  && isRowEditParce">
-                            up--
+                            {{update_parce_pms.saison != null?update_parce_pms.saison.intitule:null}}
                           </span>
                       </td>
                       </ng-container>
                       <ng-container matColumnDef="new_saison">
-                        <th mat-header-cell *matHeaderCellDef> new-- </th>
+                        <th mat-header-cell *matHeaderCellDef>{{update_parce_pms.saison != null?update_parce_pms.saison.intitule:null}}</th>
                       </ng-container>
 
                       <!-- Saison Column -->
@@ -358,12 +446,12 @@
                             {{row.variette}}
                           </span>
                           <span *ngIf="indexEditRowParce == ind && indexEditRowPms == i  && isRowEditParce">
-                            up--
+                            {{update_parce_pms.espece != null?update_parce_pms.espece.nom_espece:null}} {{update_parce_pms.variette != null?update_parce_pms.variette.nom_var:null}}
                           </span>
                       </td>
                       </ng-container>
                       <ng-container matColumnDef="new_variette">
-                        <th mat-header-cell *matHeaderCellDef> new-- </th>
+                        <th mat-header-cell *matHeaderCellDef> {{update_parce_pms.espece != null?update_parce_pms.espece.nom_espece:null}} {{update_parce_pms.variette != null?update_parce_pms.variette.nom_var:null}}</th>
                       </ng-container>
 
                       <!-- Objectif Column -->
@@ -374,12 +462,12 @@
                             {{row.objectif}}
                           </span>
                           <span *ngIf="indexEditRowParce == ind && indexEditRowPms == i  && isRowEditParce">
-                            up--
+                            {{update_parce_pms.objectif}}
                           </span>
                       </td>
                       </ng-container>
                       <ng-container matColumnDef="new_objectif">
-                        <th mat-header-cell *matHeaderCellDef> new-- </th>
+                        <th mat-header-cell *matHeaderCellDef> {{update_parce_pms.objectif}} </th>
                       </ng-container>
 
                       <!-- Fokontany Column -->
@@ -390,12 +478,12 @@
                             {{row.fokontany_prc}}
                           </span>
                           <span *ngIf="indexEditRowParce == ind && indexEditRowPms == i  && isRowEditParce">
-                            up--
+                            {{update_parce_pms.fokontany != null?update_parce_pms.fokontany.nom_fkt:null}} {{update_parce_pms.village != null?update_parce_pms.village:null}}
                           </span>
                       </td>
                       </ng-container>
                       <ng-container matColumnDef="new_adresse">
-                        <th mat-header-cell *matHeaderCellDef> new-- </th>
+                        <th mat-header-cell *matHeaderCellDef> {{update_parce_pms.fokontany != null?update_parce_pms.fokontany.nom_fkt:null}} {{update_parce_pms.village != null?update_parce_pms.village:null}} </th>
                       </ng-container>
 
                       <!-- Fokontany Column -->
@@ -406,12 +494,12 @@
                             {{row.indication}}
                           </span>
                           <span *ngIf="indexEditRowParce == ind && indexEditRowPms == i  && isRowEditParce">
-                            up--
+                            
                           </span>
                       </td>
                       </ng-container>
                       <ng-container matColumnDef="new_indication">
-                        <th mat-header-cell *matHeaderCellDef> new-- </th>
+                        <th mat-header-cell *matHeaderCellDef>  </th>
                       </ng-container>
             
                       <!-- Code_parce Column -->
@@ -422,12 +510,12 @@
                             {{row.code_parce}}
                           </span>
                           <span *ngIf="indexEditRowParce == ind && indexEditRowPms == i  && isRowEditParce">
-                            up--
+                            
                           </span>
                       </td>
                       </ng-container>
                       <ng-container matColumnDef="new_code_parce">
-                        <th mat-header-cell *matHeaderCellDef>new--</th>
+                        <th mat-header-cell *matHeaderCellDef></th>
                       </ng-container>
             
                       <!-- ref_gps Column -->
@@ -438,12 +526,12 @@
                             {{row.ref_gps}}
                           </span>
                           <span *ngIf="indexEditRowParce == ind && indexEditRowPms == i  && isRowEditParce">
-                            up--
+                            {{update_parce_pms.ref_gps}}
                           </span>
                       </td>
                       </ng-container>
                       <ng-container matColumnDef="new_ref_gps">
-                        <th mat-header-cell *matHeaderCellDef> new-- </th>
+                        <th mat-header-cell *matHeaderCellDef> {{update_parce_pms.ref_gps}} </th>
                       </ng-container>
             
                       <!-- lat Column -->
@@ -454,12 +542,12 @@
                             {{row.lat}}
                           </span>
                           <span *ngIf="indexEditRowParce == ind && indexEditRowPms == i  && isRowEditParce">
-                            up--
+                            {{update_parce_pms.latitude}}
                           </span>
                         </td>
                       </ng-container>
                       <ng-container matColumnDef="new_lat">
-                        <th mat-header-cell *matHeaderCellDef> new-- </th>
+                        <th mat-header-cell *matHeaderCellDef> {{update_parce_pms.latitude}} </th>
                       </ng-container>
             
                       <!-- log Column -->
@@ -470,12 +558,12 @@
                             {{row.logitude}}
                           </span>
                           <span *ngIf="indexEditRowParce == ind && indexEditRowPms == i  && isRowEditParce">
-                            up--
+                            {{update_parce_pms.longitude}}
                           </span>
                         </td>
                       </ng-container>
                       <ng-container matColumnDef="new_log">
-                        <th mat-header-cell *matHeaderCellDef> new-- </th>
+                        <th mat-header-cell *matHeaderCellDef> {{update_parce_pms.longitude}} </th>
                       </ng-container>
             
                       <!--Superficie Column -->
@@ -486,12 +574,12 @@
                             {{row.superficie}}
                           </span>
                           <span *ngIf="indexEditRowParce == ind && indexEditRowPms == i  && isRowEditParce">
-                            up--
+                            {{update_parce_pms.superficie}}
                           </span>
                         </td>
                       </ng-container>
                       <ng-container matColumnDef="new_superficie">
-                        <th mat-header-cell *matHeaderCellDef> new-- </th>
+                        <th mat-header-cell *matHeaderCellDef> {{update_parce_pms.superficie}} </th>
                       </ng-container>
 
                       <ng-container matColumnDef="action">

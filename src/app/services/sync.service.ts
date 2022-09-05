@@ -29,6 +29,14 @@ export class SyncService {
     return this.http.post<any>(this.base_path + 'culture/update_suivi', data, this.httpOptions);
   }
 
+  // sync Benef bloc
+  SyncBenefBloc(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'beneficiaire/update_benef_bl', data, this.httpOptions);
+  }
+  // Sync Parce Bloc
+  syncParceBloc(data: any): Observable<any> {
+    return this.http.post<any>(this.base_path + 'parcelle/update_parce_bl', data, this.httpOptions);
+  }
   // sync Mep bloc
   syncMepBloc(data: any): Observable<any> {
     return this.http.post<any>(this.base_path + 'culture/update_mep_bloc', data, this.httpOptions);

@@ -725,11 +725,14 @@ export class ImportDataService implements OnInit, OnDestroy {
       data_benef = res;
       if (data_benef.length > 0) {
         data_benef.forEach((elem, i) => {
-          const insert = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, dt_nais_vers, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, id_commune, village, dt_Insert, etat, statut) 
-                          VALUES ("${elem.code_benef}", ${elem.img_benef != null? `"${elem.img_benef}"`: null},"${elem.nom}", ${elem.prenom != null? `"${elem.prenom}"`:null}, "${elem.sexe}", ${elem.dt_nais != null? `"${elem.dt_nais}"` : null}, ${elem.dt_nais_vers != null? `"${elem.dt_nais_vers}"` : null}, ${elem.surnom != null?`"${elem.surnom}"`:null}, ${elem.cin}, ${elem.dt_delivrance != null?`"${elem.dt_delivrance}"`:null}, 
-                          "${elem.lieu_delivrance}", ${elem.img_cin != null?`"${elem.img_cin}"`:null}, "${elem.contact}", ${elem.id_fkt != null? `"${elem.id_fkt}"`:null}, ${elem.id_commune != null? `"${elem.id_commune}"`:null}, ${elem.village != null? `"${elem.village}"`:null}, "${elem.dt_Insert}", "${elem.etat_benef}", "${elem.status_benef}");`;
-          console.log(elem);
-          this.insertData(insert);
+          let value = [elem.code_benef, elem.img_benef, elem.nom, elem.prenom, elem.sexe, elem.dt_nais, elem.dt_nais_vers, elem.surnom, elem.cin, elem.dt_delivrance, elem.lieu_delivrance, elem.img_cin, elem.contact, elem.id_fkt, elem.id_commune, elem.village, elem.dt_Insert, elem.etat_benef, elem.status_benef];
+          let state_add_benf = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, dt_nais_vers, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, id_commune, village, dt_Insert, etat, statut) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+          let req = {
+            state_: state_add_benf, 
+            data_: value
+          }
+          this.insertDataSet(req);
           if (i == (data_benef.length - 1)) {
             console.log("==Fin du boucle beneficiaire PMS==");
             this.select("beneficiaire", data_benef);
@@ -764,11 +767,14 @@ export class ImportDataService implements OnInit, OnDestroy {
           data_benef = element;
           if (data_benef.length > 0) {
             data_benef.forEach((elem, i) => {
-              const insert = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, dt_nais_vers, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, id_commune, village, dt_Insert, etat, statut) 
-                      VALUES ("${elem.code_benef}", ${elem.img_benef != null? `"${elem.img_benef}"`: null},"${elem.nom}", ${elem.prenom != null? `"${elem.prenom}"`:null}, "${elem.sexe}", ${elem.dt_nais != null? `"${elem.dt_nais}"` : null}, ${elem.dt_nais_vers != null? `"${elem.dt_nais_vers}"` : null}, ${elem.surnom != null?`"${elem.surnom}"`:null}, ${elem.cin}, ${elem.dt_delivrance != null?`"${elem.dt_delivrance}"`:null}, 
-                      "${elem.lieu_delivrance}", ${elem.img_cin != null?`"${elem.img_cin}"`:null}, "${elem.contact}", ${elem.id_fkt != null? `"${elem.id_fkt}"`:null}, ${elem.id_commune != null? `"${elem.id_commune}"`:null}, ${elem.village != null? `"${elem.village}"`:null}, "${elem.dt_Insert}", "${elem.etat_benef}", "${elem.status_benef}");`;
-              console.log(elem);
-              this.insertData(insert);
+              let value = [elem.code_benef, elem.img_benef, elem.nom, elem.prenom, elem.sexe, elem.dt_nais, elem.dt_nais_vers, elem.surnom, elem.cin, elem.dt_delivrance, elem.lieu_delivrance, elem.img_cin, elem.contact, elem.id_fkt, elem.id_commune, elem.village, elem.dt_Insert, elem.etat_benef, elem.status_benef];
+              let state_add_benf = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, dt_nais_vers, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, id_commune, village, dt_Insert, etat, statut) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+              let req = {
+                state_: state_add_benf, 
+                data_: value
+              }
+              this.insertDataSet(req);
               if (i == (data_benef.length - 1)) {
                 console.log("==Fin du boucle beneficiaire BLOC==");
                 this.select("beneficiaire", data_benef);
@@ -803,11 +809,14 @@ export class ImportDataService implements OnInit, OnDestroy {
         let code_pr: any[] = [];
         benef_pr.forEach((elem_info_bnf, ind) => {
           // Inserer l'information des beneficiaires
-          const state_info_benef = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, dt_nais_vers, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, id_commune, village, dt_Insert, etat, statut) 
-                      VALUES ("${elem_info_bnf.code_benef}", ${elem_info_bnf.img_benef != null? `"${elem_info_bnf.img_benef}"`: null},"${elem_info_bnf.nom}", ${elem_info_bnf.prenom != null? `"${elem_info_bnf.prenom}"`:null}, "${elem_info_bnf.sexe}", ${elem_info_bnf.dt_nais != null? `"${elem_info_bnf.dt_nais}"` : null}, ${elem_info_bnf.dt_nais_vers != null? `"${elem_info_bnf.dt_nais_vers}"` : null}, ${elem_info_bnf.surnom != null?`"${elem_info_bnf.surnom}"`:null}, ${elem_info_bnf.cin}, ${elem_info_bnf.dt_delivrance != null?`"${elem_info_bnf.dt_delivrance}"`:null}, 
-                      "${elem_info_bnf.lieu_delivrance}", ${elem_info_bnf.img_cin != null?`"${elem_info_bnf.img_cin}"`:null}, "${elem_info_bnf.contact}", ${elem_info_bnf.id_fkt != null? `"${elem_info_bnf.id_fkt}"`:null}, ${elem_info_bnf.id_commune != null? `"${elem_info_bnf.id_commune}"`:null}, ${elem_info_bnf.village != null? `"${elem_info_bnf.village}"`:null}, "${elem_info_bnf.dt_Insert}", "${elem_info_bnf.etat_benef}", "${elem_info_bnf.statut_benef}");`;
-
-          this.insertData(state_info_benef);
+          let value = [elem_info_bnf.code_benef, elem_info_bnf.img_benef, elem_info_bnf.nom, elem_info_bnf.prenom, elem_info_bnf.sexe, elem_info_bnf.dt_nais, elem_info_bnf.dt_nais_vers, elem_info_bnf.surnom, elem_info_bnf.cin, elem_info_bnf.dt_delivrance, elem_info_bnf.lieu_delivrance, elem_info_bnf.img_cin, elem_info_bnf.contact, elem_info_bnf.id_fkt, elem_info_bnf.id_commune, elem_info_bnf.village, elem_info_bnf.dt_Insert, elem_info_bnf.etat_benef, elem_info_bnf.statut_benef];
+          let state_add_benf = `INSERT OR IGNORE INTO beneficiaire(code_benef, img_benef, nom, prenom, sexe, dt_nais, dt_nais_vers, surnom, cin, dt_delivrance, lieu_delivrance, img_cin, contact, id_fkt, id_commune, village, dt_Insert, etat, statut) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+          let req = {
+            state_: state_add_benf, 
+            data_: value
+          }
+          this.insertDataSet(req);
           if ((benef_pr.length - 1) === ind) {
             // Fin du boucle    
             console.log("::::::::::::::::::::::::::::::::");
@@ -872,8 +881,8 @@ export class ImportDataService implements OnInit, OnDestroy {
           data_elem.push({
             code_mep: elem_mep.code_culture
           });
-          let value = [elem_mep.code_culture, elem_mep.id_parce, elem_mep.id_espece, elem_mep.id_var, elem_mep.id_saison, elem_mep.annee_du, elem_mep.ddp, elem_mep.qso, elem_mep.dt_distribution, elem_mep.dds, elem_mep.sfce, elem_mep.nbre_ligne, elem_mep.long_ligne, elem_mep.usage, elem_mep.sc, elem_mep.ea_autres, elem_mep.ea_id_variette, elem_mep.dt_creation, elem_mep.dt_modification, elem_mep.status, elem_mep.etat, elem_mep.id_equipe, elem_mep.type];
-          let state_add_mep = `INSERT INTO culture_pr(code_culture, id_parce, id_espece, id_var, id_saison, annee_du, ddp, qso, dt_distribution, dds, sfce, nbre_ligne, long_ligne, usage, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type) 
+          let value = [elem_mep.code_culture, elem_mep.id_parce, elem_mep.id_espece, elem_mep.id_var, elem_mep.id_saison, elem_mep.id_annee, elem_mep.ddp, elem_mep.qso, elem_mep.dt_distribution, elem_mep.dds, elem_mep.sfce, elem_mep.nbre_ligne, elem_mep.long_ligne, elem_mep.usage, elem_mep.sc, elem_mep.ea_autres, elem_mep.ea_id_variette, elem_mep.dt_creation, elem_mep.dt_modification, elem_mep.status, elem_mep.etat, elem_mep.id_equipe, elem_mep.type];
+          let state_add_mep = `INSERT INTO culture_pr(code_culture, id_parce, id_espece, id_var, id_saison, id_annee, ddp, qso, dt_distribution, dds, sfce, nbre_ligne, long_ligne, usage, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type) 
                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
           let req = {
             state_: state_add_mep, 
@@ -1058,8 +1067,8 @@ export class ImportDataService implements OnInit, OnDestroy {
       _data_mep_bloc = res_mep;
       if (_data_mep_bloc.length > 0) {
         _data_mep_bloc.forEach((elem_mep, i) => {
-          const state = `INSERT OR IGNORE INTO culture_bl(code_culture, id_parce, id_espece, id_var, id_saison, annee_du, ddp, qso, dt_distribution, dds, sfce, nbre_ligne, long_ligne, usage, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type) 
-                          VALUES ("${elem_mep.code_culture}", "${elem_mep.id_parce}", ${elem_mep.id_espece != null?`"${elem_mep.id_espece}"`:null}, ${elem_mep.id_var != null?`"${elem_mep.id_var}"`:null}, "${elem_mep.id_saison}", "${elem_mep.annee_du}", "${elem_mep.ddp}", ${elem_mep.qso},  ${elem_mep.dt_distribution != null?`"${elem_mep.dt_distribution}"`:null},
+          const state = `INSERT OR IGNORE INTO culture_bl(code_culture, id_parce, id_espece, id_var, id_saison, id_annee, ddp, qso, dt_distribution, dds, sfce, nbre_ligne, long_ligne, usage, sc, ea_autres, ea_id_variette, dt_creation, dt_modification, status, etat, id_equipe, type) 
+                          VALUES ("${elem_mep.code_culture}", "${elem_mep.id_parce}", ${elem_mep.id_espece != null?`"${elem_mep.id_espece}"`:null}, ${elem_mep.id_var != null?`"${elem_mep.id_var}"`:null}, ${elem_mep.id_saison != null?`"${elem_mep.id_saison}"`:null}, ${elem_mep.id_annee}, "${elem_mep.ddp}", ${elem_mep.qso},  ${elem_mep.dt_distribution != null?`"${elem_mep.dt_distribution}"`:null},
                           ${elem_mep.dds != null?`"${elem_mep.dds}"`:null}, ${elem_mep.sfce}, ${elem_mep.nbre_ligne}, ${elem_mep.long_ligne}, ${elem_mep.usage != null?`"${elem_mep.usage}"`:null}, ${elem_mep.sc != null?`"${elem_mep.sc}"`:null}, ${elem_mep.ea_autres != null?`"${elem_mep.ea_autres}"`:null}, ${elem_mep.ea_id_variette != null?`"${elem_mep.ea_id_variette}"`:null}, 
                           "${elem_mep.dt_creation}", "${elem_mep.dt_modification}", "${elem_mep.status}", "${elem_mep.etat}", ${elem_mep.id_equipe}, "${elem_mep.type}");`;
           this.insertData(state);

@@ -2,7 +2,7 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ModalController, NavParams } from '@ionic/angular';
 import * as moment from 'moment';
-import { Local_benef_activ_bl, Local_bloc_parce, Loc_Bloc, Loc_categEspece, Loc_Espece, Loc_mep_bloc, Loc_saison, Loc_variette } from 'src/app/interfaces/interfaces-local';
+import { Local_benef_activ_bl, Local_bloc_parce, Loc_AnneeAgricole, Loc_Bloc, Loc_categEspece, Loc_Espece, Loc_mep_bloc, Loc_saison, Loc_variette } from 'src/app/interfaces/interfaces-local';
 import { ROLE_CACT_INERME, SC } from 'src/app/utils/global-variables';
 
 @Component({
@@ -50,6 +50,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
   data_espece_filter_ea: Loc_Espece[] = [];
   data_variette_filter: Loc_variette[] = [];
   data_variette_filter_ea: Loc_variette[] = [];
+  data_annee_agricole: Loc_AnneeAgricole[] = [];
   
   isAssocie: boolean = false;
   isSelectedAutreCulte: boolean = false;
@@ -76,6 +77,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
       categ_espece = data.categorie;//
       this.data_var = data.variette;//
       this.data_espece_ea= data.espece; //
+      this.data_annee_agricole = data.annee_agricole;
 
       console.log("Data Add suivi:::: ", data);
 
@@ -159,6 +161,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
       let espece_ea: Loc_Espece = null;
       let var_ea_: Loc_variette = null;
       let sc_: any = null;
+      let annee_ag: Loc_AnneeAgricole = null;
 
       this.data_benef_filtre = this.data_benef.filter(item => {return item.id_bloc === this.data_Mep_edit.code_bloc});
       this.data_parcelle_filter = this.data_parcelle.filter(item => {return item.code_benef_bl === this.data_Mep_edit.code_benef_bl});
@@ -248,6 +251,11 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
           console.log(parce_);
         }
       });
+      this.data_annee_agricole.forEach(elem_annee => {
+        if (elem_annee.code === this.data_Mep_edit.id_annee) {
+          annee_ag = elem_annee;
+        }
+      });
 
       this.data_sc.forEach(item => {
         if (item.value === this.data_Mep_edit.sc) {
@@ -256,7 +264,7 @@ export class ModalBlocPage implements OnInit, AfterViewInit {
       });
 
       this.sg_paForm = this.formBuilder.group({
-        annee: [this.data_Mep_edit.annee_du, Validators.required],
+        annee: [annee_ag, Validators.required],
         saison: this.isEditMepSg?[saison_, Validators.required]:saison_,
         bloc: [bloc_, Validators.required],
         beneficiaire: benef_,

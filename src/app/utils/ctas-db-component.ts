@@ -222,7 +222,7 @@ CREATE TABLE IF NOT EXISTS benef_activ_bl (
     id_benef TEXT NOT NULL, 
     code_achat TEXT,
     id_bloc TEXT NOT NULL, 
-    id_collaborateur INTEGER NOT NULL,
+    id_collaborateur TEXT NOT NULL,
     etat TEXT NOT NULL,
     status TEXT NOT NULL,
     FOREIGN KEY (id_proj) REFERENCES projet(code_proj) ON DELETE SET DEFAULT,
@@ -238,7 +238,7 @@ CREATE TABLE IF NOT EXISTS benef_activ_pr (
     id_benef TEXT NOT NULL, 
     id_bloc TEXT, 
     code_achat TEXT, 
-    id_collaborateur INTEGER NOT NULL, 
+    id_collaborateur TEXT NOT NULL, 
     id_tech INTEGER NOT NULL, 
     etat TEXT NOT NULL, 
     status TEXT NOT NULL,
@@ -262,7 +262,8 @@ CREATE TABLE IF NOT EXISTS parcelle (
     FOREIGN KEY (id_benef) REFERENCES beneficiaire(code_benef) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS assoc_parce (
-    code_parce TEXT PRIMARY KEY NOT NULL, 
+    code_parce TEXT PRIMARY KEY NOT NULL,
+    code_parce_temp TEXT,
     id_assoc TEXT NOT NULL, 
     id_benef TEXT NOT NULL, 
     ref_gps TEXT, 
@@ -382,7 +383,7 @@ CREATE TABLE IF NOT EXISTS cultures_pms (
     FOREIGN KEY(id_parce) REFERENCES assoc_parce(code_parce) ON DELETE SET DEFAULT,
     FOREIGN KEY(id_saison) REFERENCES saison(code_saison) ON DELETE SET DEFAULT,
     FOREIGN KEY(id_var) REFERENCES variette(code_var) ON DELETE SET DEFAULT,
-    FOREIGN KEY(id_annee) REFERENCES annee_agricole(code) ON DELETE SET DEFAULT
+    FOREIGN KEY (id_annee) REFERENCES annee_agricole(code) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS suivi_pms (
     id TEXT PRIMARY KEY, 
@@ -406,7 +407,7 @@ CREATE TABLE IF NOT EXISTS culture_bl(
     id_espece TEXT, 
     id_var TEXT, 
     id_saison TEXT, 
-    annee_du TEXT NOT NULL, 
+    id_annee INTEGER NOT NULL, 
     ddp TEXT NOT NULL, 
     qso INTEGER, 
     dt_distribution TEXT,
@@ -423,7 +424,11 @@ CREATE TABLE IF NOT EXISTS culture_bl(
     status TEXT NOT NULL, 
     etat TEXT NOT NULL, 
     id_equipe INTEGER NOT NULL,
-    type TEXT NOT NULL
+    type TEXT NOT NULL,
+    FOREIGN KEY(id_parce) REFERENCES bloc_parce(code_parce) ON DELETE SET DEFAULT,
+    FOREIGN KEY(id_saison) REFERENCES saison(code_saison) ON DELETE SET DEFAULT,
+    FOREIGN KEY(id_var) REFERENCES variette(code_var) ON DELETE SET DEFAULT,
+    FOREIGN KEY (id_annee) REFERENCES annee_agricole(code) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS suivi_bl(
     code_sv TEXT PRIMARY KEY, 
@@ -442,26 +447,8 @@ CREATE TABLE IF NOT EXISTS suivi_bl(
     ex INTEGER,
     dt_creation TEXT,
     dt_modification TEXT,
-    etat TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS suivi_bl(
-    code_sv TEXT PRIMARY KEY, 
-    id_culture TEXT NOT NULL, 
-    ddp TEXT NOT NULL,
-    stc TEXT,
-    ec TEXT,
-    ql INTEGER, 
-    qr INTEGER, 
-    long_ligne INTEGER, 
-    nbre_ligne INTEGER, 
-    nbre_pied INTEGER, 
-    hauteur INTEGER,
-    img_cult TEXT, 
-    dt_capture TEXT,
-    ex INTEGER,
-    dt_creation TEXT,
-    dt_modification TEXT,
-    etat TEXT NOT NULL
+    etat TEXT NOT NULL,
+    FOREIGN KEY (id_culture) REFERENCES culture_bl(code_culture) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS animation_ve(
     code TEXT PRIMARY KEY, 
@@ -496,7 +483,7 @@ CREATE TABLE IF NOT EXISTS culture_pr(
     id_espece TEXT, 
     id_var TEXT, 
     id_saison TEXT, 
-    annee_du TEXT NOT NULL, 
+    id_annee INTEGER NOT NULL, 
     ddp TEXT NOT NULL, 
     qso TEXT, 
     dt_distribution TEXT, 
@@ -517,7 +504,8 @@ CREATE TABLE IF NOT EXISTS culture_pr(
     FOREIGN KEY(id_parce) REFERENCES cep_parce(code_parce) ON DELETE SET DEFAULT,
     FOREIGN KEY(id_espece) REFERENCES espece(code_espece) ON DELETE SET DEFAULT,
     FOREIGN KEY(id_var) REFERENCES variette(code_var) ON DELETE SET DEFAULT,
-    FOREIGN KEY(id_saison) REFERENCES saison(code_saison) ON DELETE SET DEFAULT
+    FOREIGN KEY(id_saison) REFERENCES saison(code_saison) ON DELETE SET DEFAULT,
+    FOREIGN KEY (id_annee) REFERENCES annee_agricole(code) ON DELETE SET DEFAULT
 );
 CREATE TABLE IF NOT EXISTS suivi_pr(
     code_sv TEXT PRIMARY KEY, 

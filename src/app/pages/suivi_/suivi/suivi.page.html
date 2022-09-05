@@ -601,7 +601,7 @@
                                     <ion-img [src]="fileLastImage.data" *ngIf="indexRowSuivi == i  && isEditableSuivi && fileLastImage.data !== null"></ion-img>
                                     <ion-img [src]="row.img_cult" *ngIf="indexRowSuivi == i  && isEditableSuivi && fileLastImage.data === null"></ion-img>
                                   </ion-thumbnail>
-                                  <ion-button fill="clear" color="blue" (click)="selectImage()" *ngIf="indexRowSuivi == i  && isEditableSuivi">
+                                  <ion-button fill="clear" color="blue" (click)="takeImage()" *ngIf="indexRowSuivi == i  && isEditableSuivi">
                                     <ion-icon slot="start" name="camera"></ion-icon>
                                   </ion-button>
                                 </td>
@@ -612,7 +612,7 @@
                                   <ion-thumbnail slot="start">
                                     <ion-img [src]="fileLastImage.data"></ion-img>
                                   </ion-thumbnail>
-                                  <ion-button fill="clear" expand="full" color="blue" (click)="selectImage()">
+                                  <ion-button fill="clear" expand="full" color="blue" (click)="takeImage()">
                                     <ion-icon slot="start" name="camera"></ion-icon>
                                     Select Image
                                   </ion-button>

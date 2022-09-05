@@ -7,7 +7,7 @@
 <ion-content>
   <!--Beneficiaire-->
   <div  *ngIf="isAddBenef || isEditBenef">
-    <form [formGroup]="beneficiaireForm" class="contonair-flex">
+    <form [formGroup]="beneficiaireForm" class="contonair-flex" (ngSubmit)="onSave('beneficiaire')">
       <div fxLayout="column width100">
         <!--Column 0-->
         <div class="child-column-flex" fxLayout="row" *ngIf="isBenefPms || isBenefBloc">
@@ -91,7 +91,8 @@
             <mat-form-field appearance="fill">
               <mat-label>Date de naissance</mat-label>
               <input matInput [matDatepicker]="dt_nais" formControlName="dt_naissance">
-              <mat-datepicker-toggle matSuffix [for]="dt_nais"></mat-datepicker-toggle>
+              <mat-hint>MM/DD/YYYY(01/01/1960)</mat-hint>
+              <mat-datepicker-toggle matSuffix [for]="dt_nais" disabled></mat-datepicker-toggle>
               <mat-datepicker #dt_nais disabled="false"></mat-datepicker>
             </mat-form-field>
           </div>
@@ -117,7 +118,8 @@
             <mat-form-field appearance="fill">
               <mat-label>Date de délivrance</mat-label>
               <input matInput [matDatepicker]="dt_del" formControlName="dt_delivrance">
-              <mat-datepicker-toggle matSuffix [for]="dt_del"></mat-datepicker-toggle>
+              <mat-hint>MM/DD/YYYY(01/01/1960)</mat-hint>
+              <mat-datepicker-toggle matSuffix [for]="dt_del" disabled></mat-datepicker-toggle>
               <mat-datepicker #dt_del disabled="false"></mat-datepicker>
             </mat-form-field>
           </div>
@@ -190,7 +192,7 @@
             <mat-form-field appearance="outline" floatLabel="auto">
               <mat-label>Fokontany</mat-label>
               <mat-select formControlName="fokontany">
-                <mat-option (click)="onSelectFokontany('autres')" *ngIf="data_fokontany_filter.length !== 0">Autres</mat-option>
+                <mat-option (click)="onSelectFokontany('autres')">Autres</mat-option>
                 <mat-option (click)="onSelectFokontany('fokontany')" *ngFor="let fkt of data_fokontany_filter" [value]="fkt">
                   {{ fkt.nom_fkt }}
                 </mat-option>
@@ -237,7 +239,7 @@
             <button mat-raised-button (click)="onDismiss()" color="danger">Annuller</button>
           </div>
           <div class="child-row1">
-            <button mat-raised-button (click)="onSave('beneficiaire')" color="primary" [disabled]="!beneficiaireForm.valid || isValidate">Valider</button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="!beneficiaireForm.valid || isValidate">Valider</button>
           </div>
         </div>
       </div>
@@ -250,6 +252,7 @@
       <div class="child-flex" fxLayout="row" *ngIf="isParcePms">
         <div class="hild-row">
           <mat-form-field appearance="outline" floatLabel="auto">
+            <mat-label>Année</mat-label>
             <mat-select formControlName="annee">
               <mat-option *ngFor="let annee of data_annee_agricole" [value]="annee">
                 {{ annee.annee_du }}-{{ annee.annee_au }}
@@ -331,6 +334,7 @@
       <div class="child-column" fxLayout="row" *ngIf="isCepPr || isParceBl || (isParcePms && isNewParcePms)">
         <div class="child-row" *ngIf="isCepPr || isParceBl">
           <mat-form-field appearance="outline" floatLabel="auto" *ngIf="isCepPr">
+            <mat-label>Bloc</mat-label>
             <mat-select formControlName="bloc">
               <mat-option (click)="onSelectNone('bloc-cep')">Aucune</mat-option>
               <mat-option *ngFor="let bloc of data_bloc" [value]="bloc">
@@ -339,6 +343,7 @@
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="outline" floatLabel="auto" *ngIf="isParceBl">
+            <mat-label>Bloc</mat-label>
             <mat-select formControlName="bloc">
               <mat-option (click)="onSelectNone('bloc-cep')">Aucune</mat-option>
               <mat-option *ngFor="let bloc of data_bloc_benef" [value]="bloc">{{ bloc.nom_bloc }}</mat-option>
@@ -347,6 +352,7 @@
         </div>
         <div class="child-row">
           <mat-form-field appearance="outline">
+            <mat-label>References gps</mat-label>
             <input matInput type="text" placeholder="Ref_gps!" formControlName="ref_gps">
           </mat-form-field>
         </div>
@@ -361,16 +367,19 @@
       <div class="child-column" fxLayout="row" *ngIf="isCepPr || isParceBl || (isParcePms && isNewParcePms)">
         <div class="child-row">
           <mat-form-field appearance="outline">
+            <mat-label>Longitude</mat-label>
             <input matInput type="number" placeholder="longitude!" formControlName="longitude">
           </mat-form-field>
         </div>
         <div class="child-row">
           <mat-form-field appearance="outline">
+            <mat-label>Superficie(m²)</mat-label>
             <input matInput type="number" placeholder="superficie!" formControlName="superficie">
           </mat-form-field>
         </div>
         <div class="child-row">
           <mat-form-field appearance="outline" floatLabel="auto">
+            <mat-label>Région</mat-label>
             <mat-select formControlName="region">
               <mat-option (click)="onSelectRegion()" *ngFor="let reg of data_region" [value]="reg">
                 {{ reg.nom_reg }}
@@ -383,6 +392,7 @@
       <div class="child-column" fxLayout="row" *ngIf="isCepPr || isParceBl || (isParcePms && isNewParcePms)">
         <div class="child-row">
           <mat-form-field appearance="outline" floatLabel="auto">
+            <mat-label>District</mat-label>
             <mat-select formControlName="district">
               <mat-option (click)="onSelectDistrict()" *ngFor="let dist of data_district_filter" [value]="dist">
                 {{ dist.nom_dist }}
@@ -392,6 +402,7 @@
         </div>
         <div class="child-row">
           <mat-form-field appearance="outline" floatLabel="auto">
+            <mat-label>Commune</mat-label>
             <mat-select formControlName="commune">
               <mat-option (click)="onSelectCommune()" *ngFor="let com of data_commune_filter" [value]="com">
                 {{ com.nom_com }}
@@ -402,6 +413,7 @@
         <div class="child-row" fxLayout="row">
           <div class="child-row-flex">
             <mat-form-field appearance="outline" floatLabel="auto">
+              <mat-label>Fokontany</mat-label>
               <mat-select formControlName="fokontany">
                 <mat-option (click)="onSelectFokontany('autres')">Autres</mat-option>
                 <mat-option (click)="onSelectFokontany('fokontany')" *ngFor="let fkt of data_fokontany_filter" [value]="fkt">
@@ -667,10 +679,9 @@
       <!--Column Annee-->
       <div class="child-row-2">
         <mat-form-field appearance="outline" floatLabel="auto">
-          <mat-label>Annee_du</mat-label>
           <mat-select formControlName="annee">
-            <mat-option *ngFor="let annee of annee_du" [value]="annee">
-              {{ annee }}
+            <mat-option *ngFor="let annee of data_annee_agricole" [value]="annee">
+              {{ annee.annee_du }}-{{ annee.annee_au }}
             </mat-option>
           </mat-select>
         </mat-form-field>

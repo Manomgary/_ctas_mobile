@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import * as moment from 'moment';
 import { BehaviorSubject } from 'rxjs';
 import { Db_Culture_pms, UpdateAnimeSpecu } from 'src/app/interfaces/interface-insertDb';
-import { Sync_activ_pms, Sync_activ_pr, Sync_anime_specu, Sync_anime_ve, Sync_benef_activ_pms, Sync_benef_activ_pr, Sync_cep_pr, Sync_culture_pms, Sync_info_benef, Sync_MepPR, Sync_mep_bl, Sync_parceSaison_pms, Sync_parce_pms, Sync_suivi_bl, Sync_Suivi_MepPr, Sync_suivi_pms } from 'src/app/interfaces/interface-sync';
+import { Sync_activ_pms, Sync_activ_pr, Sync_anime_specu, Sync_anime_ve, Sync_benef_activ_pms, Sync_benef_activ_pr, Sync_benef_bl, Sync_Bnf_Activ_Bl, Sync_cep_pr, Sync_culture_pms, Sync_info_benef, Sync_MepPR, Sync_mep_bl, Sync_parceSaison_pms, Sync_Parce_Bl, Sync_parce_pms, Sync_suivi_bl, Sync_Suivi_MepPr, Sync_suivi_pms } from 'src/app/interfaces/interface-sync';
 import { CrudDbService } from 'src/app/services/local/crud-db.service';
 import { LoadSyncService } from 'src/app/services/local/load-sync.service';
 import { SyncService } from 'src/app/services/sync.service';
@@ -19,7 +19,7 @@ export class SynchroPage implements OnInit {
   private isRouterActive: BehaviorSubject<boolean> = new BehaviorSubject(false);
   private projet: any = {};
   private users: Utilisateurs[] = [];
-  private data_culture: Sync_culture_pms[]= [];
+  private data_culture: Sync_culture_pms[] = [];
   private data_suivi: Sync_suivi_pms[] = []
   private isCheckData: boolean = false;
 
@@ -42,15 +42,20 @@ export class SynchroPage implements OnInit {
   private data_mep_pr: Sync_MepPR[] = [];
   private data_suivi_pr: Sync_Suivi_MepPr[] = [];
 
+  private data_benef_activ_bl: Sync_benef_bl[] = [];
+  private data_info_benf_bl: Sync_info_benef[] = [];
+  private data_benef_bl: Sync_Bnf_Activ_Bl[] = [];
+  private data_parce_bl: Sync_Parce_Bl[] = [];
+
   constructor(private router: Router,
-              private LoadTosync: LoadSyncService,
-              private syncService: SyncService,
-              private crudDb: CrudDbService) {
+    private LoadTosync: LoadSyncService,
+    private syncService: SyncService,
+    private crudDb: CrudDbService) {
 
     if (this.router.getCurrentNavigation().extras.state) {
       const routeState = this.router.getCurrentNavigation().extras.state;
       this.projet = JSON.parse(routeState.projet);
-      this.users =  JSON.parse(routeState.users);
+      this.users = JSON.parse(routeState.users);
       this.isRouterActive.next(true);
     }
     this.isRouterActive.subscribe(isActive => {
@@ -66,11 +71,13 @@ export class SynchroPage implements OnInit {
         this.loadSyncPms();
         this.loadSyncParcePms();
         this.loadSyncCepPr();
+        this.loadBenefBloc();
+        this.loadParceBloc();
       }
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   /*************************
    * Sync CULTURE PMS
@@ -86,16 +93,16 @@ export class SynchroPage implements OnInit {
         // updated data_culure
         let updated_culture: Db_Culture_pms;
         this.data_culture.forEach((elem, i) => {
-          updated_culture = {    
-            code_culture: elem.code_culture, 
-            id_parce: elem.id_parce, 
+          updated_culture = {
+            code_culture: elem.code_culture,
+            id_parce: elem.id_parce,
             id_var: elem.id_var,
             id_saison: elem.id_saison,
             id_annee: elem.id_annee,
             ddp: elem.ddp,
             dt_creation: elem.dt_creation,
             dt_modification: moment().format("YYYY-MM-DD"),
-            qsa : elem.qsa,
+            qsa: elem.qsa,
             img_fact: elem.img_fact,
             dds: elem.dds,
             sfce: elem.sfce,
@@ -103,7 +110,7 @@ export class SynchroPage implements OnInit {
             ea_id_variette: elem.ea_id_variette,
             ea_autres: elem.ea_autres,
             statuts: elem.statuts,
-            Etat: elem.Etat === SYNC? ISSYNC: ISUPDATE
+            Etat: elem.Etat === SYNC ? ISSYNC : ISUPDATE
           }
           this.crudDb.UpdatedCulture(updated_culture).then(res => {
             if ((this.data_culture.length - 1) === i) {
@@ -114,16 +121,16 @@ export class SynchroPage implements OnInit {
         });
       }
     },
-    error => {
-      console.log("error http::: ", error);
-    });
+      error => {
+        console.log("error http::: ", error);
+      });
   }
 
   loadCulture() {
     let index = this.users.length - 1;
     let code_equipe = this.users[index].id_equipe;
     const data_ = {
-      id_tech : code_equipe,
+      id_tech: code_equipe,
       id_projet: this.projet.code_proj
     }
     console.log(data_);
@@ -133,25 +140,25 @@ export class SynchroPage implements OnInit {
       if (res.values.length > 0) {
         res.values.forEach((elem: Sync_culture_pms) => {
           this.data_culture.push({
-              code_culture: elem.code_culture,
-              id_parce: elem.id_parce,
-              id_var: elem.id_var,
-              id_saison: elem.id_saison,
-              id_annee: elem.id_annee,
-              ddp: elem.ddp,
-              qsa: elem.qsa,
-              img_fact: elem.img_fact,
-              dds: elem.dds,
-              sfce: elem.sfce,
-              objectif: elem.objectif,
-              sc: elem.sc,
-              ea_id_variette: elem.ea_id_variette,
-              ea_autres: elem.ea_autres,
-              dt_creation: elem.dt_creation,
-              dt_modification: elem.dt_modification,
-              statuts: elem.statuts,
-              Etat: elem.Etat
-            });
+            code_culture: elem.code_culture,
+            id_parce: elem.id_parce,
+            id_var: elem.id_var,
+            id_saison: elem.id_saison,
+            id_annee: elem.id_annee,
+            ddp: elem.ddp,
+            qsa: elem.qsa,
+            img_fact: elem.img_fact,
+            dds: elem.dds,
+            sfce: elem.sfce,
+            objectif: elem.objectif,
+            sc: elem.sc,
+            ea_id_variette: elem.ea_id_variette,
+            ea_autres: elem.ea_autres,
+            dt_creation: elem.dt_creation,
+            dt_modification: elem.dt_modification,
+            statuts: elem.statuts,
+            Etat: elem.Etat
+          });
         });
         console.log(this.data_culture);
         this.isCheckData = true;
@@ -199,7 +206,7 @@ export class SynchroPage implements OnInit {
     let index = this.users.length - 1;
     let code_equipe = this.users[index].id_equipe;
     const data_ = {
-      id_tech : code_equipe,
+      id_tech: code_equipe,
       id_projet: this.projet.code_proj
     }
     console.log(data_);
@@ -213,7 +220,7 @@ export class SynchroPage implements OnInit {
             id_culture: elem_suivi.id_culture,
             ddp: elem_suivi.ddp,
             stc: elem_suivi.stc,
-            ec: elem_suivi.ec, 
+            ec: elem_suivi.ec,
             pb: elem_suivi.pb,
             ex: elem_suivi.ex,
             img_cult: elem_suivi.img_cult,
@@ -228,36 +235,133 @@ export class SynchroPage implements OnInit {
     });
   }
   /*************************
-   * SYNC Mise en Place bloc
+   * Beneficiaire SYNC Mise en Place bloc
    **************************/
-  onSyncMepBl() {
-    const _data_ = {
-      add_mepBl: this.data_mep_bloc
+  loadBenefBloc() {
+    const data_ = {
+      id_tech: this.users[this.users.length - 1].id_equipe,
+      id_projet: this.projet.code_proj
+    };
+    this.data_benef_activ_bl = [];
+    this.data_info_benf_bl = [];
+    this.data_benef_bl = [];
+    this.LoadTosync.loadSyncBenefBloc(data_).then(res => {
+      this.data_benef_activ_bl = res.values;
+      if (this.data_benef_activ_bl.length > 0) {
+        this.data_benef_activ_bl.forEach(elem_benef_bl => {
+          this.data_info_benf_bl.push({
+            code_benef: elem_benef_bl.code_benef,
+            img_benef: elem_benef_bl.img_benef,
+            nom: elem_benef_bl.nom,
+            prenom: elem_benef_bl.prenom,
+            sexe: elem_benef_bl.sexe,
+            dt_nais: elem_benef_bl.dt_nais,
+            dt_nais_vers: elem_benef_bl.dt_nais_vers,
+            surnom: elem_benef_bl.surnom,
+            cin: elem_benef_bl.cin,
+            dt_delivrance: elem_benef_bl.dt_delivrance,
+            lieu_delivrance: elem_benef_bl.lieu_delivrance,
+            img_cin: elem_benef_bl.img_cin,
+            contact: elem_benef_bl.contact,
+            id_fkt: elem_benef_bl.id_fkt,
+            id_commune: elem_benef_bl.id_commune,
+            village: elem_benef_bl.village,
+            dt_Insert: elem_benef_bl.dt_Insert,
+            etat: elem_benef_bl.etat_bnf,
+            statut: elem_benef_bl.status_bnf
+          });
+          this.data_benef_bl.push({
+            code_benef_bl: elem_benef_bl.code_benef_bl,
+            code_benef_bl_temp: elem_benef_bl.code_benef_bl_temp,
+            id_proj: elem_benef_bl.id_proj,
+            id_activ: elem_benef_bl.id_activ,
+            id_benef: elem_benef_bl.id_benef,
+            id_bloc: elem_benef_bl.id_bloc,
+            code_achat: elem_benef_bl.code_achat,
+            id_collaborateur: elem_benef_bl.id_collaborateur,
+            etat: elem_benef_bl.etat_bbl,
+            status: elem_benef_bl.status_bnf
+          });
+        });
+      }
+    });
+  }
+  onSyncBenefBloc() {
+    console.log(":::Data PR:::", this.data_benef_activ_pr);
+    let data_ = {
+      update_info_benef: this.data_info_benf_bl,
+      update_bnf_activ_bl: this.data_benef_bl
     }
-    // requeste
-    this.syncService.syncMepBloc(_data_).subscribe(res_sync => {
-      if (res_sync.status = 200) {
-        this.data_mep_bloc.forEach((elem, ind) => {
-          let updated_mep = {
-            code_culture: elem.code_culture,
-            isSyncUpdate: true,
-            etat: elem.etat === SYNC? ISSYNC: ISUPDATE
+    this.syncService.SyncBenefBloc(data_).subscribe(res_sync_bnf => {
+      if (res_sync_bnf.response == 1) {
+        this.data_info_benf_bl.forEach((elem_bnf_info, ind_info) => {
+          let updated_etat_benef = {
+            code_benef: elem_bnf_info.code_benef,
+            etat: elem_bnf_info.etat === SYNC ? ISSYNC : ISUPDATE
           }
-          this.crudDb.UpdateMepBl(updated_mep).then(res => {
-            if ((this.data_mep_bloc.length - 1) === ind) {
-             this.loadMepBloc();
+          this.crudDb.UpdateBenefSync(updated_etat_benef).then(res_bnf_info => {
+            console.log(":::Bnf_info Bloc Updated:::");
+            // Fin du boucle
+            if ((this.data_info_benf_bl.length - 1) === ind_info) {
+              this.data_benef_bl.forEach((elem_bnf_bl, ind_bnf_bl) => {
+                let update_etat_bnf_bl = {
+                  isUpdateBenefBlocSync: true,
+                  data_benef_bl: {
+                    code_benef_bl: elem_bnf_bl.code_benef_bl,
+                    etat: elem_bnf_bl.etat === SYNC ? ISSYNC : ISUPDATE,
+                    status: elem_bnf_bl.status
+                  }
+                }
+                this.crudDb.UpdateBenefBl(update_etat_bnf_bl).then(res => {
+                  if ((this.data_benef_bl.length - 1) === ind_bnf_bl) {
+                    this.loadBenefBloc();
+                  }
+                });
+              });
             }
           });
         });
       }
-    }, err => {
-      console.log(":::::ERREUR Sync Http MEP BLOC::::: ", err);
     });
   }
-
+  // Parce Bloc
+  loadParceBloc() {
+    const data_ = {
+      id_tech: this.users[this.users.length - 1].id_equipe,
+      id_projet: this.projet.code_proj
+    };
+    this.data_parce_bl = [];
+    this.LoadTosync.loadSyncParceBl(data_).then(res_parce => {
+      this.data_parce_bl = res_parce.values;
+    });
+  }
+  onSyncParceBloc() {
+    let data_ = {
+      update_parce_bl: this.data_parce_bl
+    }
+    this.syncService.syncParceBloc(data_).subscribe(res_sync => {
+      if (res_sync.response == 1) {
+        this.data_parce_bl.forEach((elem_prc, ind) => {
+          let update_parce = {
+            isUpdateParceBlSync: true,
+            data_parce_bl: {
+              code_parce: elem_prc.code_parce,
+              etat: elem_prc.etat === SYNC ? ISSYNC : ISUPDATE,
+              status: elem_prc.status
+            }
+          }
+          this.crudDb.UpdateParceBl(update_parce).then(res_updat => {
+            if ((this.data_parce_bl.length - 1) === ind) {
+              this.loadParceBloc();
+            }
+          });
+        });
+      }
+    });
+  }
   loadMepBloc() {
     const data_ = {
-      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_tech: this.users[this.users.length - 1].id_equipe,
       id_projet: this.projet.code_proj
     }
     this.data_mep_bloc = [];
@@ -270,10 +374,34 @@ export class SynchroPage implements OnInit {
       console.log("Response Mep data bloc::::", this.data_mep_bloc);
     });
   }
+  onSyncMepBl() {
+    const _data_ = {
+      add_mepBl: this.data_mep_bloc
+    }
+    // requeste
+    this.syncService.syncMepBloc(_data_).subscribe(res_sync => {
+      if (res_sync.status = 200) {
+        this.data_mep_bloc.forEach((elem, ind) => {
+          let updated_mep = {
+            code_culture: elem.code_culture,
+            isSyncUpdate: true,
+            etat: elem.etat === SYNC ? ISSYNC : ISUPDATE
+          }
+          this.crudDb.UpdateMepBl(updated_mep).then(res => {
+            if ((this.data_mep_bloc.length - 1) === ind) {
+              this.loadMepBloc();
+            }
+          });
+        });
+      }
+    }, err => {
+      console.log(":::::ERREUR Sync Http MEP BLOC::::: ", err);
+    });
+  }
 
   // Sync Suivi MEP  bloc
   onSyncSuiviBl() {
-    const data_  = {
+    const data_ = {
       add_suiviBl: this.data_suivi_bloc
     }
     // load sync
@@ -284,7 +412,7 @@ export class SynchroPage implements OnInit {
           let updated_mep = {
             code_suivi: elem.code_sv,
             isSyncUpdate: true,
-            etat: elem.etat === SYNC? ISSYNC: ISUPDATE
+            etat: elem.etat === SYNC ? ISSYNC : ISUPDATE
           }
           this.crudDb.UpdateSuiviBl(updated_mep).then(res_ => {
             // fin du boucle
@@ -298,7 +426,7 @@ export class SynchroPage implements OnInit {
   }
   loadSvBloc() {
     const data_ = {
-      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_tech: this.users[this.users.length - 1].id_equipe,
       id_projet: this.projet.code_proj
     }
     this.LoadTosync.loadSyncSvBl(data_).then(res_ => {
@@ -316,7 +444,7 @@ export class SynchroPage implements OnInit {
    */
   loadBenefeActivePr() {
     const data_ = {
-      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_tech: this.users[this.users.length - 1].id_equipe,
       id_projet: this.projet.code_proj
     };
     this.data_benef_activ_pr = [];
@@ -348,15 +476,15 @@ export class SynchroPage implements OnInit {
             statut: elem_pr.statut_benef
           });
           this.data_benef_pr.push({
-            code_pr: elem_pr.code_pr, 
-            id_proj: elem_pr.id_proj, 
+            code_pr: elem_pr.code_pr,
+            id_proj: elem_pr.id_proj,
             id_activ: elem_pr.id_activ,
-            id_benef: elem_pr.id_benef, 
-            id_bloc: elem_pr.id_bloc, 
-            code_achat: elem_pr.code_achat, 
-            id_collaborateur: elem_pr.id_collaborateur, 
-            id_tech: elem_pr.id_tech, 
-            etat: elem_pr.etat_pr, 
+            id_benef: elem_pr.id_benef,
+            id_bloc: elem_pr.id_bloc,
+            code_achat: elem_pr.code_achat,
+            id_collaborateur: elem_pr.id_collaborateur,
+            id_tech: elem_pr.id_tech,
+            etat: elem_pr.etat_pr,
             status: elem_pr.status_pr
           });
         });
@@ -376,7 +504,7 @@ export class SynchroPage implements OnInit {
           // update data
           let updated_etat_benef = {
             code_benef: elem_info.code_benef,
-            etat: elem_info.etat === SYNC? ISSYNC: ISUPDATE
+            etat: elem_info.etat === SYNC ? ISSYNC : ISUPDATE
           }
           this.crudDb.UpdateBenefSync(updated_etat_benef).then(res => {
             console.log(":::Benef info Updated::::");
@@ -384,7 +512,7 @@ export class SynchroPage implements OnInit {
               this.data_benef_pr.forEach((elem_pr, ind_pr) => {
                 let update_etat_pr = {
                   code_pr: elem_pr.code_pr,
-                  etat: elem_pr.etat === SYNC? ISSYNC: ISUPDATE
+                  etat: elem_pr.etat === SYNC ? ISSYNC : ISUPDATE
                 }
                 this.crudDb.UpdatePrBenefSync(update_etat_pr).then(res => {
                   console.log(":::::PR updated::::");
@@ -402,7 +530,7 @@ export class SynchroPage implements OnInit {
    */
   loadSyncCepPr() {
     const data_ = {
-      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_tech: this.users[this.users.length - 1].id_equipe,
       id_projet: this.projet.code_proj
     };
     this.data_cep_pr = [];
@@ -414,17 +542,17 @@ export class SynchroPage implements OnInit {
   }
   onSyncParcePr() {
     const data_ = {
-      update_cep_pr : this.data_cep_pr
+      update_cep_pr: this.data_cep_pr
     }
     this.syncService.syncCepPR(data_).subscribe(res => {
       if (res.response == 1) {
-         if (this.data_cep_pr.length > 0) {
+        if (this.data_cep_pr.length > 0) {
           this.data_cep_pr.forEach(elem_cep => {
             let data_update_cep = {
               isUpdateCepSync: true,
               data_cep: {
                 code_parce: elem_cep.code_parce,
-                etat: elem_cep.etat  == SYNC? ISSYNC: ISUPDATE
+                etat: elem_cep.etat == SYNC ? ISSYNC : ISUPDATE
               }
             }
             this.crudDb.UpdateParcellePr(data_update_cep).then(res => {
@@ -432,7 +560,7 @@ export class SynchroPage implements OnInit {
               this.loadSyncCepPr();
             });
           });
-         }
+        }
       }
     });
   }
@@ -441,7 +569,7 @@ export class SynchroPage implements OnInit {
    ***************/
   loadAnimationVe() {
     const data_ = {
-      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_tech: this.users[this.users.length - 1].id_equipe,
       id_projet: this.projet.code_proj
     };
     this.data_anime_ve = [];
@@ -464,7 +592,7 @@ export class SynchroPage implements OnInit {
         this.data_anime_ve.forEach((elem_anime_ve, ind) => {
           let update_etat_anime = {
             code: elem_anime_ve.code,
-            etat: elem_anime_ve.etat === SYNC? ISSYNC: ISUPDATE
+            etat: elem_anime_ve.etat === SYNC ? ISSYNC : ISUPDATE
           }
           this.crudDb.UpdateAnimationVeSync(update_etat_anime).then(res => {
             console.log(":::::Updated Sync Animation ve:::::");
@@ -478,14 +606,14 @@ export class SynchroPage implements OnInit {
                   id_var: elem_specu.id_var,
                   id_espece: elem_specu.id_espece,
                   quantite: elem_specu.quantite,
-                  etat: elem_specu.etat === SYNC?ISSYNC: ISUPDATE,
+                  etat: elem_specu.etat === SYNC ? ISSYNC : ISUPDATE,
                   status: elem_specu.status
                 }
                 this.crudDb.UpdateAnimationVe_specu(update_specu).then(res => {
                   console.log(":::::Animation/VE Speculation is Updated:::::");
                 });
               });
-            } 
+            }
             this.loadAnimationVe();
           }
         });
@@ -499,7 +627,7 @@ export class SynchroPage implements OnInit {
    ****************************/
   loadSyncMepPR() {
     const data_ = {
-      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_tech: this.users[this.users.length - 1].id_equipe,
       id_projet: this.projet.code_proj
     };
     this.data_mep_pr = [];
@@ -518,7 +646,7 @@ export class SynchroPage implements OnInit {
           let update_etat_mep_pr = {
             isUpdateMepSuiviSync: true,
             code_culture: elem_mep_pr.code_culture,
-            etat: elem_mep_pr.etat === SYNC? ISSYNC: ISUPDATE,
+            etat: elem_mep_pr.etat === SYNC ? ISSYNC : ISUPDATE,
             status: ACTIVE
           }
           this.crudDb.UpdatedMepPR(update_etat_mep_pr).then(res => {
@@ -531,7 +659,7 @@ export class SynchroPage implements OnInit {
   }
   loadSuiviMepPR() {
     const data_ = {
-      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_tech: this.users[this.users.length - 1].id_equipe,
       id_projet: this.projet.code_proj
     };
     this.data_suivi_pr = [];
@@ -551,7 +679,7 @@ export class SynchroPage implements OnInit {
             isUpdateSuiviSync: true,
             data_suivi: {
               code_sv: elem_suivi_pr.code_sv,
-              etat: elem_suivi_pr.etat === SYNC? ISSYNC: ISUPDATE
+              etat: elem_suivi_pr.etat === SYNC ? ISSYNC : ISUPDATE
             }
           }
           this.crudDb.UpdateSuiviMepPR(update_etat_suivi_pr).then(res => {
@@ -567,7 +695,7 @@ export class SynchroPage implements OnInit {
    */
   loadSyncPms() {
     const data_ = {
-      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_tech: this.users[this.users.length - 1].id_equipe,
       id_projet: this.projet.code_proj
     };
     this.data_benef_activ_pms = [];
@@ -626,7 +754,7 @@ export class SynchroPage implements OnInit {
           // update data
           let updated_etat_benef = {
             code_benef: elem_info.code_benef,
-            etat: elem_info.etat === SYNC? ISSYNC: ISUPDATE
+            etat: elem_info.etat === SYNC ? ISSYNC : ISUPDATE
           }
           this.crudDb.UpdateBenefSync(updated_etat_benef).then(res => {
             console.log(":::Benef info Updated::::");
@@ -636,7 +764,7 @@ export class SynchroPage implements OnInit {
                   isUpdatePmsSync: true,
                   data_pms: {
                     code_benef_pms: elem_pms.code_benef_pms,
-                    etat: elem_pms.etat === SYNC? ISSYNC: ISUPDATE,
+                    etat: elem_pms.etat === SYNC ? ISSYNC : ISUPDATE,
                     status: ACTIVE
                   }
                 }
@@ -656,7 +784,7 @@ export class SynchroPage implements OnInit {
    */
   loadSyncParcePms() {
     const data_ = {
-      id_tech : this.users[this.users.length - 1].id_equipe,
+      id_tech: this.users[this.users.length - 1].id_equipe,
       id_projet: this.projet.code_proj
     };
     this.data_parce_pms = [];
@@ -682,12 +810,12 @@ export class SynchroPage implements OnInit {
     this.syncService.syncParcePms(data_).subscribe(res => {
       if (res.response == 1) {
         if (this.data_parce_pms.length > 0) {
-          this.data_parce_pms.forEach(elem_parce =>  {
+          this.data_parce_pms.forEach(elem_parce => {
             let update_parce = {
               isUpdateParcePmsSync: true,
               data_parce: {
                 code_parce: elem_parce.code_parce,
-                etat: elem_parce.etat === SYNC?ISSYNC:ISUPDATE, 
+                etat: elem_parce.etat === SYNC ? ISSYNC : ISUPDATE,
                 status: elem_parce.status
               }
             }
@@ -702,7 +830,7 @@ export class SynchroPage implements OnInit {
               isUpdateParceSaisonSync: true,
               data_parce_saison: {
                 code: elem_parceSaison.code,
-                etat: elem_parceSaison.etat === SYNC?ISSYNC:ISUPDATE
+                etat: elem_parceSaison.etat === SYNC ? ISSYNC : ISUPDATE
               }
             }
             this.crudDb.UpdateParcelleSaisonPms(update_parce).then(res => {
@@ -713,5 +841,69 @@ export class SynchroPage implements OnInit {
       }
       this.loadSyncParcePms();
     });
+  }
+  /**
+   * 
+  */
+  onSyncBloc() {
+    // sync bloc
+    /**if (this.data_benef_activ_bl.length > 0) {
+      console.log(":::::Sync Beneficiaire Bloc::::");
+      this.onSyncBenefBloc();
+    }
+    if (this.data_parce_bl.length > 0) {
+      console.log("::::Sync Parcelle Bloc:::::");
+      this.onSyncParceBloc();
+    }
+    if (this.data_mep_bloc.length > 0) {
+      console.log("::::Sync MEP Bloc:::");
+      this.onSyncMepBl();
+    }
+    if (this.data_suivi_bloc.length > 0) {
+      console.log("::::Sync Suivi Bloc::::");
+      this.onSyncSuiviBl();
+    }*/
+  }
+  async onSyncRp() {
+    // Sync Rp
+    /**if (this.data_benef_activ_pms.length > 0) {
+      console.log(":::Sync ::::PMS:::");
+      this.onSyncBenefeActivePms();
+    }
+    if (this.data_parceSaison_pms.length > 0) {
+      console.log(":::Sync :::: Parcelle Pms:::");
+      this.onSyncParcePms();
+    }
+    if (this.data_culture.length > 0) {
+      console.log(":::Sync ::::MEP PMS:::");
+      this.onSyncCulture();
+    }
+    if (this.data_suivi.length > 0) {
+      console.log(":::Sync:::: Suivi PMS:::");
+      this.onSyncSuivi();
+    }*/
+  }
+  onSyncPR() {
+    // Sync Rp
+    /**if (this.data_benef_activ_pr.length > 0) {
+      console.log(":: Sync:::Benef activiter PR:::");
+      this.onSyncBenefeActivePr();
+    }
+    if (this.data_cep_pr.length > 0) {
+      console.log("::::Sync::::CEP PR:::");
+      this.onSyncParcePr();
+    }
+    if (this.data_anime_ve.length > 0) {
+      console.log("::::Sync::::Animation Ve:::");
+      this.onSyncAnimationVe();
+    }
+    if (this.data_mep_pr.length > 0) {
+      console.log(":::Sync::::MEP PR:::");
+      this.onSyncMepPR();
+    }
+    if (this.data_suivi_pr.length > 0) {
+      console.log(":::Sync::::Suivi PR:::");
+      this.onSyncSuiviPr();
+    }*/
   }
 }

@@ -96,10 +96,11 @@ export class LoadSyncService {
    **********************************/
   async loadSyncMepBl(data: any) {
     if (this.dbService.dbReady.value) {
-      const state = `SELECT CBL.code_culture, CBL.id_parce, CBL.id_espece, CBL.id_var, CBL.id_saison, CBL.annee_du, CBL.ddp, CBL.qso, CBL.dt_distribution, CBL.dds, CBL.sfce, CBL.nbre_ligne, CBL.long_ligne, CBL.usage, CBL.sc, CBL.ea_autres, CBL.ea_id_variette, CBL.dt_creation, CBL.dt_modification, CBL.status, CBL.etat, CBL.id_equipe, CBL.type 
+      const state = `SELECT CBL.code_culture, CBL.id_parce, CBL.id_espece, CBL.id_var, CBL.id_saison, CBL.id_annee, CBL.ddp, CBL.qso, CBL.dt_distribution, CBL.dds, CBL.sfce, CBL.nbre_ligne, CBL.long_ligne, CBL.usage, CBL.sc, CBL.ea_autres, CBL.ea_id_variette, CBL.dt_creation, CBL.dt_modification, CBL.status, CBL.etat, CBL.id_equipe, CBL.type 
                     FROM culture_bl CBL
                     INNER JOIN bloc_parce BPRC ON BPRC.code_parce = CBL.id_parce
                     INNER JOIN bloc BL ON BL.code_bloc = BPRC.id_bloc
+                    INNER JOIN annee_agricole AN_ ON AN_.code = CBL.id_annee
                     WHERE BL.id_tech = ${data.id_tech} AND BL.id_prjt = "${data.id_projet}" AND CBL.etat IN("${SYNC}", "${UPDATE}")`;
       return await this.db.query(state);
     }
@@ -111,6 +112,24 @@ export class LoadSyncService {
                   INNER JOIN bloc_parce BPRC ON BPRC.code_parce = CBL.id_parce
                   INNER JOIN bloc BL ON BL.code_bloc = BPRC.id_bloc
                   WHERE BL.id_tech = ${data.id_tech} AND BL.id_prjt = "${data.id_projet}" AND SBL.etat IN("${SYNC}", "${UPDATE}")`;
+    return await this.db.query(state);
+  }
+  // LoadSync beneficiaire
+  async loadSyncBenefBloc(data: any) {
+    const state = `SELECT BABL.code_benef_bl, BABL.code_benef_bl_temp, BABL.id_proj, BABL.id_activ, BABL.id_benef, BABL.id_bloc, BABL.code_achat, BABL.id_collaborateur, BABL.etat AS etat_bbl, BABL.status AS status_bbl, BNF.code_benef, BNF.img_benef, BNF.nom, BNF.prenom, BNF.sexe, BNF.dt_nais, BNF.dt_nais_vers, BNF.surnom, BNF.cin, BNF.dt_delivrance, BNF.lieu_delivrance, BNF.img_cin, BNF.contact, BNF.id_fkt, BNF.id_commune, BNF.village, BNF.dt_Insert, BNF.etat AS etat_bnf, BNF.statut AS status_bnf
+                  FROM benef_activ_bl BABL
+                  INNER JOIN beneficiaire BNF ON BNF.code_benef = BABL.id_benef AND BNF.statut = "active"
+                  INNER JOIN bloc BL ON BL.code_bloc = BABL.id_bloc AND BL.id_prjt = "${data.id_projet}" AND BL.id_tech = ${data.id_tech} AND BL.status = "active"
+                  WHERE BABL.etat IN("${SYNC}", "${UPDATE}") AND BABL.status = "active"`;
+    return await this.db.query(state);
+  }
+  async loadSyncParceBl(data: any) {
+    const state = `SELECT BL_PRC.code_parce, BL_PRC.code_parce_temp, BL_PRC.id_bloc, BL_PRC.id_benef, BL_PRC.ref_gps, BL_PRC.lat, BL_PRC.log, BL_PRC.superficie, BL_PRC.id_fkt, BL_PRC.id_commune, BL_PRC.village, BL_PRC.anne_adheran, BL_PRC.indication, BL_PRC.etat, BL_PRC.status
+                  FROM bloc_parce BL_PRC
+                  INNER JOIN beneficiaire BNF ON BNF.code_benef = BL_PRC.id_benef AND BNF.statut = "active"
+                  INNER JOIN bloc BL ON BL.code_bloc = BL_PRC.id_bloc AND BL.id_prjt = "${data.id_projet}" AND BL.id_tech = ${data.id_tech} AND BL.status = "active"
+                  INNER JOIN benef_activ_bl BBL ON BBL.id_bloc = BL.code_bloc AND BBL.id_benef = BNF.code_benef AND BL.id_prjt = "${data.id_projet}" AND BBL.status = "active"
+                  WHERE BL_PRC.etat IN("${SYNC}", "${UPDATE}") AND BL_PRC.status = "active"`;
     return await this.db.query(state);
   }
   /**
@@ -153,12 +172,13 @@ export class LoadSyncService {
     return await this.db.query(state);
   }
   async loadSyncMepPR(data: any) {
-    const state = `SELECT MEP.code_culture, MEP.id_parce, MEP.id_espece, MEP.id_var, MEP.id_saison, MEP.annee_du, MEP.ddp, MEP.qso, MEP.dt_distribution, MEP.dds, MEP.sfce, MEP.nbre_ligne, MEP.long_ligne, MEP.usage, MEP.sc, MEP.ea_autres, MEP.ea_id_variette, MEP.dt_creation, MEP.dt_modification, MEP.status, MEP.etat, MEP.id_equipe, MEP.type 
+    const state = `SELECT MEP.code_culture, MEP.id_parce, MEP.id_espece, MEP.id_var, MEP.id_saison, MEP.id_annee, MEP.ddp, MEP.qso, MEP.dt_distribution, MEP.dds, MEP.sfce, MEP.nbre_ligne, MEP.long_ligne, MEP.usage, MEP.sc, MEP.ea_autres, MEP.ea_id_variette, MEP.dt_creation, MEP.dt_modification, MEP.status, MEP.etat, MEP.id_equipe, MEP.type 
                   FROM culture_pr MEP
                   INNER JOIN cep_parce CEP ON CEP.code_parce = MEP.id_parce AND CEP.status = "active"
                   INNER JOIN beneficiaire BNF ON BNF.code_benef = CEP.id_benef AND BNF.statut = "active"
                   INNER JOIN benef_activ_pr BAPR ON BAPR.id_proj = "${data.id_projet}" AND BAPR.id_tech = ${data.id_tech} AND BAPR.id_benef = BNF.code_benef AND BAPR.status = "active"
                   INNER JOIN projet_equipe PE ON PE.id_projet = "${data.id_projet}" AND PE.id_equipe = ${data.id_tech} AND PE.status_pe = "active"
+                  INNER JOIN annee_agricole AN_ ON AN_.code = MEP.id_annee
                   WHERE MEP.etat IN("${SYNC}", "${UPDATE}") AND MEP.status = "active"`;
     return await this.db.query(state);
   }

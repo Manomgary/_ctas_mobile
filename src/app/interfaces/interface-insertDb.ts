@@ -41,9 +41,9 @@ export interface AddMepBloc {
     id_espece: string, 
     id_var: string, 
     id_saison: string, 
-    annee_du: string, 
+    id_annee: number, 
     ddp: string, 
-    qso: string, 
+    qso: number, 
     dt_distribution: string,
     dds: string, 
     sfce: number, 
@@ -160,7 +160,7 @@ export interface UpdateMepPR {
     id_espece: string,
     id_var: string,
     id_saison: string,
-    annee_du: string,
+    id_annee: number,
     ddp: string,
     qso: number,
     dt_distribution: string,
@@ -209,7 +209,8 @@ export interface UpdatedBenefActivPms {
     status: string
 }
 export interface UpdateParcellePms {
-    code_parce: string, 
+    code_parce: string,
+    code_parce_temp: string,
     id_assoc: string, 
     id_benef: string, 
     ref_gps: string, 

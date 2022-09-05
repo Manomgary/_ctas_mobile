@@ -4,7 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { UpdateMepPR, UpdateSuiviMepPR } from 'src/app/interfaces/interface-insertDb';
-import { Loc_activ_projet, Loc_categEspece, Loc_cep_PR, Loc_Espece, Loc_MepPR, Loc_PR, Loc_projet, Loc_saison, Loc_Suivi_MepPR, Loc_variette, Update_FormModal_Suivi_Mep_Bloc } from 'src/app/interfaces/interfaces-local';
+import { Loc_activ_projet, Loc_AnneeAgricole, Loc_categEspece, Loc_cep_PR, Loc_Espece, Loc_MepPR, Loc_PR, Loc_projet, Loc_saison, Loc_Suivi_MepPR, Loc_variette, Update_FormModal_Suivi_Mep_Bloc } from 'src/app/interfaces/interfaces-local';
 import { LoadDataService } from 'src/app/services/local/load-data.service';
 import { ACTIVE, EC_CULTURAL, MV, PA, SG, STC, SYNC, UPDATE } from 'src/app/utils/global-variables';
 import { Utilisateurs } from 'src/app/utils/interface-bd';
@@ -16,7 +16,7 @@ import { CaptureImageService } from 'src/app/services/capture-image.service';
 const moment = _moment;
 
 interface Update_Mep {
-  annee: string,
+  annee: Loc_AnneeAgricole,
   saison: Loc_saison,
   beneficiaire: Loc_PR,
   parcelle: Loc_cep_PR,
@@ -86,6 +86,7 @@ export class SuiviPrPage implements OnInit {
   mep_sg: Loc_MepPR[] = [];
   mep_pa: Loc_MepPR[] = [];
   mep_mv: Loc_MepPR[] = [];
+  data_annee_agricole: Loc_AnneeAgricole[] = [];
 
   displayedColumnsMepSg: string[] = ['annee', 'saison', 'code_mep', 'code_parce', 'sfce_reel', 'code_benef', 'nom', 'ddp', 'variette', 'qso', 'dds', 'sc', 'sfce_embl', 'nb_ligne', 'long_ligne', 'ea', 'action'];
   displayedColumnsMepPa: string[] = ['annee', 'code_mep', 'code_parce', 'sfce_reel', 'code_benef', 'nom', 'ddp', 'espece', 'qso', 'dt_dist', 'dds', 'nbre_ligne', 'long_ligne', 'action'];
@@ -164,6 +165,7 @@ export class SuiviPrPage implements OnInit {
           this.loadMep();
           this.loadDataInitial();
           this.loadPRBloc();
+          this.loadAnneeAgricole();
         }
     }
 
@@ -288,7 +290,8 @@ export class SuiviPrPage implements OnInit {
       parcelle: this.data_parce,
       categorie: this.data_categ,
       espece: this.data_espece,
-      variette: this.data_var
+      variette: this.data_var,
+      annee_agricole: this.data_annee_agricole
     }
     switch(parent) {
       case 'mep-sg':
@@ -365,7 +368,8 @@ export class SuiviPrPage implements OnInit {
       parcelle: this.data_parce,
       categorie: this.data_categ,
       espece: this.data_espece,
-      variette: this.data_var
+      variette: this.data_var,
+      annee_agricole: this.data_annee_agricole
     }
     parent.data_initial = data;
     switch(parent.src) {
@@ -435,7 +439,7 @@ export class SuiviPrPage implements OnInit {
       id_espece: null,
       id_var: null,
       id_saison: this.updated_Mep.saison != null?this.updated_Mep.saison.code_saison:null,
-      annee_du: this.updated_Mep.annee,
+      id_annee: this.updated_Mep.annee != null?this.updated_Mep.annee.code:null,
       ddp: this.updated_Mep.ddp,
       qso: this.updated_Mep.qso,
       dt_distribution: this.updated_Mep.dt_distribution,
@@ -523,7 +527,7 @@ export class SuiviPrPage implements OnInit {
       id_espece: null,
       id_var: null,
       id_saison: this.updated_Mep.saison != null?this.updated_Mep.saison.code_saison:null,
-      annee_du: this.updated_Mep.annee,
+      id_annee: this.updated_Mep.annee != null?this.updated_Mep.annee.code:null,
       ddp: this.updated_Mep.ddp,
       qso: this.updated_Mep.qso,
       dt_distribution: this.updated_Mep.dt_distribution,
@@ -869,7 +873,7 @@ export class SuiviPrPage implements OnInit {
   //
   generateCodeMep() {
     let code_mep: string = '';
-    let annee_ = this.updated_Mep.annee.charAt(2) + this.updated_Mep.annee.charAt(3);
+    let annee_ = this.updated_Mep.annee != null?this.updated_Mep.annee.annee_du.toString().charAt(2) + this.updated_Mep.annee.annee_du.toString().charAt(3) + this.updated_Mep.annee.annee_au.toString().charAt(2) + this.updated_Mep.annee.annee_au.toString().charAt(3):null;
 
     if (this.updated_Mep.saison != null) {
       //return code_mep = annee_ + this.updated_Mep.saison.intitule + '-' + this.user[this.user.length - 1].id_equipe +  this.projet.ancronyme + '-' + 'Mep';
@@ -1110,5 +1114,11 @@ export class SuiviPrPage implements OnInit {
         });
         break
     }
+  }
+  // 
+  loadAnneeAgricole() {
+    this.loadData.loadAnneeAgricole().then(res => {
+      this.data_annee_agricole = res.values;
+    });
   }
 }

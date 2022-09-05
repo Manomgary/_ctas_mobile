@@ -327,6 +327,7 @@ export class ModalPrPage implements OnInit {
       this.data_categ = data_initial.categorie;
       this.data_pr = data_initial.pr;
       this.data_cep = data_initial.parcelle;
+      this.data_annee_agricole = data_initial.annee_agricole;
       this.data_categ_ea = this.data_categ.filter(item => {return item.code_cat === 1});
       // Add
       if (this.navParams.get('isAddMepSg')) {
@@ -1051,6 +1052,7 @@ export class ModalPrPage implements OnInit {
       let categ_ea: Loc_categEspece = null;
       let espece_ea: Loc_Espece = null;
       let var_ea: Loc_variette = null;
+      let annee_agr: Loc_AnneeAgricole = null;
 
       this.data_pr.forEach(item => {
         if (item.code_pr === this.data_Mep_Pr_edit.code_pr) {
@@ -1130,8 +1132,14 @@ export class ModalPrPage implements OnInit {
         }
       }
 
+      this.data_annee_agricole.forEach(elem_annee => {
+        if (elem_annee.code === this.data_Mep_Pr_edit.id_annee) {
+          annee_agr = elem_annee;
+        }
+      });
+
       this.mepForm = this.formBuilder.group({
-        annee: [this.data_Mep_Pr_edit.annee_du, Validators.required],
+        annee: [annee_agr, Validators.required],
         saison: this.isEditMepSG?[saison_, Validators.required]:saison_,
         beneficiaire: [pr_, Validators.required],
         parcelle: [cep_, Validators.required],
@@ -1237,8 +1245,16 @@ export class ModalPrPage implements OnInit {
   }
   initFormCepPr() {
     if (this.isAddCepPr) {
+      let bloc_benef: Loc_Bloc = null
+      if (this.isParceBl) {
+        this.data_bloc_benef.forEach(elem_bloc => {
+          if (elem_bloc.code_bloc === this.elem_benef_bl.id_bloc) {
+            bloc_benef = elem_bloc;
+          }
+        });
+      }
       this.cepForm = this.formBuilder.group({
-        bloc: null,
+        bloc: this.isParceBl?[bloc_benef, Validators.required]:null,
         ref_gps: null,
         latitude: null,
         longitude: null,
@@ -1258,11 +1274,6 @@ export class ModalPrPage implements OnInit {
       let region: Loc_region = null;
       let bloc_equipe: BlocEquipe = null;
       let bloc_benef: Loc_Bloc = null;
-
-        // filtre
-      /**this.data_district_filter = this.data_district.filter(item => {return item.id_reg === this.element_cep.code_region});
-      this.data_commune_filter = this.data_commune.filter(item => {return item.id_dist === this.element_cep.code_district});
-      this.data_fokontany_filter = this.data_fokontany.filter(item => {return item.id_com === this.element_cep.code_commune});*/
 
       this.data_fokontany_filter.forEach(item => {
         if (this.isCepPr) {
@@ -1298,7 +1309,6 @@ export class ModalPrPage implements OnInit {
         }
       });
       this.data_region.forEach(item => {
-        console.log(":::::id_reg:::", item.code_reg, "::::code_reg:::", this.element_cep.code_region);
         if (this.isCepPr) {
           if (item.code_reg === this.element_cep.code_region) {
             region = item
@@ -1325,8 +1335,14 @@ export class ModalPrPage implements OnInit {
         }
       });
       
-      if (this.element_cep.village != null) {
-        this.isAutresFkt = true;
+      if (this.isCepPr) {
+        if (this.element_cep.village != null) {
+          this.isAutresFkt = true;
+        }
+      } else if (this.isParceBl) {
+        if (this.elem_parce_bl.village != null) {
+          this.isAutresFkt = true;
+        }
       }
       
       this.cepForm = this.formBuilder.group({
@@ -1334,7 +1350,7 @@ export class ModalPrPage implements OnInit {
         ref_gps: this.isCepPr?this.element_cep.ref_gps:this.elem_parce_bl.ref_gps,
         latitude: this.isCepPr?this.element_cep.lat:this.elem_parce_bl.lat,
         longitude: this.isCepPr?this.element_cep.log:this.elem_parce_bl.log,
-        superficie: this.isCepPr?[this.element_cep.superficie, , Validators.required]:[this.elem_parce_bl.superficie, Validators.required],
+        superficie: this.isCepPr?[this.element_cep.superficie, Validators.required]:[this.elem_parce_bl.superficie, Validators.required],
         region: [region, Validators.required],
         district: [district, Validators.required],
         commune: [commune, Validators.required],
@@ -1368,6 +1384,8 @@ export class ModalPrPage implements OnInit {
         fokontany: null,
         village: null
       });
+      /**this.beneficiaireForm.get('dt_naissance').disable();
+      this.beneficiaireForm.get('dt_delivrance').disable();*/
     }
     if (this.isEditBenef) {
       let fkt: Loc_Fokontany = null;
@@ -1759,6 +1777,7 @@ export class ModalPrPage implements OnInit {
       dismiss = this.animeVeForm.value;
       console.log(dismiss);
     }
+    console.log("beneficiaire data dismiss:::", this.beneficiaireForm.value);
     this.modalCtrl.dismiss(dismiss);
   }
   onSaveMepPr() {
@@ -1809,4 +1828,14 @@ export class ModalPrPage implements OnInit {
         this.parcePms.get(c).updateValueAndValidity();
       });
   }
+
+  /**disableForm(group: FormGroup) {
+    for (const i in group.controls) {
+       if(enable) {
+         group.controls[i].enable();
+       } else {
+         group.controls[i].disable();
+       }
+    }
+ }*/
 }

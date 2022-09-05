@@ -210,13 +210,14 @@ export class LoginPage implements OnInit {
                 }
               };
               this.route.navigate(['homes'], navigationExtras);
-              loading.dismiss();
+              this.loadingCtrl.dismiss();
             } else {
               this.openToast("votre mot identifiant est incorrecte ou mot de passe!");
-              loading.dismiss();
+              this.loadingCtrl.dismiss();
             }
           });
         }
+        this.loadingCtrl.dismiss();
       });
     }
     this.isValidate = false;
